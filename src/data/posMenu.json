@@ -1,0 +1,2444 @@
+{
+ "_source": "Transcribed from BLUU back-office POS menu screenshot (8.webp) and live POS photos, 10/24/2026. Grid is 4 columns x 8 rows per page; row 8 col 4 holds the page navigator.",
+ "gridColumns": 4,
+ "gridRows": 8,
+ "categories": [
+  {
+   "id": "ayce-meat",
+   "label": "AYCE MEAT",
+   "color": "#0f4c66"
+  },
+  {
+   "id": "ayce-apps",
+   "label": "AYCE APPS",
+   "color": "#0f4c66"
+  },
+  {
+   "id": "ayce-price",
+   "label": "AYCE PRICE",
+   "color": "#ff2a10"
+  },
+  {
+   "id": "ayce-ultimate",
+   "label": "AYCE ULTIMATE",
+   "color": "#0f4c66"
+  },
+  {
+   "id": "combo",
+   "label": "COMBO",
+   "color": "#6b2d0c"
+  },
+  {
+   "id": "appetizer",
+   "label": "APPETIZER",
+   "color": "#24601a"
+  },
+  {
+   "id": "lunch",
+   "label": "LUNCH",
+   "color": "#33c21a"
+  },
+  {
+   "id": "dinner",
+   "label": "DINNER",
+   "color": "#7a0ac6"
+  },
+  {
+   "id": "side-order",
+   "label": "SIDE ORDER",
+   "color": "#e8278a"
+  },
+  {
+   "id": "beverage",
+   "label": "BEVERAGE",
+   "color": "#5e4566"
+  },
+  {
+   "id": "beer",
+   "label": "BEER",
+   "color": "#6d0a6d"
+  },
+  {
+   "id": "korean-wine",
+   "label": "KOREAN WINE",
+   "color": "#6d0a6d"
+  },
+  {
+   "id": "wine",
+   "label": "WINE",
+   "color": "#6d0a6d"
+  },
+  {
+   "id": "dessert",
+   "label": "DESSERT",
+   "color": "#12b48a"
+  }
+ ],
+ "items": [
+  {
+   "id": "15-brisket-ayce",
+   "label": "15. BRISKET AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 0.0,
+   "number": 15,
+   "countsAsMeat": true
+  },
+  {
+   "id": "16-ribeye-ayce",
+   "label": "16. RIBEYE AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 0.0,
+   "number": 16,
+   "countsAsMeat": true
+  },
+  {
+   "id": "17-beef-blg-ayce",
+   "label": "17. BEEF BLG AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 0.0,
+   "number": 17,
+   "countsAsMeat": true
+  },
+  {
+   "id": "18-pork-belly-ayce",
+   "label": "18. PORK BELLY AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 0.0,
+   "number": 18,
+   "countsAsMeat": true
+  },
+  {
+   "id": "19-miso-pork-ayce",
+   "label": "19. MISO PORK AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 0.0,
+   "number": 19,
+   "countsAsMeat": true
+  },
+  {
+   "id": "20-ckn-blg-ayce",
+   "label": "20. CKN BLG AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 0.0,
+   "number": 20,
+   "countsAsMeat": true
+  },
+  {
+   "id": "21-grlc-ckn-ayce",
+   "label": "21. GRLC CKN AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 0.0,
+   "number": 21,
+   "countsAsMeat": true
+  },
+  {
+   "id": "22-short-plt-belly-ayce",
+   "label": "22. SHORT PLT (BELLY) AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 0.0,
+   "number": 22,
+   "countsAsMeat": true
+  },
+  {
+   "id": "23-red-pork-ayce",
+   "label": "23. RED PORK AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 0.0,
+   "number": 23,
+   "countsAsMeat": true
+  },
+  {
+   "id": "24-wine-pork-ayce",
+   "label": "24. WINE PORK AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 0.0,
+   "number": 24,
+   "countsAsMeat": true
+  },
+  {
+   "id": "25-galbi-only-1pc",
+   "label": "25. GALBI ONLY 1PC",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 3.95,
+   "number": 25,
+   "color": "#ee6268",
+   "countsAsMeat": true
+  },
+  {
+   "id": "26-pork-jowl-ayce",
+   "label": "26. PORK JOWL AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 0.0,
+   "number": 26,
+   "countsAsMeat": true
+  },
+  {
+   "id": "27-pork-blg-ayce",
+   "label": "27. PORK BLG AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 0.0,
+   "number": 27,
+   "countsAsMeat": true
+  },
+  {
+   "id": "28-pork-shoulder-ayce",
+   "label": "28. PORK SHOULDER AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 0.0,
+   "number": 28,
+   "countsAsMeat": true
+  },
+  {
+   "id": "29-spicy-ckn-thigh-ayce",
+   "label": "29. SPICY CKN THIGH AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 0.0,
+   "number": 29,
+   "countsAsMeat": true
+  },
+  {
+   "id": "30-ckn-breast-ayce",
+   "label": "30. CKN BREAST AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 0.0,
+   "number": 30,
+   "countsAsMeat": true
+  },
+  {
+   "id": "31-shrimp-ayce",
+   "label": "31. SHRIMP AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 0.0,
+   "number": 31,
+   "countsAsMeat": true
+  },
+  {
+   "id": "32-spicy-cala-ayce",
+   "label": "32. SPICY CALA AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 0.0,
+   "number": 32,
+   "countsAsMeat": true
+  },
+  {
+   "id": "33-seasoned-short-rib-ayce",
+   "label": "33. SEASONED SHORT RIB AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 0.0,
+   "number": 33,
+   "countsAsMeat": true
+  },
+  {
+   "id": "34-spicy-pork-blg-ayce",
+   "label": "34. SPICY PORK BLG AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 0.0,
+   "number": 34,
+   "countsAsMeat": true
+  },
+  {
+   "id": "35-top-sirlon-ayce",
+   "label": "35. TOP SIRLON AYCE",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 0.0,
+   "number": 35,
+   "countsAsMeat": true
+  },
+  {
+   "id": "beef-tongue-6oz",
+   "label": "BEEF TONGUE 6oz",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 20.0,
+   "color": "#19e3ec",
+   "countsAsMeat": true
+  },
+  {
+   "id": "scallop-8pcs",
+   "label": "SCALLOP 8PCS",
+   "category": "ayce-meat",
+   "page": 1,
+   "row": 6,
+   "col": 4,
+   "price": 20.0,
+   "color": "#19e3ec",
+   "countsAsMeat": true
+  },
+  {
+   "id": "01-fried-mandu-ayce",
+   "label": "01. FRIED MANDU AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 0.0,
+   "number": 1
+  },
+  {
+   "id": "02-egg-roll-ayce",
+   "label": "02. EGG ROLL AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 0.0,
+   "number": 2
+  },
+  {
+   "id": "03-soybeans-ayce",
+   "label": "03. SOYBEANS AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 0.0,
+   "number": 3
+  },
+  {
+   "id": "04-stmd-egg-ayce",
+   "label": "04. STMD EGG AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 0.0,
+   "number": 4
+  },
+  {
+   "id": "05-popcrn-ckn-ayce",
+   "label": "05. POPCRN CKN AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 0.0,
+   "number": 5
+  },
+  {
+   "id": "06-crispy-calamari-ayce",
+   "label": "06. CRISPY CALAMARI AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 0.0,
+   "number": 6
+  },
+  {
+   "id": "07-miso-soup-ayce",
+   "label": "07. MISO SOUP AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 0.0,
+   "number": 7
+  },
+  {
+   "id": "08-seaweed-soup-ayce",
+   "label": "08. SEAWEED SOUP AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 0.0,
+   "number": 8
+  },
+  {
+   "id": "09-spicy-miso-stew-ayce",
+   "label": "09. SPICY MISO STEW AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 0.0,
+   "number": 9
+  },
+  {
+   "id": "10-soon-tofu-ayce",
+   "label": "10. SOON TOFU AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 0.0,
+   "number": 10
+  },
+  {
+   "id": "11-rice-ayce",
+   "label": "11. RICE AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 0.0,
+   "number": 11
+  },
+  {
+   "id": "12-assorted-veggie-ayce",
+   "label": "12. ASSORTED VEGGIE AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 0.0,
+   "number": 12
+  },
+  {
+   "id": "13-tofu-steak-ayce",
+   "label": "13. TOFU STEAK AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 0.0,
+   "number": 13
+  },
+  {
+   "id": "14-plant-based-meat-ayce",
+   "label": "14. PLANT BASED MEAT AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 0.0,
+   "number": 14
+  },
+  {
+   "id": "40-corn-cheese",
+   "label": "40. CORN CHEESE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 0.0,
+   "number": 40
+  },
+  {
+   "id": "41-tteok-bokki-ayce",
+   "label": "41. TTEOK-BOKKI AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 0.0,
+   "number": 41
+  },
+  {
+   "id": "42-kfc-ayce",
+   "label": "42. KFC AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 0.0,
+   "number": 42
+  },
+  {
+   "id": "43-french-fries-ayce",
+   "label": "43. FRENCH FRIES AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 0.0,
+   "number": 43
+  },
+  {
+   "id": "44-green-salad-ayce",
+   "label": "44. GREEN SALAD AYCE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 0.0,
+   "number": 44
+  },
+  {
+   "id": "45-lettuce-wrap",
+   "label": "45. LETTUCE WRAP",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 0.0,
+   "number": 45
+  },
+  {
+   "id": "46-tortilla",
+   "label": "46. TORTILLA",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 6,
+   "col": 2,
+   "price": 0.0,
+   "number": 46
+  },
+  {
+   "id": "47-pineapple",
+   "label": "47. PINEAPPLE",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 0.0,
+   "number": 47
+  },
+  {
+   "id": "rice-paper",
+   "label": "RICE PAPER",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 7,
+   "col": 1,
+   "price": 0.0
+  },
+  {
+   "id": "garlic-jalapeno",
+   "label": "GARLIC&JALAPENO",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 7,
+   "col": 2,
+   "price": 0.0
+  },
+  {
+   "id": "sesame-oil",
+   "label": "SESAME OIL",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 7,
+   "col": 3,
+   "price": 0.0
+  },
+  {
+   "id": "bean-paste-ssamjang",
+   "label": "BEAN PASTE SSAMJANG",
+   "category": "ayce-apps",
+   "page": 1,
+   "row": 7,
+   "col": 4,
+   "price": 0.0
+  },
+  {
+   "id": "premium-ayce-lunch",
+   "label": "PREMIUM AYCE (LUNCH)",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 33.95
+  },
+  {
+   "id": "premium-ayce-dinner",
+   "label": "PREMIUM AYCE (DINNER)",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 38.95
+  },
+  {
+   "id": "premium-5-8",
+   "label": "PREMIUM 5-8",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 15.0
+  },
+  {
+   "id": "premium-9-12",
+   "label": "PREMIUM 9-12",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 25.0
+  },
+  {
+   "id": "ultimate-ayce",
+   "label": "ULTIMATE AYCE",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 68.95
+  },
+  {
+   "id": "ultimate-5-8",
+   "label": "ULTIMATE 5-8",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 25.0
+  },
+  {
+   "id": "ultimate-9-12",
+   "label": "ULTIMATE 9-12",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 35.0
+  },
+  {
+   "id": "single-person-extra",
+   "label": "SINGLE PERSON EXTRA",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 5.0
+  },
+  {
+   "id": "surcharge",
+   "label": "SURCHARGE",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 10.0
+  },
+  {
+   "id": "ultimate-w-soda",
+   "label": "ULTIMATE W/ SODA",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 0.0,
+   "color": "#d98ee2"
+  },
+  {
+   "id": "ultimate-w-beer",
+   "label": "ULTIMATE W/ BEER",
+   "category": "ayce-price",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 0.0,
+   "color": "#98d898",
+   "modifierIcon": true
+  },
+  {
+   "id": "25-galbi",
+   "label": "25. GALBI",
+   "category": "ayce-ultimate",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 0.0,
+   "number": 25,
+   "countsAsMeat": true
+  },
+  {
+   "id": "36-sp-tuna-buscuit",
+   "label": "36. SP TUNA BUSCUIT",
+   "category": "ayce-ultimate",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 0.0,
+   "number": 36
+  },
+  {
+   "id": "37-japchae-ayce",
+   "label": "37. JAPCHAE AYCE",
+   "category": "ayce-ultimate",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 0.0,
+   "number": 37
+  },
+  {
+   "id": "38-beef-tongue",
+   "label": "38. BEEF TONGUE",
+   "category": "ayce-ultimate",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 0.0,
+   "number": 38,
+   "countsAsMeat": true
+  },
+  {
+   "id": "39-scallop",
+   "label": "39. SCALLOP",
+   "category": "ayce-ultimate",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 0.0,
+   "number": 39,
+   "countsAsMeat": true
+  },
+  {
+   "id": "combo-s",
+   "label": "COMBO S",
+   "category": "combo",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 105.0
+  },
+  {
+   "id": "combo-m",
+   "label": "COMBO M",
+   "category": "combo",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 150.0
+  },
+  {
+   "id": "combo-l",
+   "label": "COMBO L",
+   "category": "combo",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 180.0
+  },
+  {
+   "id": "kfc",
+   "label": "KFC",
+   "category": "appetizer",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 10.5
+  },
+  {
+   "id": "garlic-soybean",
+   "label": "GARLIC SOYBEAN",
+   "category": "appetizer",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 7.0
+  },
+  {
+   "id": "mandu",
+   "label": "MANDU",
+   "category": "appetizer",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 7.0
+  },
+  {
+   "id": "japchae",
+   "label": "JAPCHAE",
+   "category": "appetizer",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 14.0
+  },
+  {
+   "id": "tteok-bokki",
+   "label": "TTEOK-BOKKI",
+   "category": "appetizer",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 9.5
+  },
+  {
+   "id": "crispy-caramari",
+   "label": "CRISPY CARAMARI",
+   "category": "appetizer",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 9.0
+  },
+  {
+   "id": "orange-chicken",
+   "label": "ORANGE CHICKEN",
+   "category": "appetizer",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 10.5
+  },
+  {
+   "id": "chili-shrimp",
+   "label": "CHILI SHRIMP",
+   "category": "appetizer",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 13.0
+  },
+  {
+   "id": "shishito",
+   "label": "SHISHITO",
+   "category": "appetizer",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 6.5
+  },
+  {
+   "id": "eggplant",
+   "label": "EGGPLANT",
+   "category": "appetizer",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 9.5
+  },
+  {
+   "id": "tempura",
+   "label": "TEMPURA",
+   "category": "appetizer",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 9.5
+  },
+  {
+   "id": "popcorn-chicken",
+   "label": "POPCORN CHICKEN",
+   "category": "appetizer",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 9.5
+  },
+  {
+   "id": "egg-rolls-3pcs",
+   "label": "EGG ROLLS 3PCS",
+   "category": "appetizer",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 4.5
+  },
+  {
+   "id": "vegetable-saute",
+   "label": "VEGETABLE SAUTE",
+   "category": "appetizer",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 12.0
+  },
+  {
+   "id": "mushroom-saute",
+   "label": "MUSHROOM SAUTE",
+   "category": "appetizer",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 14.5
+  },
+  {
+   "id": "steamd-egg",
+   "label": "STEAMD EGG",
+   "category": "appetizer",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 7.0
+  },
+  {
+   "id": "salad",
+   "label": "SALAD",
+   "category": "appetizer",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 6.0
+  },
+  {
+   "id": "spicy-tuna-biscuit",
+   "label": "SPICY TUNA BISCUIT",
+   "category": "appetizer",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 9.5
+  },
+  {
+   "id": "french-fries",
+   "label": "FRENCH FRIES",
+   "category": "appetizer",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 5.5
+  },
+  {
+   "id": "tofu-steak-4pcs",
+   "label": "TOFU STEAK 4PCS",
+   "category": "appetizer",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 6.0
+  },
+  {
+   "id": "galbi-lunch",
+   "label": "GALBI LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 24.0
+  },
+  {
+   "id": "bulgogi-lunch",
+   "label": "BULGOGI LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 20.0
+  },
+  {
+   "id": "spicy-pork-lunch",
+   "label": "SPICY PORK LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 20.0
+  },
+  {
+   "id": "ch-teriyaki-lunch",
+   "label": "CH. TERIYAKI LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 19.0
+  },
+  {
+   "id": "bibimbap-cold-lunch",
+   "label": "BIBIMBAP COLD LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 19.0,
+   "color": "#79aee8",
+   "modifierIcon": true
+  },
+  {
+   "id": "bibimbap-hot-lunch",
+   "label": "BIBIMBAP HOT LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 20.0,
+   "color": "#e67a7a",
+   "modifierIcon": true
+  },
+  {
+   "id": "soon-tofu-lunch",
+   "label": "SOON TOFU LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 17.0,
+   "color": "#f8c46e",
+   "modifierIcon": true
+  },
+  {
+   "id": "galbi-soup-lunch",
+   "label": "GALBI SOUP LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 24.0
+  },
+  {
+   "id": "yukgaejang-lunch",
+   "label": "YUKGAEJANG LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 21.0
+  },
+  {
+   "id": "kimchi-stew",
+   "label": "KIMCHI STEW",
+   "category": "lunch",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 18.0
+  },
+  {
+   "id": "soybean-stew-lunch",
+   "label": "SOYBEAN STEW LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 18.0
+  },
+  {
+   "id": "ramen-kimch-beef",
+   "label": "RAMEN - KIMCH & BEEF",
+   "category": "lunch",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 14.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "ramen-mushroom",
+   "label": "RAMEN - MUSHROOM",
+   "category": "lunch",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 15.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "ramen-dumpling",
+   "label": "RAMEN - DUMPLING",
+   "category": "lunch",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 15.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "fried-noodle-beef",
+   "label": "FRIED NOODLE - BEEF",
+   "category": "lunch",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 17.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-chicken",
+   "label": "FRIED NOODLE - CHICKEN",
+   "category": "lunch",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 16.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-shrimp",
+   "label": "FRIED NOODLE - SHRIMP",
+   "category": "lunch",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 17.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-vegi",
+   "label": "FRIED NOODLE - VEGI",
+   "category": "lunch",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 15.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "katsu-pork",
+   "label": "KATSU - PORK",
+   "category": "lunch",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 18.0,
+   "color": "#8ef0f4"
+  },
+  {
+   "id": "katsu-chicken",
+   "label": "KATSU - CHICKEN",
+   "category": "lunch",
+   "page": 1,
+   "row": 6,
+   "col": 2,
+   "price": 17.0,
+   "color": "#8ef0f4"
+  },
+  {
+   "id": "salmon-lunch",
+   "label": "SALMON LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 20.0,
+   "color": "#b6d69c"
+  },
+  {
+   "id": "bbq-eel-lunch",
+   "label": "BBQ EEL LUNCH",
+   "category": "lunch",
+   "page": 1,
+   "row": 6,
+   "col": 4,
+   "price": 18.0
+  },
+  {
+   "id": "fried-rice-shrimp",
+   "label": "FRIED RICE - SHRIMP",
+   "category": "lunch",
+   "page": 1,
+   "row": 7,
+   "col": 1,
+   "price": 17.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-beef",
+   "label": "FRIED RICE - BEEF",
+   "category": "lunch",
+   "page": 1,
+   "row": 7,
+   "col": 2,
+   "price": 17.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-chicken",
+   "label": "FRIED RICE - CHICKEN",
+   "category": "lunch",
+   "page": 1,
+   "row": 7,
+   "col": 3,
+   "price": 17.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-kimchi",
+   "label": "FRIED RICE - KIMCHI",
+   "category": "lunch",
+   "page": 1,
+   "row": 7,
+   "col": 4,
+   "price": 17.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-veg",
+   "label": "FRIED RICE - VEG",
+   "category": "lunch",
+   "page": 1,
+   "row": 8,
+   "col": 1,
+   "price": 16.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "galbi-dnr",
+   "label": "GALBI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 32.0
+  },
+  {
+   "id": "bulgogi-dnr",
+   "label": "BULGOGI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 25.0
+  },
+  {
+   "id": "spicy-pork-bulgogi-dnr",
+   "label": "SPICY PORK BULGOGI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 24.0
+  },
+  {
+   "id": "chicken-teriyaki-dnr",
+   "label": "CHICKEN TERIYAKI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 22.0
+  },
+  {
+   "id": "bibimbap-cold-dnr",
+   "label": "BIBIMBAP COLD DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 21.0,
+   "color": "#79aee8",
+   "modifierIcon": true
+  },
+  {
+   "id": "bibimbap-hot-dnr",
+   "label": "BIBIMBAP HOT DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 22.0,
+   "color": "#e67a7a",
+   "modifierIcon": true
+  },
+  {
+   "id": "soon-tofu-dnr",
+   "label": "SOON TOFU DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 18.0,
+   "color": "#f8c46e",
+   "modifierIcon": true
+  },
+  {
+   "id": "galbi-soup-dnr",
+   "label": "GALBI SOUP DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 26.0
+  },
+  {
+   "id": "yukgaejang-dnr",
+   "label": "YUKGAEJANG DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 23.0
+  },
+  {
+   "id": "kimchi-stew-dnr",
+   "label": "KIMCHI STEW DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 20.0
+  },
+  {
+   "id": "soybean-stew-dnr",
+   "label": "SOYBEAN STEW DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 20.0
+  },
+  {
+   "id": "ramen-kimch-beef-dnr",
+   "label": "RAMEN - KIMCH & BEEF DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 15.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "ramen-mushroom-dnr",
+   "label": "RAMEN - MUSHROOM DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 16.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "ramen-dumpling-dnr",
+   "label": "RAMEN - DUMPLING DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 16.0,
+   "color": "#ecb9b9"
+  },
+  {
+   "id": "fried-noodle-beef-dnr",
+   "label": "FRIED NOODLE - BEEF DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 18.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-chicken-dnr",
+   "label": "FRIED NOODLE - CHICKEN DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 17.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-shrimp-dnr",
+   "label": "FRIED NOODLE - SHRIMP DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 18.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "fried-noodle-vegi-dnr",
+   "label": "FRIED NOODLE - VEGI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 16.0,
+   "color": "#eed37c"
+  },
+  {
+   "id": "katsu-pork-dnr",
+   "label": "KATSU - PORK DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 19.0,
+   "color": "#8ef0f4"
+  },
+  {
+   "id": "katsu-chicken-dnr",
+   "label": "KATSU - CHICKEN DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 6,
+   "col": 2,
+   "price": 18.0,
+   "color": "#8ef0f4"
+  },
+  {
+   "id": "salmon-dnr",
+   "label": "SALMON DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 22.0,
+   "color": "#b6d69c"
+  },
+  {
+   "id": "bbq-ell-dnr",
+   "label": "BBQ ELL DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 6,
+   "col": 4,
+   "price": 19.0
+  },
+  {
+   "id": "fried-rice-shrimp-dnr",
+   "label": "FRIED RICE - SHRIMP DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 7,
+   "col": 1,
+   "price": 18.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-beef-dnr",
+   "label": "FRIED RICE - BEEF DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 7,
+   "col": 2,
+   "price": 18.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-chicken-dnr",
+   "label": "FRIED RICE - CHICKEN DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 7,
+   "col": 3,
+   "price": 18.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-kimchi-dnr",
+   "label": "FRIED RICE - KIMCHI DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 7,
+   "col": 4,
+   "price": 18.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "fried-rice-veg-dnr",
+   "label": "FRIED RICE - VEG DNR",
+   "category": "dinner",
+   "page": 1,
+   "row": 8,
+   "col": 1,
+   "price": 17.0,
+   "color": "#bba3df"
+  },
+  {
+   "id": "extra-side-dishes-1pack",
+   "label": "EXTRA SIDE DISHES 1PACK",
+   "category": "side-order",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 3.0
+  },
+  {
+   "id": "rice-rice-paper",
+   "label": "RICE / RICE PAPER",
+   "category": "side-order",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 2.0
+  },
+  {
+   "id": "soup",
+   "label": "SOUP",
+   "category": "side-order",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 2.0
+  },
+  {
+   "id": "extra-egg",
+   "label": "EXTRA EGG",
+   "category": "side-order",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 1.0
+  },
+  {
+   "id": "extra-beef",
+   "label": "EXTRA BEEF",
+   "category": "side-order",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 3.0
+  },
+  {
+   "id": "extra-chicken",
+   "label": "EXTRA CHICKEN",
+   "category": "side-order",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 3.0
+  },
+  {
+   "id": "extra-spicy-pork",
+   "label": "EXTRA SPICY PORK",
+   "category": "side-order",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 3.0
+  },
+  {
+   "id": "extra-tofu",
+   "label": "EXTRA TOFU",
+   "category": "side-order",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 2.0
+  },
+  {
+   "id": "togo-12oz-kimchi",
+   "label": "TOGO 12oz KIMCHI",
+   "category": "side-order",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 8.0,
+   "color": "#62c9ce"
+  },
+  {
+   "id": "togo-12oz-bean-sprout",
+   "label": "TOGO 12oz BEAN SPROUT",
+   "category": "side-order",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 8.0,
+   "color": "#62c9ce"
+  },
+  {
+   "id": "togo-12oz-radish",
+   "label": "TOGO 12oz RADISH",
+   "category": "side-order",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 8.0,
+   "color": "#62c9ce"
+  },
+  {
+   "id": "employee-drink",
+   "label": "EMPLOYEE DRINK",
+   "category": "side-order",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 1.0,
+   "color": "#ee6c6c"
+  },
+  {
+   "id": "coke",
+   "label": "COKE",
+   "category": "beverage",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 2.75
+  },
+  {
+   "id": "diet-coke",
+   "label": "DIET COKE",
+   "category": "beverage",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 2.75
+  },
+  {
+   "id": "coke-zero",
+   "label": "COKE ZERO",
+   "category": "beverage",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 2.75
+  },
+  {
+   "id": "hot-tea",
+   "label": "HOT TEA",
+   "category": "beverage",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 2.5
+  },
+  {
+   "id": "sprite",
+   "label": "SPRITE",
+   "category": "beverage",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 2.75
+  },
+  {
+   "id": "root-beer",
+   "label": "ROOT BEER",
+   "category": "beverage",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 2.75
+  },
+  {
+   "id": "iced-tea",
+   "label": "ICED TEA",
+   "category": "beverage",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 3.5
+  },
+  {
+   "id": "dr-pepper",
+   "label": "DR PEPPER",
+   "category": "beverage",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 2.75
+  },
+  {
+   "id": "fanta",
+   "label": "FANTA",
+   "category": "beverage",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 2.75
+  },
+  {
+   "id": "arnold-palmer",
+   "label": "ARNOLD PALMER",
+   "category": "beverage",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 4.0
+  },
+  {
+   "id": "lemonade",
+   "label": "LEMONADE",
+   "category": "beverage",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 3.5
+  },
+  {
+   "id": "apple-juice",
+   "label": "APPLE JUICE",
+   "category": "beverage",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 3.5
+  },
+  {
+   "id": "perrier",
+   "label": "PERRIER",
+   "category": "beverage",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 4.0
+  },
+  {
+   "id": "pellegrino",
+   "label": "PELLEGRINO",
+   "category": "beverage",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 7.0
+  },
+  {
+   "id": "draft-coors-light",
+   "label": "(DRAFT) COORS LIGHT",
+   "category": "beer",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 7.0
+  },
+  {
+   "id": "draft-asahi",
+   "label": "(DRAFT) ASAHI",
+   "category": "beer",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 7.0
+  },
+  {
+   "id": "draft-sapporo",
+   "label": "(DRAFT) SAPPORO",
+   "category": "beer",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 7.0
+  },
+  {
+   "id": "draft-blue-moon",
+   "label": "(DRAFT) BLUE MOON",
+   "category": "beer",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 8.0
+  },
+  {
+   "id": "draft-samuel-adams",
+   "label": "(DRAFT) SAMUEL ADAMS",
+   "category": "beer",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 8.0
+  },
+  {
+   "id": "draft-lagunitas-ipa",
+   "label": "(DRAFT) LAGUNITAS IPA",
+   "category": "beer",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 8.0
+  },
+  {
+   "id": "draft-fat-tire",
+   "label": "(DRAFT) FAT TIRE",
+   "category": "beer",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 8.0
+  },
+  {
+   "id": "draft-sierra-nevada",
+   "label": "(DRAFT) SIERRA NEVADA",
+   "category": "beer",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 8.0
+  },
+  {
+   "id": "terra",
+   "label": "TERRA",
+   "category": "beer",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 9.0
+  },
+  {
+   "id": "kloud",
+   "label": "KLOUD",
+   "category": "beer",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 9.0
+  },
+  {
+   "id": "non-alcoholic-beer",
+   "label": "NON-ALCOHOLIC BEER",
+   "category": "beer",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 8.0,
+   "color": "#ffdf1a"
+  },
+  {
+   "id": "bud-light",
+   "label": "BUD LIGHT",
+   "category": "beer",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 6.5
+  },
+  {
+   "id": "corona",
+   "label": "CORONA",
+   "category": "beer",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 6.5
+  },
+  {
+   "id": "pacifico",
+   "label": "PACIFICO",
+   "category": "beer",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 6.5
+  },
+  {
+   "id": "heineken",
+   "label": "HEINEKEN",
+   "category": "beer",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 6.5
+  },
+  {
+   "id": "pitchers-coors-light",
+   "label": "(PITCHERS) COORS LIGHT",
+   "category": "beer",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 23.0
+  },
+  {
+   "id": "pitchers-asahi",
+   "label": "(PITCHERS) ASAHI",
+   "category": "beer",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 23.0
+  },
+  {
+   "id": "pitchers-sapporo",
+   "label": "(PITCHERS) SAPPORO",
+   "category": "beer",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 23.0
+  },
+  {
+   "id": "pitchers-blue-moon",
+   "label": "(PITCHERS) BLUE MOON",
+   "category": "beer",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 26.0
+  },
+  {
+   "id": "pitchers-samuel-adams",
+   "label": "(PITCHERS) SAMUEL ADAMS",
+   "category": "beer",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 26.0
+  },
+  {
+   "id": "pitchers-lagunitas-ipa",
+   "label": "(PITCHERS) LAGUNITAS IPA",
+   "category": "beer",
+   "page": 1,
+   "row": 6,
+   "col": 2,
+   "price": 26.0
+  },
+  {
+   "id": "pitchers-fat-tire",
+   "label": "(PITCHERS) FAT TIRE",
+   "category": "beer",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 26.0
+  },
+  {
+   "id": "pitchers-sierra-nevada",
+   "label": "(PITCHERS) SIERRA NEVADA",
+   "category": "beer",
+   "page": 1,
+   "row": 6,
+   "col": 4,
+   "price": 26.0
+  },
+  {
+   "id": "soju-red",
+   "label": "SOJU - RED",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 16.0
+  },
+  {
+   "id": "soju-green",
+   "label": "SOJU - GREEN",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 16.0
+  },
+  {
+   "id": "soju-jinro-is-back",
+   "label": "SOJU - JINRO IS BACK",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 16.0
+  },
+  {
+   "id": "soju-zero-sugar",
+   "label": "SOJU - ZERO SUGAR",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 16.0
+  },
+  {
+   "id": "soju-apple",
+   "label": "SOJU - APPLE",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 16.0
+  },
+  {
+   "id": "soju-grapefruit",
+   "label": "SOJU - GRAPEFRUIT",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 16.0
+  },
+  {
+   "id": "soju-green-grape",
+   "label": "SOJU - GREEN GRAPE",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 16.0
+  },
+  {
+   "id": "soju-lemon",
+   "label": "SOJU - LEMON",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 16.0
+  },
+  {
+   "id": "soju-melon",
+   "label": "SOJU - MELON",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 3,
+   "col": 1,
+   "price": 16.0
+  },
+  {
+   "id": "soju-peach",
+   "label": "SOJU - PEACH",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 3,
+   "col": 2,
+   "price": 16.0
+  },
+  {
+   "id": "soju-strawberry",
+   "label": "SOJU - STRAWBERRY",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 3,
+   "col": 3,
+   "price": 16.0
+  },
+  {
+   "id": "soju-yogurt",
+   "label": "SOJU - YOGURT",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 16.0
+  },
+  {
+   "id": "soju-martini-red",
+   "label": "SOJU MARTINI - RED",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-green",
+   "label": "SOJU MARTINI - GREEN",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-jinro-is-back",
+   "label": "SOJU MARTINI - JINRO IS BACK",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-zero-sugar",
+   "label": "SOJU MARTINI - ZERO SUGAR",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-apple",
+   "label": "SOJU MARTINI - APPLE",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-grapefruit",
+   "label": "SOJU MARTINI - GRAPEFRUIT",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-green-grape",
+   "label": "SOJU MARTINI - GREEN GRAPE",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-lemon",
+   "label": "SOJU MARTINI- LEMON",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-melon",
+   "label": "SOJU MARTINI- MELON",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-peach",
+   "label": "SOJU MARTINI - PEACH",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 6,
+   "col": 2,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-strawberry",
+   "label": "SOJU MARTINI - STRAWBERRY",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 6,
+   "col": 3,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "soju-martini-yogurt",
+   "label": "SOJU MARTINI - YOGURT",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 6,
+   "col": 4,
+   "price": 8.0,
+   "color": "#ffe600"
+  },
+  {
+   "id": "makgoli",
+   "label": "MAKGOLI",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 7,
+   "col": 1,
+   "price": 16.0
+  },
+  {
+   "id": "baekseju",
+   "label": "BAEKSEJU",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 7,
+   "col": 2,
+   "price": 17.0
+  },
+  {
+   "id": "plum-wine",
+   "label": "PLUM WINE",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 7,
+   "col": 3,
+   "price": 9.0
+  },
+  {
+   "id": "house-sake-s",
+   "label": "HOUSE SAKE (S)",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 8,
+   "col": 1,
+   "price": 7.0
+  },
+  {
+   "id": "house-sake-l",
+   "label": "HOUSE SAKE (L)",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 8,
+   "col": 2,
+   "price": 10.0
+  },
+  {
+   "id": "chung-ha-cold-sake",
+   "label": "CHUNG HA (COLD SAKE)",
+   "category": "korean-wine",
+   "page": 1,
+   "row": 8,
+   "col": 3,
+   "price": 12.0
+  },
+  {
+   "id": "glass-melot-house-wine",
+   "label": "(GLASS) MELOT HOUSE WINE",
+   "category": "wine",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 10.0
+  },
+  {
+   "id": "glass-cab-highlands-41",
+   "label": "(GLASS) CAB HIGHLANDS 41",
+   "category": "wine",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 12.0
+  },
+  {
+   "id": "glass-cab-maddalena",
+   "label": "(GLASS) CAB MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 13.0
+  },
+  {
+   "id": "glass-pinot-noir",
+   "label": "(GLASS) PINOT. NOIR",
+   "category": "wine",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 13.0
+  },
+  {
+   "id": "bottle-merlot",
+   "label": "(BOTTLE) MERLOT",
+   "category": "wine",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 30.0
+  },
+  {
+   "id": "bottle-cab-highlands-41",
+   "label": "(BOTTLE) CAB HIGHLANDS 41",
+   "category": "wine",
+   "page": 1,
+   "row": 2,
+   "col": 2,
+   "price": 36.0
+  },
+  {
+   "id": "bottle-cab-maddalena",
+   "label": "(BOTTLE) CAB MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 2,
+   "col": 3,
+   "price": 39.0
+  },
+  {
+   "id": "bottle-pinot-noir",
+   "label": "(BOTTLE) PINOT. NOIR",
+   "category": "wine",
+   "page": 1,
+   "row": 2,
+   "col": 4,
+   "price": 39.0
+  },
+  {
+   "id": "glass-char-house",
+   "label": "(GLASS) CHAR. HOUSE",
+   "category": "wine",
+   "page": 1,
+   "row": 4,
+   "col": 1,
+   "price": 9.0
+  },
+  {
+   "id": "glass-char-maddalena",
+   "label": "(GLASS) CHAR. MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 4,
+   "col": 2,
+   "price": 12.0
+  },
+  {
+   "id": "glass-sau-bl-house",
+   "label": "(GLASS) SAU.BL. HOUSE",
+   "category": "wine",
+   "page": 1,
+   "row": 4,
+   "col": 3,
+   "price": 10.0
+  },
+  {
+   "id": "glass-sau-bl-new-zealand",
+   "label": "(GLASS) SAU. BL. NEW ZEALAND",
+   "category": "wine",
+   "page": 1,
+   "row": 4,
+   "col": 4,
+   "price": 13.0
+  },
+  {
+   "id": "bottle-char-house",
+   "label": "(BOTTLE) CHAR. HOUSE",
+   "category": "wine",
+   "page": 1,
+   "row": 5,
+   "col": 1,
+   "price": 27.0
+  },
+  {
+   "id": "bottle-char-maddalena",
+   "label": "(BOTTLE) CHAR. MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 5,
+   "col": 2,
+   "price": 36.0
+  },
+  {
+   "id": "bottle-sau-bl-house",
+   "label": "(BOTTLE) SAU.BL. HOUSE",
+   "category": "wine",
+   "page": 1,
+   "row": 5,
+   "col": 3,
+   "price": 30.0
+  },
+  {
+   "id": "bottle-sau-bl-new-zealand",
+   "label": "(BOTTLE) SAU. BL. NEW ZEALAND",
+   "category": "wine",
+   "page": 1,
+   "row": 5,
+   "col": 4,
+   "price": 39.0
+  },
+  {
+   "id": "glass-p-grigio-maddalena",
+   "label": "(GLASS) P.GRIGIO MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 6,
+   "col": 1,
+   "price": 13.0
+  },
+  {
+   "id": "bottle-p-grigio-maddalena",
+   "label": "(BOTTLE) P.GRIGIO MADDALENA",
+   "category": "wine",
+   "page": 1,
+   "row": 7,
+   "col": 1,
+   "price": 39.0
+  },
+  {
+   "id": "cockage-fee",
+   "label": "COCKAGE FEE",
+   "category": "wine",
+   "page": 1,
+   "row": 7,
+   "col": 3,
+   "price": 15.0,
+   "color": "#ee9090"
+  },
+  {
+   "id": "creator-promo",
+   "label": "CREATOR PROMO",
+   "category": "wine",
+   "page": 1,
+   "row": 7,
+   "col": 4,
+   "price": 0.0,
+   "color": "#19b6f0"
+  },
+  {
+   "id": "macaron-strawberry",
+   "label": "MACARON - STRAWBERRY",
+   "category": "dessert",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 5.0
+  },
+  {
+   "id": "macaron-mango",
+   "label": "MACARON - MANGO",
+   "category": "dessert",
+   "page": 1,
+   "row": 1,
+   "col": 2,
+   "price": 5.0
+  },
+  {
+   "id": "macaron-green-tea",
+   "label": "MACARON - GREEN TEA",
+   "category": "dessert",
+   "page": 1,
+   "row": 1,
+   "col": 3,
+   "price": 5.0
+  },
+  {
+   "id": "macaron-coffee",
+   "label": "MACARON - COFFEE",
+   "category": "dessert",
+   "page": 1,
+   "row": 1,
+   "col": 4,
+   "price": 5.0
+  },
+  {
+   "id": "macaron-vanilla",
+   "label": "MACARON - VANILLA",
+   "category": "dessert",
+   "page": 1,
+   "row": 2,
+   "col": 1,
+   "price": 5.0
+  },
+  {
+   "id": "birthday-promo",
+   "label": "BIRTHDAY PROMO",
+   "category": "dessert",
+   "page": 1,
+   "row": 3,
+   "col": 4,
+   "price": 0.0,
+   "color": "#19b6f0"
+  }
+ ]
+}

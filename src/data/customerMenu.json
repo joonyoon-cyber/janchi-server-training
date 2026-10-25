@@ -1,0 +1,1395 @@
+{
+ "_source": "Janchi customer menus (AYCE, appetizer, combo, lunch, dinner, drinks PDFs)",
+ "items": [
+  {
+   "id": "ayce-packages-premium-all-you-can-eat-dinner",
+   "name": "Premium All You Can Eat (Dinner)",
+   "section": "AYCE Packages",
+   "price": 38.95
+  },
+  {
+   "id": "ayce-packages-premium-all-you-can-eat-lunch",
+   "name": "Premium All You Can Eat (Lunch)",
+   "section": "AYCE Packages",
+   "price": 33.95,
+   "priceNote": "Mon-Fri lunch only, excluding Sat/Sun & holidays"
+  },
+  {
+   "id": "ayce-packages-premium-ayce-children-5-8",
+   "name": "Premium AYCE - Children 5-8",
+   "section": "AYCE Packages",
+   "price": 15
+  },
+  {
+   "id": "ayce-packages-premium-ayce-children-9-12",
+   "name": "Premium AYCE - Children 9-12",
+   "section": "AYCE Packages",
+   "price": 25
+  },
+  {
+   "id": "ayce-packages-ultimate-all-you-can-eat",
+   "name": "Ultimate All You Can Eat",
+   "section": "AYCE Packages",
+   "price": 68.95
+  },
+  {
+   "id": "ayce-packages-ultimate-ayce-children-5-8",
+   "name": "Ultimate AYCE - Children 5-8",
+   "section": "AYCE Packages",
+   "price": 25
+  },
+  {
+   "id": "ayce-packages-ultimate-ayce-children-9-12",
+   "name": "Ultimate AYCE - Children 9-12",
+   "section": "AYCE Packages",
+   "price": 35
+  },
+  {
+   "id": "ayce-packages-single-guest-additional-charge",
+   "name": "Single Guest Additional Charge",
+   "section": "AYCE Packages",
+   "price": 5,
+   "description": "Minimum 2 orders; $5.00 additional charge for single guest"
+  },
+  {
+   "id": "ayce-packages-leftover-food-surcharge",
+   "name": "Leftover Food Surcharge",
+   "section": "AYCE Packages",
+   "price": 10,
+   "description": "$10/person or plate for leftover, uneaten, or uncooked food"
+  },
+  {
+   "id": "ayce-packages-ultimate-included-drink-1-soft-drink",
+   "name": "Ultimate included drink: 1 soft drink",
+   "section": "AYCE Packages",
+   "price": 0
+  },
+  {
+   "id": "ayce-packages-ultimate-included-drink-1-draft-beer",
+   "name": "Ultimate included drink: 1 draft beer",
+   "section": "AYCE Packages",
+   "price": 0
+  },
+  {
+   "id": "ayce-bbq-15-prime-beef-brisket",
+   "name": "15. Prime Beef Brisket",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-16-sliced-ribeye-beef",
+   "name": "16. Sliced Ribeye Beef",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-17-beef-bulgogi",
+   "name": "17. Beef Bulgogi",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-18-pork-belly",
+   "name": "18. Pork Belly",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-19-miso-pork-belly",
+   "name": "19. Miso Pork Belly",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-20-chicken-bulgogi",
+   "name": "20. Chicken Bulgogi",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-21-garlic-chicken-thigh",
+   "name": "21. Garlic Chicken Thigh",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-22-beef-short-plate-beef-belly",
+   "name": "22. Beef Short Plate (Beef Belly)",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-23-red-pepper-pork-belly",
+   "name": "23. Red Pepper Pork Belly",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-24-wine-pork-belly",
+   "name": "24. Wine Pork Belly",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-25-galbi-premium-3-95-limit-1-per-person",
+   "name": "25. Galbi (Premium, +$3.95, limit 1 per person)",
+   "section": "AYCE BBQ",
+   "price": 3.95,
+   "priceNote": "+$3.95, limit 1 per person"
+  },
+  {
+   "id": "ayce-bbq-26-pork-jowl-meat",
+   "name": "26. Pork Jowl Meat",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-27-pork-bulgogi",
+   "name": "27. Pork Bulgogi",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-28-pork-shoulder",
+   "name": "28. Pork Shoulder",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-29-spicy-chicken-thigh",
+   "name": "29. Spicy Chicken Thigh",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-30-chicken-breast",
+   "name": "30. Chicken Breast",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-31-shrimp-with-garlic-powder-salt",
+   "name": "31. Shrimp with Garlic Powder & Salt",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-32-spicy-raw-calamari",
+   "name": "32. Spicy Raw Calamari",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-33-seasoned-beef-boneless-short-rib",
+   "name": "33. Seasoned Beef Boneless Short Rib",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-34-spicy-pork-bulgogi",
+   "name": "34. Spicy Pork Bulgogi",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-bbq-35-beef-top-sirloin",
+   "name": "35. Beef Top Sirloin",
+   "section": "AYCE BBQ",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-1-fried-pork-dumplings-3pcs",
+   "name": "1. Fried Pork Dumplings (3pcs)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-2-fried-vegetable-egg-rolls-2pcs",
+   "name": "2. Fried Vegetable Egg Rolls (2pcs)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-3-steamed-green-soybeans-edamame",
+   "name": "3. Steamed Green Soybeans (Edamame)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-4-steamed-egg",
+   "name": "4. Steamed Egg",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-5-fried-popcorn-chicken",
+   "name": "5. Fried Popcorn Chicken",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-6-crispy-fried-calamari",
+   "name": "6. Crispy Fried Calamari",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-7-miso-soup",
+   "name": "7. Miso Soup",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-8-seaweed-mild-soup",
+   "name": "8. Seaweed Mild Soup",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-9-spicy-miso-stew",
+   "name": "9. Spicy Miso Stew",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-10-soon-tofu",
+   "name": "10. Soon Tofu",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-11-steamed-white-rice",
+   "name": "11. Steamed White Rice",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-12-assorted-vegetables",
+   "name": "12. Assorted Vegetables",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-13-deep-fried-tofu-steak-2pcs",
+   "name": "13. Deep Fried Tofu Steak (2pcs)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-14-plant-based-meat-patty",
+   "name": "14. Plant Based Meat Patty",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-40-corn-cheese",
+   "name": "40. Corn Cheese",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-41-tteok-bokki",
+   "name": "41. Tteok-Bokki",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-42-kfc-korean-fried-chicken",
+   "name": "42. KFC (Korean Fried Chicken)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-43-french-fries",
+   "name": "43. French Fries",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-44-green-salad",
+   "name": "44. Green Salad",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-45-lettuce-3pcs",
+   "name": "45. Lettuce (3pcs)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-46-tortilla-3pcs",
+   "name": "46. Tortilla (3pcs)",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-appetizer-soup-rice-vegetables-47-pineapple-slices",
+   "name": "47. Pineapple Slices",
+   "section": "AYCE Appetizer / Soup & Rice / Vegetables",
+   "price": 0,
+   "priceNote": "Included in AYCE"
+  },
+  {
+   "id": "ayce-ultimate-items-25-galbi",
+   "name": "25. Galbi",
+   "section": "AYCE Ultimate Items",
+   "price": 0,
+   "priceNote": "Ultimate AYCE only"
+  },
+  {
+   "id": "ayce-ultimate-items-36-spicy-tuna-biscuit",
+   "name": "36. Spicy Tuna Biscuit",
+   "section": "AYCE Ultimate Items",
+   "price": 0,
+   "priceNote": "Ultimate AYCE only"
+  },
+  {
+   "id": "ayce-ultimate-items-37-japchae",
+   "name": "37. Japchae",
+   "section": "AYCE Ultimate Items",
+   "price": 0,
+   "priceNote": "Ultimate AYCE only"
+  },
+  {
+   "id": "ayce-ultimate-items-38-beef-tongue",
+   "name": "38. Beef Tongue",
+   "section": "AYCE Ultimate Items",
+   "price": 0,
+   "priceNote": "Ultimate AYCE only"
+  },
+  {
+   "id": "ayce-ultimate-items-39-scallop",
+   "name": "39. Scallop",
+   "section": "AYCE Ultimate Items",
+   "price": 0,
+   "priceNote": "Ultimate AYCE only"
+  },
+  {
+   "id": "combo-special-combo-s-serves-2-3",
+   "name": "Combo S (serves 2-3)",
+   "section": "Combo Special",
+   "price": 105
+  },
+  {
+   "id": "combo-special-combo-m-serves-3-4",
+   "name": "Combo M (serves 3-4)",
+   "section": "Combo Special",
+   "price": 150
+  },
+  {
+   "id": "combo-special-combo-l-serves-4-5",
+   "name": "Combo L (serves 4-5)",
+   "section": "Combo Special",
+   "price": 180
+  },
+  {
+   "id": "appetizers-kfc-korean-fried-chicken",
+   "name": "KFC (Korean Fried Chicken)",
+   "section": "Appetizers",
+   "price": 10.5
+  },
+  {
+   "id": "appetizers-garlic-soy-beans",
+   "name": "Garlic Soy Beans",
+   "section": "Appetizers",
+   "price": 7
+  },
+  {
+   "id": "appetizers-mandu",
+   "name": "Mandu",
+   "section": "Appetizers",
+   "price": 7
+  },
+  {
+   "id": "appetizers-japchae",
+   "name": "Japchae",
+   "section": "Appetizers",
+   "price": 14
+  },
+  {
+   "id": "appetizers-tteok-bokki",
+   "name": "Tteok-Bokki",
+   "section": "Appetizers",
+   "price": 9.5
+  },
+  {
+   "id": "appetizers-fried-calamari",
+   "name": "Fried Calamari",
+   "section": "Appetizers",
+   "price": 9
+  },
+  {
+   "id": "appetizers-orange-chicken",
+   "name": "Orange Chicken",
+   "section": "Appetizers",
+   "price": 10.5
+  },
+  {
+   "id": "appetizers-chili-shrimp",
+   "name": "Chili Shrimp",
+   "section": "Appetizers",
+   "price": 13
+  },
+  {
+   "id": "appetizers-shishito-peppers",
+   "name": "Shishito Peppers",
+   "section": "Appetizers",
+   "price": 6.5
+  },
+  {
+   "id": "appetizers-eggplant",
+   "name": "Eggplant",
+   "section": "Appetizers",
+   "price": 9.5
+  },
+  {
+   "id": "appetizers-tempura",
+   "name": "Tempura",
+   "section": "Appetizers",
+   "price": 9.5
+  },
+  {
+   "id": "appetizers-popcorn-chicken",
+   "name": "Popcorn Chicken",
+   "section": "Appetizers",
+   "price": 9.5
+  },
+  {
+   "id": "appetizers-egg-roll-3pcs",
+   "name": "Egg Roll (3pcs)",
+   "section": "Appetizers",
+   "price": 4.5
+  },
+  {
+   "id": "appetizers-vegetable-saute",
+   "name": "Vegetable Saute",
+   "section": "Appetizers",
+   "price": 12
+  },
+  {
+   "id": "appetizers-mushroom-saute",
+   "name": "Mushroom Saute",
+   "section": "Appetizers",
+   "price": 14.5
+  },
+  {
+   "id": "appetizers-steamed-egg",
+   "name": "Steamed Egg",
+   "section": "Appetizers",
+   "price": 7
+  },
+  {
+   "id": "appetizers-green-salad",
+   "name": "Green Salad",
+   "section": "Appetizers",
+   "price": 6
+  },
+  {
+   "id": "appetizers-spicy-tuna-biscuit",
+   "name": "Spicy Tuna Biscuit",
+   "section": "Appetizers",
+   "price": 9.5
+  },
+  {
+   "id": "appetizers-french-fries",
+   "name": "French Fries",
+   "section": "Appetizers",
+   "price": 5.5
+  },
+  {
+   "id": "appetizers-tofu-steak-4pcs",
+   "name": "Tofu Steak (4pcs)",
+   "section": "Appetizers",
+   "price": 6
+  },
+  {
+   "id": "lunch-special-galbi",
+   "name": "Galbi",
+   "section": "Lunch Special",
+   "price": 24
+  },
+  {
+   "id": "lunch-special-beef-bulgogi",
+   "name": "Beef Bulgogi",
+   "section": "Lunch Special",
+   "price": 20
+  },
+  {
+   "id": "lunch-special-spicy-pork-bulgogi",
+   "name": "Spicy Pork Bulgogi",
+   "section": "Lunch Special",
+   "price": 20
+  },
+  {
+   "id": "lunch-special-chicken-teriyaki",
+   "name": "Chicken Teriyaki",
+   "section": "Lunch Special",
+   "price": 19
+  },
+  {
+   "id": "lunch-special-bibimbap",
+   "name": "Bibimbap",
+   "section": "Lunch Special",
+   "price": 19
+  },
+  {
+   "id": "lunch-special-bibimbap-hot-stone-pot",
+   "name": "Bibimbap - Hot Stone Pot",
+   "section": "Lunch Special",
+   "price": 20
+  },
+  {
+   "id": "lunch-special-soon-tofu",
+   "name": "Soon Tofu",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-galbi-tang",
+   "name": "Galbi Tang",
+   "section": "Lunch Special",
+   "price": 24
+  },
+  {
+   "id": "lunch-special-yukgae-jang",
+   "name": "Yukgae Jang",
+   "section": "Lunch Special",
+   "price": 21
+  },
+  {
+   "id": "lunch-special-kimchi-stew",
+   "name": "Kimchi Stew",
+   "section": "Lunch Special",
+   "price": 18
+  },
+  {
+   "id": "lunch-special-soybean-stew",
+   "name": "Soybean Stew",
+   "section": "Lunch Special",
+   "price": 18
+  },
+  {
+   "id": "lunch-special-korean-ramen-kimchi-beef",
+   "name": "Korean Ramen - Kimchi & Beef",
+   "section": "Lunch Special",
+   "price": 14
+  },
+  {
+   "id": "lunch-special-korean-ramen-dumpling",
+   "name": "Korean Ramen - Dumpling",
+   "section": "Lunch Special",
+   "price": 15
+  },
+  {
+   "id": "lunch-special-korean-ramen-mushroom",
+   "name": "Korean Ramen - Mushroom",
+   "section": "Lunch Special",
+   "price": 15
+  },
+  {
+   "id": "lunch-special-pan-fried-noodles-beef",
+   "name": "Pan Fried Noodles - Beef",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-pan-fried-noodles-chicken",
+   "name": "Pan Fried Noodles - Chicken",
+   "section": "Lunch Special",
+   "price": 16
+  },
+  {
+   "id": "lunch-special-pan-fried-noodles-shrimp",
+   "name": "Pan Fried Noodles - Shrimp",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-pan-fried-noodles-vegetables",
+   "name": "Pan Fried Noodles - Vegetables",
+   "section": "Lunch Special",
+   "price": 15
+  },
+  {
+   "id": "lunch-special-katsu-cutlet-pork",
+   "name": "Katsu Cutlet - Pork",
+   "section": "Lunch Special",
+   "price": 18
+  },
+  {
+   "id": "lunch-special-katsu-cutlet-chicken",
+   "name": "Katsu Cutlet - Chicken",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-salmon",
+   "name": "Salmon",
+   "section": "Lunch Special",
+   "price": 20
+  },
+  {
+   "id": "lunch-special-bbq-eel",
+   "name": "BBQ Eel",
+   "section": "Lunch Special",
+   "price": 18
+  },
+  {
+   "id": "lunch-special-fried-rice-shrimp",
+   "name": "Fried Rice - Shrimp",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-fried-rice-beef",
+   "name": "Fried Rice - Beef",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-fried-rice-chicken",
+   "name": "Fried Rice - Chicken",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-fried-rice-kimchi",
+   "name": "Fried Rice - Kimchi",
+   "section": "Lunch Special",
+   "price": 17
+  },
+  {
+   "id": "lunch-special-fried-rice-veg",
+   "name": "Fried Rice - Veg.",
+   "section": "Lunch Special",
+   "price": 16
+  },
+  {
+   "id": "dinner-entree-galbi",
+   "name": "Galbi",
+   "section": "Dinner Entree",
+   "price": 32
+  },
+  {
+   "id": "dinner-entree-beef-bulgogi",
+   "name": "Beef Bulgogi",
+   "section": "Dinner Entree",
+   "price": 25
+  },
+  {
+   "id": "dinner-entree-spicy-pork-bulgogi",
+   "name": "Spicy Pork Bulgogi",
+   "section": "Dinner Entree",
+   "price": 24
+  },
+  {
+   "id": "dinner-entree-chicken-teriyaki",
+   "name": "Chicken Teriyaki",
+   "section": "Dinner Entree",
+   "price": 22
+  },
+  {
+   "id": "dinner-entree-bibimbap",
+   "name": "Bibimbap",
+   "section": "Dinner Entree",
+   "price": 21
+  },
+  {
+   "id": "dinner-entree-bibimbap-hot-stone-pot",
+   "name": "Bibimbap - Hot Stone Pot",
+   "section": "Dinner Entree",
+   "price": 22
+  },
+  {
+   "id": "dinner-entree-soon-tofu",
+   "name": "Soon Tofu",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-galbi-tang",
+   "name": "Galbi Tang",
+   "section": "Dinner Entree",
+   "price": 26
+  },
+  {
+   "id": "dinner-entree-yukgae-jang",
+   "name": "Yukgae Jang",
+   "section": "Dinner Entree",
+   "price": 23
+  },
+  {
+   "id": "dinner-entree-kimchi-stew",
+   "name": "Kimchi Stew",
+   "section": "Dinner Entree",
+   "price": 20
+  },
+  {
+   "id": "dinner-entree-soybean-stew",
+   "name": "Soybean Stew",
+   "section": "Dinner Entree",
+   "price": 20
+  },
+  {
+   "id": "dinner-entree-korean-ramen-kimchi-beef",
+   "name": "Korean Ramen - Kimchi & Beef",
+   "section": "Dinner Entree",
+   "price": 15
+  },
+  {
+   "id": "dinner-entree-korean-ramen-dumpling",
+   "name": "Korean Ramen - Dumpling",
+   "section": "Dinner Entree",
+   "price": 16
+  },
+  {
+   "id": "dinner-entree-korean-ramen-mushroom",
+   "name": "Korean Ramen - Mushroom",
+   "section": "Dinner Entree",
+   "price": 16
+  },
+  {
+   "id": "dinner-entree-pan-fried-noodles-beef",
+   "name": "Pan Fried Noodles - Beef",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-pan-fried-noodles-chicken",
+   "name": "Pan Fried Noodles - Chicken",
+   "section": "Dinner Entree",
+   "price": 17
+  },
+  {
+   "id": "dinner-entree-pan-fried-noodles-shrimp",
+   "name": "Pan Fried Noodles - Shrimp",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-pan-fried-noodles-vegetables",
+   "name": "Pan Fried Noodles - Vegetables",
+   "section": "Dinner Entree",
+   "price": 16
+  },
+  {
+   "id": "dinner-entree-katsu-cutlet-pork",
+   "name": "Katsu Cutlet - Pork",
+   "section": "Dinner Entree",
+   "price": 19
+  },
+  {
+   "id": "dinner-entree-katsu-cutlet-chicken",
+   "name": "Katsu Cutlet - Chicken",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-salmon",
+   "name": "Salmon",
+   "section": "Dinner Entree",
+   "price": 22
+  },
+  {
+   "id": "dinner-entree-bbq-eel",
+   "name": "BBQ Eel",
+   "section": "Dinner Entree",
+   "price": 19
+  },
+  {
+   "id": "dinner-entree-fried-rice-shrimp",
+   "name": "Fried Rice - Shrimp",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-fried-rice-beef",
+   "name": "Fried Rice - Beef",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-fried-rice-chicken",
+   "name": "Fried Rice - Chicken",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-fried-rice-kimchi",
+   "name": "Fried Rice - Kimchi",
+   "section": "Dinner Entree",
+   "price": 18
+  },
+  {
+   "id": "dinner-entree-fried-rice-veg",
+   "name": "Fried Rice - Veg.",
+   "section": "Dinner Entree",
+   "price": 17
+  },
+  {
+   "id": "beverages-coke",
+   "name": "Coke",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-diet-coke",
+   "name": "Diet Coke",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-coke-zero",
+   "name": "Coke Zero",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-sprite",
+   "name": "Sprite",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-root-beer",
+   "name": "Root Beer",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-orange-fanta",
+   "name": "Orange Fanta",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-dr-pepper",
+   "name": "Dr. Pepper",
+   "section": "Beverages",
+   "price": 2.75,
+   "priceNote": "Can soda"
+  },
+  {
+   "id": "beverages-lemonade",
+   "name": "Lemonade",
+   "section": "Beverages",
+   "price": 3.5
+  },
+  {
+   "id": "beverages-apple-juice",
+   "name": "Apple Juice",
+   "section": "Beverages",
+   "price": 3.5
+  },
+  {
+   "id": "beverages-iced-tea-passion-fruit-green",
+   "name": "Iced Tea (Passion Fruit / Green)",
+   "section": "Beverages",
+   "price": 3.5
+  },
+  {
+   "id": "beverages-arnold-palmer",
+   "name": "Arnold Palmer",
+   "section": "Beverages",
+   "price": 4
+  },
+  {
+   "id": "beverages-hot-tea-green",
+   "name": "Hot Tea (Green)",
+   "section": "Beverages",
+   "price": 2.5
+  },
+  {
+   "id": "beverages-perrier",
+   "name": "Perrier",
+   "section": "Beverages",
+   "price": 4
+  },
+  {
+   "id": "beverages-pellegrino-750ml",
+   "name": "Pellegrino 750ml",
+   "section": "Beverages",
+   "price": 7
+  },
+  {
+   "id": "draft-beer-coors-light-16oz-draft",
+   "name": "Coors Light (16oz draft)",
+   "section": "Draft Beer",
+   "price": 7
+  },
+  {
+   "id": "draft-beer-coors-light-60oz-pitcher",
+   "name": "Coors Light (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 23
+  },
+  {
+   "id": "draft-beer-asahi-16oz-draft",
+   "name": "Asahi (16oz draft)",
+   "section": "Draft Beer",
+   "price": 7
+  },
+  {
+   "id": "draft-beer-asahi-60oz-pitcher",
+   "name": "Asahi (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 23
+  },
+  {
+   "id": "draft-beer-sapporo-16oz-draft",
+   "name": "Sapporo (16oz draft)",
+   "section": "Draft Beer",
+   "price": 7
+  },
+  {
+   "id": "draft-beer-sapporo-60oz-pitcher",
+   "name": "Sapporo (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 23
+  },
+  {
+   "id": "draft-beer-blue-moon-16oz-draft",
+   "name": "Blue Moon (16oz draft)",
+   "section": "Draft Beer",
+   "price": 8
+  },
+  {
+   "id": "draft-beer-blue-moon-60oz-pitcher",
+   "name": "Blue Moon (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 26
+  },
+  {
+   "id": "draft-beer-samuel-adams-16oz-draft",
+   "name": "Samuel Adams (16oz draft)",
+   "section": "Draft Beer",
+   "price": 8
+  },
+  {
+   "id": "draft-beer-samuel-adams-60oz-pitcher",
+   "name": "Samuel Adams (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 26
+  },
+  {
+   "id": "draft-beer-lagunitas-ipa-16oz-draft",
+   "name": "Lagunitas IPA (16oz draft)",
+   "section": "Draft Beer",
+   "price": 8
+  },
+  {
+   "id": "draft-beer-lagunitas-ipa-60oz-pitcher",
+   "name": "Lagunitas IPA (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 26
+  },
+  {
+   "id": "draft-beer-fat-tire-16oz-draft",
+   "name": "Fat Tire (16oz draft)",
+   "section": "Draft Beer",
+   "price": 8
+  },
+  {
+   "id": "draft-beer-fat-tire-60oz-pitcher",
+   "name": "Fat Tire (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 26
+  },
+  {
+   "id": "draft-beer-sierra-nevada-16oz-draft",
+   "name": "Sierra Nevada (16oz draft)",
+   "section": "Draft Beer",
+   "price": 8
+  },
+  {
+   "id": "draft-beer-sierra-nevada-60oz-pitcher",
+   "name": "Sierra Nevada (60oz pitcher)",
+   "section": "Draft Beer",
+   "price": 26
+  },
+  {
+   "id": "bottled-beer-heineken",
+   "name": "Heineken",
+   "section": "Bottled Beer",
+   "price": 6.5
+  },
+  {
+   "id": "bottled-beer-bud-light",
+   "name": "Bud Light",
+   "section": "Bottled Beer",
+   "price": 6.5
+  },
+  {
+   "id": "bottled-beer-pacifico",
+   "name": "Pacifico",
+   "section": "Bottled Beer",
+   "price": 6.5
+  },
+  {
+   "id": "bottled-beer-corona",
+   "name": "Corona",
+   "section": "Bottled Beer",
+   "price": 6.5
+  },
+  {
+   "id": "bottled-beer-terra-korean-beer-500ml",
+   "name": "Terra (Korean beer 500ml)",
+   "section": "Bottled Beer",
+   "price": 9
+  },
+  {
+   "id": "bottled-beer-kloud-korean-beer-500ml",
+   "name": "Kloud (Korean beer 500ml)",
+   "section": "Bottled Beer",
+   "price": 9
+  },
+  {
+   "id": "bottled-beer-non-alcoholic-beer",
+   "name": "Non-Alcoholic Beer",
+   "section": "Bottled Beer",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-rich-20",
+   "name": "Soju Bottle 375ml - Rich (20%)",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-rich-20",
+   "name": "Soju Martini - Rich (20%)",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-original-16-5",
+   "name": "Soju Bottle 375ml - Original (16.5%)",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-original-16-5",
+   "name": "Soju Martini - Original (16.5%)",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-saero-0-sugar",
+   "name": "Soju Bottle 375ml - Saero (0 sugar)",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-saero-0-sugar",
+   "name": "Soju Martini - Saero (0 sugar)",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-peach",
+   "name": "Soju Bottle 375ml - Peach",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-peach",
+   "name": "Soju Martini - Peach",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-apple",
+   "name": "Soju Bottle 375ml - Apple",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-apple",
+   "name": "Soju Martini - Apple",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-yogurt",
+   "name": "Soju Bottle 375ml - Yogurt",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-yogurt",
+   "name": "Soju Martini - Yogurt",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-citron",
+   "name": "Soju Bottle 375ml - Citron",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-citron",
+   "name": "Soju Martini - Citron",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-strawberry",
+   "name": "Soju Bottle 375ml - Strawberry",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-strawberry",
+   "name": "Soju Martini - Strawberry",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "korean-soju-soju-bottle-375ml-grape",
+   "name": "Soju Bottle 375ml - Grape",
+   "section": "Korean Soju",
+   "price": 16
+  },
+  {
+   "id": "korean-soju-soju-martini-grape",
+   "name": "Soju Martini - Grape",
+   "section": "Korean Soju",
+   "price": 8
+  },
+  {
+   "id": "rice-wine-sake-makgolli",
+   "name": "Makgolli",
+   "section": "Rice Wine / Sake",
+   "price": 16
+  },
+  {
+   "id": "rice-wine-sake-chung-ha-cold-sake",
+   "name": "Chung Ha (Cold Sake)",
+   "section": "Rice Wine / Sake",
+   "price": 12
+  },
+  {
+   "id": "rice-wine-sake-house-hot-sake-small",
+   "name": "House Hot Sake - Small",
+   "section": "Rice Wine / Sake",
+   "price": 7
+  },
+  {
+   "id": "rice-wine-sake-house-hot-sake-large",
+   "name": "House Hot Sake - Large",
+   "section": "Rice Wine / Sake",
+   "price": 10
+  },
+  {
+   "id": "rice-wine-sake-baekseju",
+   "name": "Baekseju",
+   "section": "Rice Wine / Sake",
+   "price": 17
+  },
+  {
+   "id": "rice-wine-sake-plum-wine",
+   "name": "Plum Wine",
+   "section": "Rice Wine / Sake",
+   "price": 9
+  },
+  {
+   "id": "rice-wine-sake-soju-slushie-mango-or-strawberry",
+   "name": "Soju Slushie (Mango or Strawberry)",
+   "section": "Rice Wine / Sake",
+   "price": 14
+  },
+  {
+   "id": "rice-wine-sake-soju-slushie-7oz-coronita",
+   "name": "Soju Slushie + 7oz Coronita",
+   "section": "Rice Wine / Sake",
+   "price": 17
+  },
+  {
+   "id": "wine-merlot-house-wine-glass",
+   "name": "Merlot - House Wine (glass)",
+   "section": "Wine",
+   "price": 10
+  },
+  {
+   "id": "wine-merlot-house-wine-bottle",
+   "name": "Merlot - House Wine (bottle)",
+   "section": "Wine",
+   "price": 30
+  },
+  {
+   "id": "wine-cabernet-sauvignon-highlands-41-glass",
+   "name": "Cabernet Sauvignon - Highlands 41 (glass)",
+   "section": "Wine",
+   "price": 12
+  },
+  {
+   "id": "wine-cabernet-sauvignon-highlands-41-bottle",
+   "name": "Cabernet Sauvignon - Highlands 41 (bottle)",
+   "section": "Wine",
+   "price": 36
+  },
+  {
+   "id": "wine-cabernet-sauvignon-maddalena-glass",
+   "name": "Cabernet Sauvignon - Maddalena (glass)",
+   "section": "Wine",
+   "price": 13
+  },
+  {
+   "id": "wine-cabernet-sauvignon-maddalena-bottle",
+   "name": "Cabernet Sauvignon - Maddalena (bottle)",
+   "section": "Wine",
+   "price": 39
+  },
+  {
+   "id": "wine-pinot-noir-highlands-41-glass",
+   "name": "Pinot Noir - Highlands 41 (glass)",
+   "section": "Wine",
+   "price": 13
+  },
+  {
+   "id": "wine-pinot-noir-highlands-41-bottle",
+   "name": "Pinot Noir - Highlands 41 (bottle)",
+   "section": "Wine",
+   "price": 39
+  },
+  {
+   "id": "wine-chardonnay-house-wine-glass",
+   "name": "Chardonnay - House Wine (glass)",
+   "section": "Wine",
+   "price": 9
+  },
+  {
+   "id": "wine-chardonnay-house-wine-bottle",
+   "name": "Chardonnay - House Wine (bottle)",
+   "section": "Wine",
+   "price": 27
+  },
+  {
+   "id": "wine-chardonnay-san-simon-glass",
+   "name": "Chardonnay - San Simon (glass)",
+   "section": "Wine",
+   "price": 12
+  },
+  {
+   "id": "wine-chardonnay-san-simon-bottle",
+   "name": "Chardonnay - San Simon (bottle)",
+   "section": "Wine",
+   "price": 36
+  },
+  {
+   "id": "wine-sauvignon-blanc-tierra-del-fuego-glass",
+   "name": "Sauvignon Blanc - Tierra del Fuego (glass)",
+   "section": "Wine",
+   "price": 10
+  },
+  {
+   "id": "wine-sauvignon-blanc-tierra-del-fuego-bottle",
+   "name": "Sauvignon Blanc - Tierra del Fuego (bottle)",
+   "section": "Wine",
+   "price": 30
+  },
+  {
+   "id": "wine-sauvignon-blanc-champion-new-zealand-glass",
+   "name": "Sauvignon Blanc - Champion (New Zealand) (glass)",
+   "section": "Wine",
+   "price": 13
+  },
+  {
+   "id": "wine-sauvignon-blanc-champion-new-zealand-bottle",
+   "name": "Sauvignon Blanc - Champion (New Zealand) (bottle)",
+   "section": "Wine",
+   "price": 39
+  },
+  {
+   "id": "wine-pinot-grigio-maddalena-glass",
+   "name": "Pinot Grigio - Maddalena (glass)",
+   "section": "Wine",
+   "price": 13
+  },
+  {
+   "id": "wine-pinot-grigio-maddalena-bottle",
+   "name": "Pinot Grigio - Maddalena (bottle)",
+   "section": "Wine",
+   "price": 39
+  },
+  {
+   "id": "dessert-macaron-ice-cream-strawberry",
+   "name": "Macaron Ice Cream - Strawberry",
+   "section": "Dessert",
+   "price": 5
+  },
+  {
+   "id": "dessert-macaron-ice-cream-mango",
+   "name": "Macaron Ice Cream - Mango",
+   "section": "Dessert",
+   "price": 5
+  },
+  {
+   "id": "dessert-macaron-ice-cream-green-tea",
+   "name": "Macaron Ice Cream - Green Tea",
+   "section": "Dessert",
+   "price": 5
+  },
+  {
+   "id": "dessert-macaron-ice-cream-vanilla",
+   "name": "Macaron Ice Cream - Vanilla",
+   "section": "Dessert",
+   "price": 5
+  },
+  {
+   "id": "dessert-macaron-ice-cream-coffee",
+   "name": "Macaron Ice Cream - Coffee",
+   "section": "Dessert",
+   "price": 5
+  }
+ ]
+}

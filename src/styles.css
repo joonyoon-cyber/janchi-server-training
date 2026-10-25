@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   BLUU Restaurant Pro look. Colors sampled from the reference photos.
+   The POS is drawn on a fixed 1024x768 "screen" that is scaled to fit.
+--------------------------------------------------------------------------- */
+:root {
+  --pos-font: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --pos-header: #f3f4f6;
+  --pos-body: #dde1ea;
+  --pos-btn: #e8e9ee;
+  --pos-btn-border: #b8bdc8;
+  --pos-blue: #4677d8;
+  --pos-blue-dark: #1c5bb8;
+  --pos-blue-text: #3c6fd8;
+  --pos-dark-btn: #5c6370;
+  --pos-sent-row: #a6b1c3;
+  --pos-selected-row: #c4d5ef;
+  --table-free: #dbe47e;
+  --table-busy: #a3dade;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #1f2937;
+  color: #111;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pos-screen {
+  position: relative;
+  width: 1024px;
+  height: 768px;
+  overflow: hidden;
+  font-family: var(--pos-font);
+  background: var(--pos-body);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.pos-abs {
+  position: absolute;
+}
+
+/* Generic light-gray BLUU push button */
+.pos-btn {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(#f2f3f6, #e1e3e8);
+  border: 1px solid var(--pos-btn-border);
+  border-radius: 4px;
+  color: #222;
+  font-size: 12px;
+  line-height: 1.15;
+  cursor: pointer;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+}
+.pos-btn:active {
+  filter: brightness(0.88);
+}
+.pos-btn-blue {
+  background: linear-gradient(#5d8de4, var(--pos-blue));
+  border-color: #3a64b8;
+  color: #fff;
+  font-weight: bold;
+  font-size: 13px;
+}
+.pos-btn-navy {
+  background: linear-gradient(#2f6cc9, var(--pos-blue-dark));
+  border-color: #174b98;
+  color: #fff;
+  font-weight: bold;
+  font-size: 13px;
+}
+.pos-btn-dark {
+  background: linear-gradient(#6c7380, var(--pos-dark-btn));
+  border-color: #474d58;
+  color: #fff;
+}
+
+/* Header strip */
+.pos-header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1024px;
+  height: 66px;
+  background: linear-gradient(#fafbfc, var(--pos-header));
+  border-bottom: 2px solid #c4c9d2;
+}
+.pos-header-sep {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 64px;
+  background: #cfd3da;
+}
+
+/* Menu category buttons (left column of the order screen) */
+.pos-cat {
+  position: absolute;
+  left: 8px;
+  width: 165px;
+  height: 33px;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.pos-cat.selected {
+  background: linear-gradient(#6b9cf0, #3f78e0) !important;
+}
+
+/* Menu item buttons */
+.pos-item {
+  position: absolute;
+  background: var(--pos-btn);
+  border: 1px solid #c6cad3;
+  cursor: pointer;
+  color: #111;
+  font-weight: bold;
+  font-size: 11.5px;
+  line-height: 1.12;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px 3px 4px;
+  overflow: hidden;
+}
+.pos-item:active {
+  filter: brightness(0.85);
+}
+.pos-item.in-order {
+  border: 2px solid #1b1b1b;
+  padding: 4px 2px 3px;
+}
+.pos-item .price {
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.pos-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 30, 50, 0.35);
+  z-index: 50;
+}
+.pos-modal {
+  position: absolute;
+  background: #f4f5f7;
+  border: 1px solid #8f98a8;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 51;
+  font-family: var(--pos-font);
+}
+.pos-modal-title {
+  background: linear-gradient(#5d8de4, var(--pos-blue));
+  color: #fff;
+  font-weight: bold;
+  font-size: 15px;
+  padding: 8px 12px;
+  border-radius: 5px 5px 0 0;
+}

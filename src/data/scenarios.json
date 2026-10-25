@@ -1,0 +1,589 @@
+{
+  "_note": "Hand-written training scenarios. posId values refer to src/data/posMenu.json. Guests speak in customer-menu language only.",
+  "scenarios": [
+    {
+      "id": "mvp-premium-dinner",
+      "title": "Premium AYCE Dinner (full table)",
+      "level": "beginner",
+      "summary": "Seat a party of four, send two AYCE rounds, then take a credit card payment and close the check.",
+      "time": { "weekday": 6, "hour": 18, "minute": 30 },
+      "parties": { "p1": 4 },
+      "targetSeconds": 300,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 4, "section": "ABC", "say": "I have a party of four. Please seat them in your section, A B C BAR, any open table." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll all do Premium All You Can Eat. Can we get two Cokes, one Sprite, and a draft Sapporo? Let's start with two briskets, one beef bulgogi, and one pork belly.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 4 },
+            { "posId": "coke", "qty": 2 },
+            { "posId": "sprite", "qty": 1 },
+            { "posId": "draft-sapporo", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1", "note": "A little later, the grill is empty.",
+          "say": "Can we get two more pork bellies and two more briskets?",
+          "expect": [
+            { "posId": "18-pork-belly-ayce", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 2 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "note": "The table is finished.", "say": "Can we get the check, please? We'll put it all on one card." }
+      ]
+    },
+    {
+      "id": "a-ayce-drinks-together",
+      "title": "AYCE and Drinks Together",
+      "level": "beginner",
+      "summary": "A party of four orders AYCE, drinks, and the first meat round all at once.",
+      "time": { "weekday": 5, "hour": 19, "minute": 5 },
+      "parties": { "p1": 4 },
+      "targetSeconds": 180,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 4, "section": "MYW", "say": "Party of four for you. Seat them in M Y W, please." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll all do Premium AYCE. Can we get two Cokes, one Sprite, and a draft Sapporo? For meat, let's start with two briskets and two pork bellies.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 4 },
+            { "posId": "coke", "qty": 2 },
+            { "posId": "sprite", "qty": 1 },
+            { "posId": "draft-sapporo", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b-ayce-then-drinks",
+      "title": "AYCE First, Drinks Later",
+      "level": "beginner",
+      "summary": "Send the AYCE order, then reopen the table to add drinks.",
+      "time": { "weekday": 4, "hour": 18, "minute": 15 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 180,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "Two guests. Put them anywhere in A B C BAR." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll both do Premium AYCE. Let's start with brisket and beef bulgogi.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1", "note": "You walk by a few minutes later.",
+          "say": "Oh, can we also get a Coke and a draft Asahi?",
+          "expect": [
+            { "posId": "coke", "qty": 1 },
+            { "posId": "draft-asahi", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c-drinks-first",
+      "title": "Drinks First",
+      "level": "beginner",
+      "summary": "Send drinks first, then come back for the AYCE order.",
+      "time": { "weekday": 3, "hour": 19, "minute": 0 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 180,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "MYW", "say": "Party of three, M Y W section please." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Can we start with two Cokes and an iced tea while we look at the menu?",
+          "expect": [
+            { "posId": "coke", "qty": 2 },
+            { "posId": "iced-tea", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1", "note": "You come back with the drinks.",
+          "say": "We're ready! Premium All You Can Eat for all three of us. To start: ribeye, garlic chicken, and miso pork belly.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 3 },
+            { "posId": "16-ribeye-ayce", "qty": 1 },
+            { "posId": "21-grlc-ckn-ayce", "qty": 1 },
+            { "posId": "19-miso-pork-ayce", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weekday-lunch",
+      "title": "Weekday Lunch AYCE",
+      "level": "beginner",
+      "summary": "Tuesday lunch: pick the right AYCE package for the meal period, and ring the AYCE version of an appetizer.",
+      "time": { "weekday": 2, "hour": 12, "minute": 15 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 180,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "Lunch table for two, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll both do the all you can eat lunch. Brisket and beef bulgogi to start, plus a steamed egg. And two hot teas, please.",
+          "expect": [
+            { "posId": "premium-ayce-lunch", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 },
+            { "posId": "04-stmd-egg-ayce", "qty": 1 },
+            { "posId": "hot-tea", "qty": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d-meat-rounds",
+      "title": "Additional Meat Rounds + Cash",
+      "level": "intermediate",
+      "summary": "Three meat rounds on one table, then a cash payment with change.",
+      "time": { "weekday": 5, "hour": 18, "minute": 45 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 300,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "ABC", "say": "Three guests, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Premium AYCE for the three of us. Two briskets, a pork belly, and a chicken bulgogi to start.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 3 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 },
+            { "posId": "20-ckn-blg-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1",
+          "say": "Can we get two more briskets, one pork belly, and one beef bulgogi?",
+          "expect": [
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r3", "kind": "order", "party": "p1",
+          "say": "Last round for us: one spicy pork and one pork jowl.",
+          "expect": [
+            { "posId": "34-spicy-pork-blg-ayce", "qty": 1 },
+            { "posId": "26-pork-jowl-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "cash", "cashGiven": 140, "askChange": true, "say": "Check please. Here's $140 in cash." }
+      ]
+    },
+    {
+      "id": "family-kids",
+      "title": "Family With Kids",
+      "level": "intermediate",
+      "summary": "Two adults and two children: use the children's AYCE prices.",
+      "time": { "weekday": 0, "hour": 17, "minute": 45 },
+      "parties": { "p1": 4 },
+      "targetSeconds": 240,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 4, "section": "MYW", "say": "Family of four, M Y W please." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll do Premium all you can eat for everyone. Our daughter is 7 and our son is 10. Two lemonades for the kids. And to start, two briskets, a chicken breast, and a pork belly.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "premium-5-8", "qty": 1 },
+            { "posId": "premium-9-12", "qty": 1 },
+            { "posId": "lemonade", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "30-ckn-breast-ayce", "qty": 1 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "say": "We're all set. Card, please." }
+      ]
+    },
+    {
+      "id": "a-la-carte-dinner",
+      "title": "À la carte Dinner + Cash",
+      "level": "intermediate",
+      "summary": "No AYCE: an entrée, an appetizer and two drinks, paid in cash.",
+      "time": { "weekday": 3, "hour": 19, "minute": 20 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 240,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "Two for dinner, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We're not doing all you can eat tonight. We'll share the galbi entrée and the Korean fried chicken. And a Coke and a Terra.",
+          "expect": [
+            { "posId": "galbi-dnr", "qty": 1 },
+            { "posId": "kfc", "qty": 1 },
+            { "posId": "coke", "qty": 1 },
+            { "posId": "terra", "qty": 1 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "cash", "cashGiven": 100, "askChange": true, "say": "Here's a hundred. Can I get change?" }
+      ]
+    },
+    {
+      "id": "qty-change-mid-order",
+      "title": "Guest Changes the Order Mid-Entry",
+      "level": "intermediate",
+      "summary": "Fix quantities and add an item before sending.",
+      "time": { "weekday": 4, "hour": 18, "minute": 40 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 200,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "MYW", "say": "Two guests, M Y W section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Premium AYCE for both of us. Two briskets and two pork bellies, please.",
+          "interrupt": {
+            "afterAdds": 4,
+            "say": "Oh wait, sorry. Just one pork belly, and add a ribeye instead.",
+            "cancelled": [{ "posId": "18-pork-belly-ayce", "qty": 1 }]
+          },
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 },
+            { "posId": "16-ribeye-ayce", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cancel-before-send",
+      "title": "Cancel an Appetizer Before Sending",
+      "level": "intermediate",
+      "summary": "À la carte appetizers and drinks; the guest cancels and swaps items before you press Order.",
+      "time": { "weekday": 1, "hour": 20, "minute": 10 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 200,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "ABC", "say": "Three guests for drinks and appetizers, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We're just snacking. Can we get the mandu, the fried calamari, and the japchae? And three Cokes.",
+          "interrupt": {
+            "afterAdds": 3,
+            "say": "Actually, cancel the calamari. And make one of those Cokes a Sprite.",
+            "cancelled": [{ "posId": "crispy-caramari", "qty": 1 }, { "posId": "coke", "qty": 1 }]
+          },
+          "expect": [
+            { "posId": "mandu", "qty": 1 },
+            { "posId": "japchae", "qty": 1 },
+            { "posId": "coke", "qty": 2 },
+            { "posId": "sprite", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "single-guest",
+      "title": "Single Guest AYCE",
+      "level": "intermediate",
+      "summary": "One guest orders AYCE: remember the single-guest charge.",
+      "time": { "weekday": 5, "hour": 19, "minute": 30 },
+      "parties": { "p1": 1 },
+      "targetSeconds": 200,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 1, "section": "ABC", "say": "Party of one. Seat them at BAR 2, please.", "tableId": "BAR2" },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Just me tonight. I'll do the Premium all you can eat. I know there's an extra charge for one person, that's fine. Brisket and ribeye to start.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 1 },
+            { "posId": "single-person-extra", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "16-ribeye-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "say": "I'm done, thank you! Card is fine." }
+      ]
+    },
+    {
+      "id": "ultimate-ayce",
+      "title": "Ultimate AYCE",
+      "level": "intermediate",
+      "summary": "Ultimate package with Ultimate-only items from the AYCE ULTIMATE group.",
+      "time": { "weekday": 6, "hour": 19, "minute": 50 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 240,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "MYW", "say": "Two guests, M Y W section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We want the Ultimate all you can eat. Let's start with the galbi, beef tongue, scallops, and a brisket.",
+          "expect": [
+            { "posId": "ultimate-ayce", "qty": 2 },
+            { "posId": "25-galbi", "qty": 1 },
+            { "posId": "38-beef-tongue", "qty": 1 },
+            { "posId": "39-scallop", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "say": "That was amazing. Here's my card." }
+      ]
+    },
+    {
+      "id": "e-meat-limit",
+      "title": "Over the 4-Meat Limit",
+      "level": "advanced",
+      "summary": "The guests ask for five meats at once. Apply the AYCE rule and send the rest next round.",
+      "time": { "weekday": 6, "hour": 18, "minute": 0 },
+      "parties": { "p1": 4 },
+      "targetSeconds": 300,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 4, "section": "ABC", "say": "Four guests, A B C BAR section." },
+        {
+          "id": "q", "kind": "decision", "party": "p1",
+          "say": "Premium AYCE for all four. Can we get two briskets, two pork bellies, and one beef bulgogi?",
+          "question": "That is five meat orders. What do you do?",
+          "options": [
+            { "text": "Ring in all five so the table isn't kept waiting", "correct": false, "feedback": "AYCE is limited to 4 meat items per order per table at a time." },
+            { "text": "Explain the limit of 4 meats per round, send 4 now, and send the last one in the next round", "correct": true, "feedback": "Right. The limit is per table, per round. The remaining meat goes in with the next round." },
+            { "text": "Tell them they have to choose only four and drop the fifth", "correct": false, "feedback": "Guests can still have the fifth meat; it just has to wait for the next round." }
+          ]
+        },
+        {
+          "id": "r1", "kind": "order", "party": "p1", "say": "Okay, no problem. Send what you can.",
+          "expect": [{ "posId": "premium-ayce-dinner", "qty": 4 }],
+          "overLimit": {
+            "requested": [
+              { "posId": "15-brisket-ayce", "qty": 2 },
+              { "posId": "18-pork-belly-ayce", "qty": 2 },
+              { "posId": "17-beef-blg-ayce", "qty": 1 }
+            ]
+          }
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1", "remainderOf": "r1", "note": "The first plates are on the grill.",
+          "say": "Can we get the rest of what we asked for? And add a corn cheese.",
+          "expect": [{ "posId": "40-corn-cheese", "qty": 1 }]
+        }
+      ]
+    },
+    {
+      "id": "void-after-send",
+      "title": "Cancel After Sending + Cash",
+      "level": "advanced",
+      "summary": "Void an item that was already ordered, then take cash.",
+      "time": { "weekday": 4, "hour": 20, "minute": 0 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 300,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "Two guests, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Two Premium AYCE. A Coke and a Sprite. Start us with brisket and pork belly.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "coke", "qty": 1 },
+            { "posId": "sprite", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "v", "kind": "void", "party": "p1", "item": { "posId": "sprite", "qty": 1 }, "say": "Sorry, can you cancel the Sprite? I'll just have water." },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "cash", "cashGiven": 100, "askChange": true, "say": "We're ready to pay. Here's $100." }
+      ]
+    },
+    {
+      "id": "party-of-six",
+      "title": "Party of Six (Gratuity)",
+      "level": "advanced",
+      "summary": "Large party: 18% gratuity applies to parties of 5 or more.",
+      "time": { "weekday": 6, "hour": 19, "minute": 15 },
+      "parties": { "p1": 6 },
+      "targetSeconds": 360,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 6, "section": "MYW", "say": "Party of six. M Y W section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "All six of us want Premium AYCE. Three Cokes and a pitcher of Sapporo. First round: two briskets, one spicy pork bulgogi, and one wine pork belly.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 6 },
+            { "posId": "coke", "qty": 3 },
+            { "posId": "pitchers-sapporo", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "34-spicy-pork-blg-ayce", "qty": 1 },
+            { "posId": "24-wine-pork-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "r2", "kind": "order", "party": "p1",
+          "say": "Next round: two seasoned short ribs and two red pepper pork bellies.",
+          "expect": [
+            { "posId": "33-seasoned-short-rib-ayce", "qty": 2 },
+            { "posId": "23-red-pork-ayce", "qty": 2 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "gratuityPct": 18, "say": "We'll put it all on one card." }
+      ]
+    },
+    {
+      "id": "two-tables",
+      "title": "Two Tables at Once",
+      "level": "advanced",
+      "summary": "Manage two parties in different sections; ring and pay on the right table.",
+      "time": { "weekday": 5, "hour": 18, "minute": 20 },
+      "parties": { "p1": 2, "p2": 4 },
+      "targetSeconds": 480,
+      "stages": [
+        { "id": "seat1", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "First party: two guests in A B C BAR." },
+        {
+          "id": "p1r1", "kind": "order", "party": "p1",
+          "say": "(Party of two) Premium AYCE for both. Two Cokes. Brisket and beef bulgogi to start.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "coke", "qty": 2 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "seat2", "kind": "seat", "party": "p2", "speaker": "host", "guests": 4, "section": "MYW", "say": "Second party: four guests, M Y W section." },
+        {
+          "id": "p2r1", "kind": "order", "party": "p2",
+          "say": "(Party of four) Drinks first: a pitcher of Asahi and a bottle of peach soju.",
+          "expect": [
+            { "posId": "pitchers-asahi", "qty": 1 },
+            { "posId": "soju-peach", "qty": 1 }
+          ]
+        },
+        {
+          "id": "p1r2", "kind": "order", "party": "p1",
+          "say": "(Party of two) Can we get another brisket and a pork belly?",
+          "expect": [
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 }
+          ]
+        },
+        {
+          "id": "p2r2", "kind": "order", "party": "p2",
+          "say": "(Party of four) We'll all do Premium AYCE. Two ribeyes, a pork belly, and a garlic chicken.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 4 },
+            { "posId": "16-ribeye-ayce", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 },
+            { "posId": "21-grlc-ckn-ayce", "qty": 1 }
+          ]
+        },
+        { "id": "p1pay", "kind": "pay", "party": "p1", "method": "cash", "cashGiven": 100, "askChange": true, "say": "(Party of two) We're done. Here's $100 cash." },
+        { "id": "p2pay", "kind": "pay", "party": "p2", "method": "credit", "say": "(Party of four) Check please, one card." }
+      ]
+    },
+    {
+      "id": "ayce-same-choice",
+      "title": "AYCE Policy: Whole Table",
+      "level": "advanced",
+      "summary": "One guest doesn't want AYCE. Apply the house rule.",
+      "time": { "weekday": 4, "hour": 18, "minute": 50 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 240,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "ABC", "say": "Three guests, A B C BAR section." },
+        {
+          "id": "q", "kind": "decision", "party": "p1",
+          "say": "Two of us want the all you can eat, but our friend isn't that hungry. Can she just get a bibimbap?",
+          "question": "How do you respond?",
+          "options": [
+            { "text": "Sure: ring two Premium AYCE and one bibimbap", "correct": false, "feedback": "All party members must order the same AYCE choice; mixing AYCE and à la carte at one table isn't allowed." },
+            { "text": "Explain that everyone at the table must order the same AYCE, otherwise the table orders from the à la carte menu", "correct": true, "feedback": "That's the house rule printed on the AYCE menu." },
+            { "text": "Ring three AYCE without saying anything", "correct": false, "feedback": "Never charge guests for something they did not agree to. Explain the rule and let them choose." }
+          ]
+        },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Okay, makes sense. We'll all do Premium then. Start with two briskets and a beef bulgogi.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 3 },
+            { "posId": "15-brisket-ayce", "qty": 2 },
+            { "posId": "17-beef-blg-ayce", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ayce-disability-exception",
+      "title": "AYCE Policy: Disability Exception",
+      "level": "advanced",
+      "summary": "A guest with a disability cannot take part in AYCE. Per Janchi policy this is the one exception.",
+      "time": { "weekday": 0, "hour": 18, "minute": 10 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 240,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "MYW", "say": "Three guests, M Y W section." },
+        {
+          "id": "q", "kind": "decision", "party": "p1",
+          "say": "My brother has a disability and can't eat grilled food. Can he order a soon tofu while the two of us do Premium AYCE?",
+          "question": "How do you respond?",
+          "options": [
+            { "text": "Tell them all three must order AYCE or the table goes à la carte", "correct": false, "feedback": "Janchi makes an exception to the same-AYCE rule for guests with disabilities." },
+            { "text": "Accommodate: two Premium AYCE and one soon tofu entrée", "correct": true, "feedback": "Guests with disabilities are the one exception to the whole-table AYCE rule." },
+            { "text": "Ask them to prove the disability first", "correct": false, "feedback": "Never ask a guest to prove a disability." }
+          ]
+        },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Thank you! So two Premium AYCE and his soon tofu. Brisket and pork belly to start.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "soon-tofu-dnr", "qty": 1 },
+            { "posId": "15-brisket-ayce", "qty": 1 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weekend-lunch-price",
+      "title": "Saturday Lunch Pricing",
+      "level": "advanced",
+      "summary": "It's lunchtime on a Saturday. The AYCE lunch price is weekdays only.",
+      "time": { "weekday": 6, "hour": 12, "minute": 30 },
+      "parties": { "p1": 2 },
+      "targetSeconds": 180,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 2, "section": "ABC", "say": "Two for lunch, A B C BAR section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "Two Premium all you can eat, please. Pork belly and garlic chicken to start, and two Diet Cokes.",
+          "expect": [
+            { "posId": "premium-ayce-dinner", "qty": 2 },
+            { "posId": "18-pork-belly-ayce", "qty": 1 },
+            { "posId": "21-grlc-ckn-ayce", "qty": 1 },
+            { "posId": "diet-coke", "qty": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "combo-dinner",
+      "title": "Combo for Three",
+      "level": "intermediate",
+      "summary": "An à la carte combo order with drinks, paid by card.",
+      "time": { "weekday": 2, "hour": 18, "minute": 30 },
+      "parties": { "p1": 3 },
+      "targetSeconds": 200,
+      "stages": [
+        { "id": "seat", "kind": "seat", "party": "p1", "speaker": "host", "guests": 3, "section": "MYW", "say": "Three guests, M Y W section." },
+        {
+          "id": "r1", "kind": "order", "party": "p1",
+          "say": "We'll get the Combo M to share. A bottle of yogurt soju and two Coke Zeros.",
+          "expect": [
+            { "posId": "combo-m", "qty": 1 },
+            { "posId": "soju-yogurt", "qty": 1 },
+            { "posId": "coke-zero", "qty": 2 }
+          ]
+        },
+        { "id": "pay", "kind": "pay", "party": "p1", "method": "credit", "say": "Card, please." }
+      ]
+    }
+  ]
+}

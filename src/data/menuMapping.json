@@ -1,0 +1,2922 @@
+{
+ "_note": "status: mapped | ambiguous (needs confirmation) | missing-in-pos | pos-only",
+ "mappings": [
+  {
+   "customerItemId": "ayce-packages-premium-all-you-can-eat-dinner",
+   "customerName": "Premium All You Can Eat (Dinner)",
+   "aliases": [
+    "premium ayce",
+    "premium all you can eat",
+    "premium",
+    "all you can eat",
+    "ayce"
+   ],
+   "status": "mapped",
+   "posId": "premium-ayce-dinner",
+   "posName": "PREMIUM AYCE (DINNER)",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-premium-all-you-can-eat-lunch",
+   "customerName": "Premium All You Can Eat (Lunch)",
+   "aliases": [
+    "premium lunch",
+    "lunch ayce"
+   ],
+   "status": "mapped",
+   "posId": "premium-ayce-lunch",
+   "posName": "PREMIUM AYCE (LUNCH)",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-premium-ayce-children-5-8",
+   "customerName": "Premium AYCE - Children 5-8",
+   "aliases": [
+    "kid 5-8",
+    "child 5 to 8"
+   ],
+   "status": "mapped",
+   "posId": "premium-5-8",
+   "posName": "PREMIUM 5-8",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-premium-ayce-children-9-12",
+   "customerName": "Premium AYCE - Children 9-12",
+   "aliases": [
+    "kid 9-12",
+    "child 9 to 12"
+   ],
+   "status": "mapped",
+   "posId": "premium-9-12",
+   "posName": "PREMIUM 9-12",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-ultimate-all-you-can-eat",
+   "customerName": "Ultimate All You Can Eat",
+   "aliases": [
+    "ultimate",
+    "ultimate ayce"
+   ],
+   "status": "mapped",
+   "posId": "ultimate-ayce",
+   "posName": "ULTIMATE AYCE",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-ultimate-ayce-children-5-8",
+   "customerName": "Ultimate AYCE - Children 5-8",
+   "aliases": [],
+   "status": "mapped",
+   "posId": "ultimate-5-8",
+   "posName": "ULTIMATE 5-8",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-ultimate-ayce-children-9-12",
+   "customerName": "Ultimate AYCE - Children 9-12",
+   "aliases": [],
+   "status": "mapped",
+   "posId": "ultimate-9-12",
+   "posName": "ULTIMATE 9-12",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-single-guest-additional-charge",
+   "customerName": "Single Guest Additional Charge",
+   "aliases": [],
+   "status": "mapped",
+   "posId": "single-person-extra",
+   "posName": "SINGLE PERSON EXTRA",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-leftover-food-surcharge",
+   "customerName": "Leftover Food Surcharge",
+   "aliases": [],
+   "status": "mapped",
+   "posId": "surcharge",
+   "posName": "SURCHARGE",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "ayce-packages-ultimate-included-drink-1-soft-drink",
+   "customerName": "Ultimate included drink: 1 soft drink",
+   "aliases": [],
+   "status": "ambiguous",
+   "posId": "ultimate-w-soda",
+   "posName": "ULTIMATE W/ SODA",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null,
+   "note": "Ultimate includes 1 draft beer or 1 soft drink. Whether servers ring the actual soda as well is not shown in the references."
+  },
+  {
+   "customerItemId": "ayce-packages-ultimate-included-drink-1-draft-beer",
+   "customerName": "Ultimate included drink: 1 draft beer",
+   "aliases": [],
+   "status": "ambiguous",
+   "posId": "ultimate-w-beer",
+   "posName": "ULTIMATE W/ BEER",
+   "posCategory": "AYCE PRICE",
+   "posItemNumber": null,
+   "note": "Button shows a modifier icon; modifier choices are not shown in the references."
+  },
+  {
+   "customerItemId": "ayce-bbq-15-prime-beef-brisket",
+   "customerName": "15. Prime Beef Brisket",
+   "aliases": [
+    "brisket",
+    "beef brisket"
+   ],
+   "status": "mapped",
+   "posId": "15-brisket-ayce",
+   "posName": "15. BRISKET AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 15
+  },
+  {
+   "customerItemId": "ayce-bbq-16-sliced-ribeye-beef",
+   "customerName": "16. Sliced Ribeye Beef",
+   "aliases": [
+    "ribeye",
+    "rib eye",
+    "sliced ribeye"
+   ],
+   "status": "mapped",
+   "posId": "16-ribeye-ayce",
+   "posName": "16. RIBEYE AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 16
+  },
+  {
+   "customerItemId": "ayce-bbq-17-beef-bulgogi",
+   "customerName": "17. Beef Bulgogi",
+   "aliases": [
+    "beef bulgogi",
+    "bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "17-beef-blg-ayce",
+   "posName": "17. BEEF BLG AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 17
+  },
+  {
+   "customerItemId": "ayce-bbq-18-pork-belly",
+   "customerName": "18. Pork Belly",
+   "aliases": [
+    "pork belly",
+    "plain pork belly"
+   ],
+   "status": "mapped",
+   "posId": "18-pork-belly-ayce",
+   "posName": "18. PORK BELLY AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 18
+  },
+  {
+   "customerItemId": "ayce-bbq-19-miso-pork-belly",
+   "customerName": "19. Miso Pork Belly",
+   "aliases": [
+    "miso pork belly",
+    "miso pork"
+   ],
+   "status": "mapped",
+   "posId": "19-miso-pork-ayce",
+   "posName": "19. MISO PORK AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 19
+  },
+  {
+   "customerItemId": "ayce-bbq-20-chicken-bulgogi",
+   "customerName": "20. Chicken Bulgogi",
+   "aliases": [
+    "chicken bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "20-ckn-blg-ayce",
+   "posName": "20. CKN BLG AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 20
+  },
+  {
+   "customerItemId": "ayce-bbq-21-garlic-chicken-thigh",
+   "customerName": "21. Garlic Chicken Thigh",
+   "aliases": [
+    "garlic chicken",
+    "garlic chicken thigh"
+   ],
+   "status": "mapped",
+   "posId": "21-grlc-ckn-ayce",
+   "posName": "21. GRLC CKN AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 21
+  },
+  {
+   "customerItemId": "ayce-bbq-22-beef-short-plate-beef-belly",
+   "customerName": "22. Beef Short Plate (Beef Belly)",
+   "aliases": [
+    "beef belly",
+    "short plate"
+   ],
+   "status": "mapped",
+   "posId": "22-short-plt-belly-ayce",
+   "posName": "22. SHORT PLT (BELLY) AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 22
+  },
+  {
+   "customerItemId": "ayce-bbq-23-red-pepper-pork-belly",
+   "customerName": "23. Red Pepper Pork Belly",
+   "aliases": [
+    "red pepper pork belly",
+    "red pork belly"
+   ],
+   "status": "mapped",
+   "posId": "23-red-pork-ayce",
+   "posName": "23. RED PORK AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 23
+  },
+  {
+   "customerItemId": "ayce-bbq-24-wine-pork-belly",
+   "customerName": "24. Wine Pork Belly",
+   "aliases": [
+    "wine pork belly",
+    "red wine pork belly"
+   ],
+   "status": "mapped",
+   "posId": "24-wine-pork-ayce",
+   "posName": "24. WINE PORK AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 24
+  },
+  {
+   "customerItemId": "ayce-bbq-25-galbi-premium-3-95-limit-1-per-person",
+   "customerName": "25. Galbi (Premium, +$3.95, limit 1 per person)",
+   "aliases": [
+    "galbi",
+    "marinated short rib"
+   ],
+   "status": "mapped",
+   "posId": "25-galbi-only-1pc",
+   "posName": "25. GALBI ONLY 1PC",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 25
+  },
+  {
+   "customerItemId": "ayce-bbq-26-pork-jowl-meat",
+   "customerName": "26. Pork Jowl Meat",
+   "aliases": [
+    "pork jowl",
+    "pork cheek"
+   ],
+   "status": "mapped",
+   "posId": "26-pork-jowl-ayce",
+   "posName": "26. PORK JOWL AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 26
+  },
+  {
+   "customerItemId": "ayce-bbq-27-pork-bulgogi",
+   "customerName": "27. Pork Bulgogi",
+   "aliases": [
+    "pork bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "27-pork-blg-ayce",
+   "posName": "27. PORK BLG AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 27
+  },
+  {
+   "customerItemId": "ayce-bbq-28-pork-shoulder",
+   "customerName": "28. Pork Shoulder",
+   "aliases": [
+    "pork shoulder"
+   ],
+   "status": "mapped",
+   "posId": "28-pork-shoulder-ayce",
+   "posName": "28. PORK SHOULDER AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 28
+  },
+  {
+   "customerItemId": "ayce-bbq-29-spicy-chicken-thigh",
+   "customerName": "29. Spicy Chicken Thigh",
+   "aliases": [
+    "spicy chicken",
+    "spicy chicken thigh"
+   ],
+   "status": "mapped",
+   "posId": "29-spicy-ckn-thigh-ayce",
+   "posName": "29. SPICY CKN THIGH AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 29
+  },
+  {
+   "customerItemId": "ayce-bbq-30-chicken-breast",
+   "customerName": "30. Chicken Breast",
+   "aliases": [
+    "chicken breast"
+   ],
+   "status": "mapped",
+   "posId": "30-ckn-breast-ayce",
+   "posName": "30. CKN BREAST AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 30
+  },
+  {
+   "customerItemId": "ayce-bbq-31-shrimp-with-garlic-powder-salt",
+   "customerName": "31. Shrimp with Garlic Powder & Salt",
+   "aliases": [
+    "shrimp",
+    "garlic shrimp"
+   ],
+   "status": "mapped",
+   "posId": "31-shrimp-ayce",
+   "posName": "31. SHRIMP AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 31
+  },
+  {
+   "customerItemId": "ayce-bbq-32-spicy-raw-calamari",
+   "customerName": "32. Spicy Raw Calamari",
+   "aliases": [
+    "spicy calamari",
+    "raw calamari"
+   ],
+   "status": "mapped",
+   "posId": "32-spicy-cala-ayce",
+   "posName": "32. SPICY CALA AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 32
+  },
+  {
+   "customerItemId": "ayce-bbq-33-seasoned-beef-boneless-short-rib",
+   "customerName": "33. Seasoned Beef Boneless Short Rib",
+   "aliases": [
+    "seasoned short rib",
+    "boneless short rib"
+   ],
+   "status": "mapped",
+   "posId": "33-seasoned-short-rib-ayce",
+   "posName": "33. SEASONED SHORT RIB AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 33
+  },
+  {
+   "customerItemId": "ayce-bbq-34-spicy-pork-bulgogi",
+   "customerName": "34. Spicy Pork Bulgogi",
+   "aliases": [
+    "spicy pork",
+    "spicy pork bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "34-spicy-pork-blg-ayce",
+   "posName": "34. SPICY PORK BLG AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 34
+  },
+  {
+   "customerItemId": "ayce-bbq-35-beef-top-sirloin",
+   "customerName": "35. Beef Top Sirloin",
+   "aliases": [
+    "top sirloin",
+    "sirloin"
+   ],
+   "status": "mapped",
+   "posId": "35-top-sirlon-ayce",
+   "posName": "35. TOP SIRLON AYCE",
+   "posCategory": "AYCE MEAT",
+   "posItemNumber": 35
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-1-fried-pork-dumplings-3pcs",
+   "customerName": "1. Fried Pork Dumplings (3pcs)",
+   "aliases": [
+    "dumplings",
+    "fried dumplings",
+    "mandu"
+   ],
+   "status": "mapped",
+   "posId": "01-fried-mandu-ayce",
+   "posName": "01. FRIED MANDU AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 1
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-2-fried-vegetable-egg-rolls-2pcs",
+   "customerName": "2. Fried Vegetable Egg Rolls (2pcs)",
+   "aliases": [
+    "egg rolls"
+   ],
+   "status": "mapped",
+   "posId": "02-egg-roll-ayce",
+   "posName": "02. EGG ROLL AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 2
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-3-steamed-green-soybeans-edamame",
+   "customerName": "3. Steamed Green Soybeans (Edamame)",
+   "aliases": [
+    "edamame",
+    "soybeans"
+   ],
+   "status": "mapped",
+   "posId": "03-soybeans-ayce",
+   "posName": "03. SOYBEANS AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 3
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-4-steamed-egg",
+   "customerName": "4. Steamed Egg",
+   "aliases": [
+    "steamed egg",
+    "egg casserole"
+   ],
+   "status": "mapped",
+   "posId": "04-stmd-egg-ayce",
+   "posName": "04. STMD EGG AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 4
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-5-fried-popcorn-chicken",
+   "customerName": "5. Fried Popcorn Chicken",
+   "aliases": [
+    "popcorn chicken"
+   ],
+   "status": "mapped",
+   "posId": "05-popcrn-ckn-ayce",
+   "posName": "05. POPCRN CKN AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 5
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-6-crispy-fried-calamari",
+   "customerName": "6. Crispy Fried Calamari",
+   "aliases": [
+    "fried calamari",
+    "calamari"
+   ],
+   "status": "mapped",
+   "posId": "06-crispy-calamari-ayce",
+   "posName": "06. CRISPY CALAMARI AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 6
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-7-miso-soup",
+   "customerName": "7. Miso Soup",
+   "aliases": [
+    "miso soup"
+   ],
+   "status": "mapped",
+   "posId": "07-miso-soup-ayce",
+   "posName": "07. MISO SOUP AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 7
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-8-seaweed-mild-soup",
+   "customerName": "8. Seaweed Mild Soup",
+   "aliases": [
+    "seaweed soup"
+   ],
+   "status": "mapped",
+   "posId": "08-seaweed-soup-ayce",
+   "posName": "08. SEAWEED SOUP AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 8
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-9-spicy-miso-stew",
+   "customerName": "9. Spicy Miso Stew",
+   "aliases": [
+    "spicy miso stew"
+   ],
+   "status": "mapped",
+   "posId": "09-spicy-miso-stew-ayce",
+   "posName": "09. SPICY MISO STEW AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 9
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-10-soon-tofu",
+   "customerName": "10. Soon Tofu",
+   "aliases": [
+    "soon tofu",
+    "tofu soup"
+   ],
+   "status": "mapped",
+   "posId": "10-soon-tofu-ayce",
+   "posName": "10. SOON TOFU AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 10
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-11-steamed-white-rice",
+   "customerName": "11. Steamed White Rice",
+   "aliases": [
+    "rice",
+    "white rice"
+   ],
+   "status": "mapped",
+   "posId": "11-rice-ayce",
+   "posName": "11. RICE AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 11
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-12-assorted-vegetables",
+   "customerName": "12. Assorted Vegetables",
+   "aliases": [
+    "veggies",
+    "vegetables"
+   ],
+   "status": "mapped",
+   "posId": "12-assorted-veggie-ayce",
+   "posName": "12. ASSORTED VEGGIE AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 12
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-13-deep-fried-tofu-steak-2pcs",
+   "customerName": "13. Deep Fried Tofu Steak (2pcs)",
+   "aliases": [
+    "tofu steak"
+   ],
+   "status": "mapped",
+   "posId": "13-tofu-steak-ayce",
+   "posName": "13. TOFU STEAK AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 13
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-14-plant-based-meat-patty",
+   "customerName": "14. Plant Based Meat Patty",
+   "aliases": [
+    "plant based meat",
+    "veggie patty"
+   ],
+   "status": "mapped",
+   "posId": "14-plant-based-meat-ayce",
+   "posName": "14. PLANT BASED MEAT AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 14
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-40-corn-cheese",
+   "customerName": "40. Corn Cheese",
+   "aliases": [
+    "corn cheese"
+   ],
+   "status": "mapped",
+   "posId": "40-corn-cheese",
+   "posName": "40. CORN CHEESE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 40
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-41-tteok-bokki",
+   "customerName": "41. Tteok-Bokki",
+   "aliases": [
+    "tteokbokki",
+    "rice cakes"
+   ],
+   "status": "mapped",
+   "posId": "41-tteok-bokki-ayce",
+   "posName": "41. TTEOK-BOKKI AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 41
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-42-kfc-korean-fried-chicken",
+   "customerName": "42. KFC (Korean Fried Chicken)",
+   "aliases": [
+    "kfc",
+    "korean fried chicken"
+   ],
+   "status": "mapped",
+   "posId": "42-kfc-ayce",
+   "posName": "42. KFC AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 42
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-43-french-fries",
+   "customerName": "43. French Fries",
+   "aliases": [
+    "fries"
+   ],
+   "status": "mapped",
+   "posId": "43-french-fries-ayce",
+   "posName": "43. FRENCH FRIES AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 43
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-44-green-salad",
+   "customerName": "44. Green Salad",
+   "aliases": [
+    "salad"
+   ],
+   "status": "mapped",
+   "posId": "44-green-salad-ayce",
+   "posName": "44. GREEN SALAD AYCE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 44
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-45-lettuce-3pcs",
+   "customerName": "45. Lettuce (3pcs)",
+   "aliases": [
+    "lettuce",
+    "lettuce wraps"
+   ],
+   "status": "mapped",
+   "posId": "45-lettuce-wrap",
+   "posName": "45. LETTUCE WRAP",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 45
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-46-tortilla-3pcs",
+   "customerName": "46. Tortilla (3pcs)",
+   "aliases": [
+    "tortillas"
+   ],
+   "status": "mapped",
+   "posId": "46-tortilla",
+   "posName": "46. TORTILLA",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 46
+  },
+  {
+   "customerItemId": "ayce-appetizer-soup-rice-vegetables-47-pineapple-slices",
+   "customerName": "47. Pineapple Slices",
+   "aliases": [
+    "pineapple"
+   ],
+   "status": "mapped",
+   "posId": "47-pineapple",
+   "posName": "47. PINEAPPLE",
+   "posCategory": "AYCE APPS",
+   "posItemNumber": 47
+  },
+  {
+   "customerItemId": "ayce-ultimate-items-25-galbi",
+   "customerName": "25. Galbi",
+   "aliases": [
+    "galbi",
+    "short rib"
+   ],
+   "status": "mapped",
+   "posId": "25-galbi",
+   "posName": "25. GALBI",
+   "posCategory": "AYCE ULTIMATE",
+   "posItemNumber": 25
+  },
+  {
+   "customerItemId": "ayce-ultimate-items-36-spicy-tuna-biscuit",
+   "customerName": "36. Spicy Tuna Biscuit",
+   "aliases": [
+    "tuna biscuit",
+    "spicy tuna"
+   ],
+   "status": "mapped",
+   "posId": "36-sp-tuna-buscuit",
+   "posName": "36. SP TUNA BUSCUIT",
+   "posCategory": "AYCE ULTIMATE",
+   "posItemNumber": 36
+  },
+  {
+   "customerItemId": "ayce-ultimate-items-37-japchae",
+   "customerName": "37. Japchae",
+   "aliases": [
+    "japchae",
+    "glass noodles"
+   ],
+   "status": "mapped",
+   "posId": "37-japchae-ayce",
+   "posName": "37. JAPCHAE AYCE",
+   "posCategory": "AYCE ULTIMATE",
+   "posItemNumber": 37
+  },
+  {
+   "customerItemId": "ayce-ultimate-items-38-beef-tongue",
+   "customerName": "38. Beef Tongue",
+   "aliases": [
+    "beef tongue",
+    "tongue"
+   ],
+   "status": "mapped",
+   "posId": "38-beef-tongue",
+   "posName": "38. BEEF TONGUE",
+   "posCategory": "AYCE ULTIMATE",
+   "posItemNumber": 38
+  },
+  {
+   "customerItemId": "ayce-ultimate-items-39-scallop",
+   "customerName": "39. Scallop",
+   "aliases": [
+    "scallops",
+    "scallop"
+   ],
+   "status": "mapped",
+   "posId": "39-scallop",
+   "posName": "39. SCALLOP",
+   "posCategory": "AYCE ULTIMATE",
+   "posItemNumber": 39
+  },
+  {
+   "customerItemId": "combo-special-combo-s-serves-2-3",
+   "customerName": "Combo S (serves 2-3)",
+   "aliases": [
+    "combo s",
+    "small combo"
+   ],
+   "status": "mapped",
+   "posId": "combo-s",
+   "posName": "COMBO S",
+   "posCategory": "COMBO",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "combo-special-combo-m-serves-3-4",
+   "customerName": "Combo M (serves 3-4)",
+   "aliases": [
+    "combo m",
+    "medium combo"
+   ],
+   "status": "mapped",
+   "posId": "combo-m",
+   "posName": "COMBO M",
+   "posCategory": "COMBO",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "combo-special-combo-l-serves-4-5",
+   "customerName": "Combo L (serves 4-5)",
+   "aliases": [
+    "combo l",
+    "large combo"
+   ],
+   "status": "mapped",
+   "posId": "combo-l",
+   "posName": "COMBO L",
+   "posCategory": "COMBO",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-kfc-korean-fried-chicken",
+   "customerName": "KFC (Korean Fried Chicken)",
+   "aliases": [
+    "kfc",
+    "korean fried chicken"
+   ],
+   "status": "mapped",
+   "posId": "kfc",
+   "posName": "KFC",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-garlic-soy-beans",
+   "customerName": "Garlic Soy Beans",
+   "aliases": [
+    "garlic edamame",
+    "garlic soybeans"
+   ],
+   "status": "mapped",
+   "posId": "garlic-soybean",
+   "posName": "GARLIC SOYBEAN",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-mandu",
+   "customerName": "Mandu",
+   "aliases": [
+    "mandu",
+    "steamed dumplings"
+   ],
+   "status": "mapped",
+   "posId": "mandu",
+   "posName": "MANDU",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-japchae",
+   "customerName": "Japchae",
+   "aliases": [
+    "japchae",
+    "glass noodles"
+   ],
+   "status": "mapped",
+   "posId": "japchae",
+   "posName": "JAPCHAE",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-tteok-bokki",
+   "customerName": "Tteok-Bokki",
+   "aliases": [
+    "tteokbokki",
+    "spicy rice cakes"
+   ],
+   "status": "mapped",
+   "posId": "tteok-bokki",
+   "posName": "TTEOK-BOKKI",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-fried-calamari",
+   "customerName": "Fried Calamari",
+   "aliases": [
+    "calamari",
+    "fried calamari"
+   ],
+   "status": "mapped",
+   "posId": "crispy-caramari",
+   "posName": "CRISPY CARAMARI",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-orange-chicken",
+   "customerName": "Orange Chicken",
+   "aliases": [
+    "orange chicken"
+   ],
+   "status": "mapped",
+   "posId": "orange-chicken",
+   "posName": "ORANGE CHICKEN",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-chili-shrimp",
+   "customerName": "Chili Shrimp",
+   "aliases": [
+    "chili shrimp"
+   ],
+   "status": "mapped",
+   "posId": "chili-shrimp",
+   "posName": "CHILI SHRIMP",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-shishito-peppers",
+   "customerName": "Shishito Peppers",
+   "aliases": [
+    "shishito",
+    "shishito peppers"
+   ],
+   "status": "mapped",
+   "posId": "shishito",
+   "posName": "SHISHITO",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-eggplant",
+   "customerName": "Eggplant",
+   "aliases": [
+    "eggplant"
+   ],
+   "status": "mapped",
+   "posId": "eggplant",
+   "posName": "EGGPLANT",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-tempura",
+   "customerName": "Tempura",
+   "aliases": [
+    "tempura"
+   ],
+   "status": "mapped",
+   "posId": "tempura",
+   "posName": "TEMPURA",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-popcorn-chicken",
+   "customerName": "Popcorn Chicken",
+   "aliases": [
+    "popcorn chicken"
+   ],
+   "status": "mapped",
+   "posId": "popcorn-chicken",
+   "posName": "POPCORN CHICKEN",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-egg-roll-3pcs",
+   "customerName": "Egg Roll (3pcs)",
+   "aliases": [
+    "egg rolls"
+   ],
+   "status": "mapped",
+   "posId": "egg-rolls-3pcs",
+   "posName": "EGG ROLLS 3PCS",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-vegetable-saute",
+   "customerName": "Vegetable Saute",
+   "aliases": [
+    "vegetable saute",
+    "veggie saute"
+   ],
+   "status": "mapped",
+   "posId": "vegetable-saute",
+   "posName": "VEGETABLE SAUTE",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-mushroom-saute",
+   "customerName": "Mushroom Saute",
+   "aliases": [
+    "mushroom saute"
+   ],
+   "status": "mapped",
+   "posId": "mushroom-saute",
+   "posName": "MUSHROOM SAUTE",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-steamed-egg",
+   "customerName": "Steamed Egg",
+   "aliases": [
+    "steamed egg"
+   ],
+   "status": "mapped",
+   "posId": "steamd-egg",
+   "posName": "STEAMD EGG",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-green-salad",
+   "customerName": "Green Salad",
+   "aliases": [
+    "salad",
+    "green salad"
+   ],
+   "status": "mapped",
+   "posId": "salad",
+   "posName": "SALAD",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-spicy-tuna-biscuit",
+   "customerName": "Spicy Tuna Biscuit",
+   "aliases": [
+    "tuna biscuit"
+   ],
+   "status": "mapped",
+   "posId": "spicy-tuna-biscuit",
+   "posName": "SPICY TUNA BISCUIT",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-french-fries",
+   "customerName": "French Fries",
+   "aliases": [
+    "fries"
+   ],
+   "status": "mapped",
+   "posId": "french-fries",
+   "posName": "FRENCH FRIES",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "appetizers-tofu-steak-4pcs",
+   "customerName": "Tofu Steak (4pcs)",
+   "aliases": [
+    "tofu steak"
+   ],
+   "status": "mapped",
+   "posId": "tofu-steak-4pcs",
+   "posName": "TOFU STEAK 4PCS",
+   "posCategory": "APPETIZER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-galbi",
+   "customerName": "Galbi",
+   "aliases": [
+    "galbi",
+    "galbi lunch"
+   ],
+   "status": "mapped",
+   "posId": "galbi-lunch",
+   "posName": "GALBI LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-beef-bulgogi",
+   "customerName": "Beef Bulgogi",
+   "aliases": [
+    "bulgogi",
+    "beef bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "bulgogi-lunch",
+   "posName": "BULGOGI LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-spicy-pork-bulgogi",
+   "customerName": "Spicy Pork Bulgogi",
+   "aliases": [
+    "spicy pork"
+   ],
+   "status": "mapped",
+   "posId": "spicy-pork-lunch",
+   "posName": "SPICY PORK LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-chicken-teriyaki",
+   "customerName": "Chicken Teriyaki",
+   "aliases": [
+    "chicken teriyaki",
+    "teriyaki"
+   ],
+   "status": "mapped",
+   "posId": "ch-teriyaki-lunch",
+   "posName": "CH. TERIYAKI LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-bibimbap",
+   "customerName": "Bibimbap",
+   "aliases": [
+    "bibimbap"
+   ],
+   "status": "mapped",
+   "posId": "bibimbap-cold-lunch",
+   "posName": "BIBIMBAP COLD LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-bibimbap-hot-stone-pot",
+   "customerName": "Bibimbap - Hot Stone Pot",
+   "aliases": [
+    "hot stone bibimbap",
+    "dolsot bibimbap"
+   ],
+   "status": "mapped",
+   "posId": "bibimbap-hot-lunch",
+   "posName": "BIBIMBAP HOT LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-soon-tofu",
+   "customerName": "Soon Tofu",
+   "aliases": [
+    "soon tofu",
+    "tofu soup"
+   ],
+   "status": "mapped",
+   "posId": "soon-tofu-lunch",
+   "posName": "SOON TOFU LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-galbi-tang",
+   "customerName": "Galbi Tang",
+   "aliases": [
+    "galbi tang",
+    "short rib soup"
+   ],
+   "status": "mapped",
+   "posId": "galbi-soup-lunch",
+   "posName": "GALBI SOUP LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-yukgae-jang",
+   "customerName": "Yukgae Jang",
+   "aliases": [
+    "yukgaejang",
+    "spicy beef soup"
+   ],
+   "status": "mapped",
+   "posId": "yukgaejang-lunch",
+   "posName": "YUKGAEJANG LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-kimchi-stew",
+   "customerName": "Kimchi Stew",
+   "aliases": [
+    "kimchi stew",
+    "kimchi jjigae"
+   ],
+   "status": "mapped",
+   "posId": "kimchi-stew",
+   "posName": "KIMCHI STEW",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-soybean-stew",
+   "customerName": "Soybean Stew",
+   "aliases": [
+    "soybean stew",
+    "doenjang jjigae"
+   ],
+   "status": "mapped",
+   "posId": "soybean-stew-lunch",
+   "posName": "SOYBEAN STEW LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-korean-ramen-kimchi-beef",
+   "customerName": "Korean Ramen - Kimchi & Beef",
+   "aliases": [
+    "kimchi beef ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-kimch-beef",
+   "posName": "RAMEN - KIMCH & BEEF",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-korean-ramen-dumpling",
+   "customerName": "Korean Ramen - Dumpling",
+   "aliases": [
+    "dumpling ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-dumpling",
+   "posName": "RAMEN - DUMPLING",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-korean-ramen-mushroom",
+   "customerName": "Korean Ramen - Mushroom",
+   "aliases": [
+    "mushroom ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-mushroom",
+   "posName": "RAMEN - MUSHROOM",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-pan-fried-noodles-beef",
+   "customerName": "Pan Fried Noodles - Beef",
+   "aliases": [
+    "beef noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-beef",
+   "posName": "FRIED NOODLE - BEEF",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-pan-fried-noodles-chicken",
+   "customerName": "Pan Fried Noodles - Chicken",
+   "aliases": [
+    "chicken noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-chicken",
+   "posName": "FRIED NOODLE - CHICKEN",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-pan-fried-noodles-shrimp",
+   "customerName": "Pan Fried Noodles - Shrimp",
+   "aliases": [
+    "shrimp noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-shrimp",
+   "posName": "FRIED NOODLE - SHRIMP",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-pan-fried-noodles-vegetables",
+   "customerName": "Pan Fried Noodles - Vegetables",
+   "aliases": [
+    "veggie noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-vegi",
+   "posName": "FRIED NOODLE - VEGI",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-katsu-cutlet-pork",
+   "customerName": "Katsu Cutlet - Pork",
+   "aliases": [
+    "pork katsu"
+   ],
+   "status": "mapped",
+   "posId": "katsu-pork",
+   "posName": "KATSU - PORK",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-katsu-cutlet-chicken",
+   "customerName": "Katsu Cutlet - Chicken",
+   "aliases": [
+    "chicken katsu"
+   ],
+   "status": "mapped",
+   "posId": "katsu-chicken",
+   "posName": "KATSU - CHICKEN",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-salmon",
+   "customerName": "Salmon",
+   "aliases": [
+    "salmon"
+   ],
+   "status": "mapped",
+   "posId": "salmon-lunch",
+   "posName": "SALMON LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-bbq-eel",
+   "customerName": "BBQ Eel",
+   "aliases": [
+    "eel",
+    "bbq eel"
+   ],
+   "status": "mapped",
+   "posId": "bbq-eel-lunch",
+   "posName": "BBQ EEL LUNCH",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-fried-rice-shrimp",
+   "customerName": "Fried Rice - Shrimp",
+   "aliases": [
+    "shrimp fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-shrimp",
+   "posName": "FRIED RICE - SHRIMP",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-fried-rice-beef",
+   "customerName": "Fried Rice - Beef",
+   "aliases": [
+    "beef fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-beef",
+   "posName": "FRIED RICE - BEEF",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-fried-rice-chicken",
+   "customerName": "Fried Rice - Chicken",
+   "aliases": [
+    "chicken fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-chicken",
+   "posName": "FRIED RICE - CHICKEN",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-fried-rice-kimchi",
+   "customerName": "Fried Rice - Kimchi",
+   "aliases": [
+    "kimchi fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-kimchi",
+   "posName": "FRIED RICE - KIMCHI",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "lunch-special-fried-rice-veg",
+   "customerName": "Fried Rice - Veg.",
+   "aliases": [
+    "veggie fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-veg",
+   "posName": "FRIED RICE - VEG",
+   "posCategory": "LUNCH",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-galbi",
+   "customerName": "Galbi",
+   "aliases": [
+    "galbi"
+   ],
+   "status": "mapped",
+   "posId": "galbi-dnr",
+   "posName": "GALBI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-beef-bulgogi",
+   "customerName": "Beef Bulgogi",
+   "aliases": [
+    "bulgogi",
+    "beef bulgogi"
+   ],
+   "status": "mapped",
+   "posId": "bulgogi-dnr",
+   "posName": "BULGOGI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-spicy-pork-bulgogi",
+   "customerName": "Spicy Pork Bulgogi",
+   "aliases": [
+    "spicy pork"
+   ],
+   "status": "mapped",
+   "posId": "spicy-pork-bulgogi-dnr",
+   "posName": "SPICY PORK BULGOGI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-chicken-teriyaki",
+   "customerName": "Chicken Teriyaki",
+   "aliases": [
+    "chicken teriyaki",
+    "teriyaki"
+   ],
+   "status": "mapped",
+   "posId": "chicken-teriyaki-dnr",
+   "posName": "CHICKEN TERIYAKI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-bibimbap",
+   "customerName": "Bibimbap",
+   "aliases": [
+    "bibimbap"
+   ],
+   "status": "mapped",
+   "posId": "bibimbap-cold-dnr",
+   "posName": "BIBIMBAP COLD DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-bibimbap-hot-stone-pot",
+   "customerName": "Bibimbap - Hot Stone Pot",
+   "aliases": [
+    "hot stone bibimbap",
+    "dolsot bibimbap"
+   ],
+   "status": "mapped",
+   "posId": "bibimbap-hot-dnr",
+   "posName": "BIBIMBAP HOT DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-soon-tofu",
+   "customerName": "Soon Tofu",
+   "aliases": [
+    "soon tofu",
+    "tofu soup"
+   ],
+   "status": "mapped",
+   "posId": "soon-tofu-dnr",
+   "posName": "SOON TOFU DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-galbi-tang",
+   "customerName": "Galbi Tang",
+   "aliases": [
+    "galbi tang",
+    "short rib soup"
+   ],
+   "status": "mapped",
+   "posId": "galbi-soup-dnr",
+   "posName": "GALBI SOUP DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-yukgae-jang",
+   "customerName": "Yukgae Jang",
+   "aliases": [
+    "yukgaejang",
+    "spicy beef soup"
+   ],
+   "status": "mapped",
+   "posId": "yukgaejang-dnr",
+   "posName": "YUKGAEJANG DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-kimchi-stew",
+   "customerName": "Kimchi Stew",
+   "aliases": [
+    "kimchi stew"
+   ],
+   "status": "mapped",
+   "posId": "kimchi-stew-dnr",
+   "posName": "KIMCHI STEW DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-soybean-stew",
+   "customerName": "Soybean Stew",
+   "aliases": [
+    "soybean stew"
+   ],
+   "status": "mapped",
+   "posId": "soybean-stew-dnr",
+   "posName": "SOYBEAN STEW DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-korean-ramen-kimchi-beef",
+   "customerName": "Korean Ramen - Kimchi & Beef",
+   "aliases": [
+    "kimchi beef ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-kimch-beef-dnr",
+   "posName": "RAMEN - KIMCH & BEEF DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-korean-ramen-dumpling",
+   "customerName": "Korean Ramen - Dumpling",
+   "aliases": [
+    "dumpling ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-dumpling-dnr",
+   "posName": "RAMEN - DUMPLING DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-korean-ramen-mushroom",
+   "customerName": "Korean Ramen - Mushroom",
+   "aliases": [
+    "mushroom ramen"
+   ],
+   "status": "mapped",
+   "posId": "ramen-mushroom-dnr",
+   "posName": "RAMEN - MUSHROOM DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-pan-fried-noodles-beef",
+   "customerName": "Pan Fried Noodles - Beef",
+   "aliases": [
+    "beef noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-beef-dnr",
+   "posName": "FRIED NOODLE - BEEF DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-pan-fried-noodles-chicken",
+   "customerName": "Pan Fried Noodles - Chicken",
+   "aliases": [
+    "chicken noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-chicken-dnr",
+   "posName": "FRIED NOODLE - CHICKEN DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-pan-fried-noodles-shrimp",
+   "customerName": "Pan Fried Noodles - Shrimp",
+   "aliases": [
+    "shrimp noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-shrimp-dnr",
+   "posName": "FRIED NOODLE - SHRIMP DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-pan-fried-noodles-vegetables",
+   "customerName": "Pan Fried Noodles - Vegetables",
+   "aliases": [
+    "veggie noodles"
+   ],
+   "status": "mapped",
+   "posId": "fried-noodle-vegi-dnr",
+   "posName": "FRIED NOODLE - VEGI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-katsu-cutlet-pork",
+   "customerName": "Katsu Cutlet - Pork",
+   "aliases": [
+    "pork katsu"
+   ],
+   "status": "mapped",
+   "posId": "katsu-pork-dnr",
+   "posName": "KATSU - PORK DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-katsu-cutlet-chicken",
+   "customerName": "Katsu Cutlet - Chicken",
+   "aliases": [
+    "chicken katsu"
+   ],
+   "status": "mapped",
+   "posId": "katsu-chicken-dnr",
+   "posName": "KATSU - CHICKEN DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-salmon",
+   "customerName": "Salmon",
+   "aliases": [
+    "salmon"
+   ],
+   "status": "mapped",
+   "posId": "salmon-dnr",
+   "posName": "SALMON DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-bbq-eel",
+   "customerName": "BBQ Eel",
+   "aliases": [
+    "eel",
+    "bbq eel"
+   ],
+   "status": "mapped",
+   "posId": "bbq-ell-dnr",
+   "posName": "BBQ ELL DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-fried-rice-shrimp",
+   "customerName": "Fried Rice - Shrimp",
+   "aliases": [
+    "shrimp fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-shrimp-dnr",
+   "posName": "FRIED RICE - SHRIMP DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-fried-rice-beef",
+   "customerName": "Fried Rice - Beef",
+   "aliases": [
+    "beef fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-beef-dnr",
+   "posName": "FRIED RICE - BEEF DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-fried-rice-chicken",
+   "customerName": "Fried Rice - Chicken",
+   "aliases": [
+    "chicken fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-chicken-dnr",
+   "posName": "FRIED RICE - CHICKEN DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-fried-rice-kimchi",
+   "customerName": "Fried Rice - Kimchi",
+   "aliases": [
+    "kimchi fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-kimchi-dnr",
+   "posName": "FRIED RICE - KIMCHI DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dinner-entree-fried-rice-veg",
+   "customerName": "Fried Rice - Veg.",
+   "aliases": [
+    "veggie fried rice"
+   ],
+   "status": "mapped",
+   "posId": "fried-rice-veg-dnr",
+   "posName": "FRIED RICE - VEG DNR",
+   "posCategory": "DINNER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-coke",
+   "customerName": "Coke",
+   "aliases": [
+    "coke",
+    "coca-cola"
+   ],
+   "status": "mapped",
+   "posId": "coke",
+   "posName": "COKE",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-diet-coke",
+   "customerName": "Diet Coke",
+   "aliases": [
+    "diet coke"
+   ],
+   "status": "mapped",
+   "posId": "diet-coke",
+   "posName": "DIET COKE",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-coke-zero",
+   "customerName": "Coke Zero",
+   "aliases": [
+    "coke zero"
+   ],
+   "status": "mapped",
+   "posId": "coke-zero",
+   "posName": "COKE ZERO",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-sprite",
+   "customerName": "Sprite",
+   "aliases": [
+    "sprite"
+   ],
+   "status": "mapped",
+   "posId": "sprite",
+   "posName": "SPRITE",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-root-beer",
+   "customerName": "Root Beer",
+   "aliases": [
+    "root beer"
+   ],
+   "status": "mapped",
+   "posId": "root-beer",
+   "posName": "ROOT BEER",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-orange-fanta",
+   "customerName": "Orange Fanta",
+   "aliases": [
+    "fanta",
+    "orange soda"
+   ],
+   "status": "mapped",
+   "posId": "fanta",
+   "posName": "FANTA",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-dr-pepper",
+   "customerName": "Dr. Pepper",
+   "aliases": [
+    "dr pepper"
+   ],
+   "status": "mapped",
+   "posId": "dr-pepper",
+   "posName": "DR PEPPER",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-lemonade",
+   "customerName": "Lemonade",
+   "aliases": [
+    "lemonade"
+   ],
+   "status": "mapped",
+   "posId": "lemonade",
+   "posName": "LEMONADE",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-apple-juice",
+   "customerName": "Apple Juice",
+   "aliases": [
+    "apple juice"
+   ],
+   "status": "mapped",
+   "posId": "apple-juice",
+   "posName": "APPLE JUICE",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-iced-tea-passion-fruit-green",
+   "customerName": "Iced Tea (Passion Fruit / Green)",
+   "aliases": [
+    "iced tea",
+    "passion fruit tea",
+    "green iced tea"
+   ],
+   "status": "mapped",
+   "posId": "iced-tea",
+   "posName": "ICED TEA",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-arnold-palmer",
+   "customerName": "Arnold Palmer",
+   "aliases": [
+    "arnold palmer",
+    "half and half"
+   ],
+   "status": "mapped",
+   "posId": "arnold-palmer",
+   "posName": "ARNOLD PALMER",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-hot-tea-green",
+   "customerName": "Hot Tea (Green)",
+   "aliases": [
+    "hot tea",
+    "green tea"
+   ],
+   "status": "mapped",
+   "posId": "hot-tea",
+   "posName": "HOT TEA",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-perrier",
+   "customerName": "Perrier",
+   "aliases": [
+    "perrier",
+    "sparkling water"
+   ],
+   "status": "mapped",
+   "posId": "perrier",
+   "posName": "PERRIER",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "beverages-pellegrino-750ml",
+   "customerName": "Pellegrino 750ml",
+   "aliases": [
+    "pellegrino"
+   ],
+   "status": "mapped",
+   "posId": "pellegrino",
+   "posName": "PELLEGRINO",
+   "posCategory": "BEVERAGE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-coors-light-16oz-draft",
+   "customerName": "Coors Light (16oz draft)",
+   "aliases": [
+    "draft coors light",
+    "coors light"
+   ],
+   "status": "mapped",
+   "posId": "draft-coors-light",
+   "posName": "(DRAFT) COORS LIGHT",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-coors-light-60oz-pitcher",
+   "customerName": "Coors Light (60oz pitcher)",
+   "aliases": [
+    "pitcher of coors light"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-coors-light",
+   "posName": "(PITCHERS) COORS LIGHT",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-asahi-16oz-draft",
+   "customerName": "Asahi (16oz draft)",
+   "aliases": [
+    "draft asahi",
+    "asahi"
+   ],
+   "status": "mapped",
+   "posId": "draft-asahi",
+   "posName": "(DRAFT) ASAHI",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-asahi-60oz-pitcher",
+   "customerName": "Asahi (60oz pitcher)",
+   "aliases": [
+    "pitcher of asahi"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-asahi",
+   "posName": "(PITCHERS) ASAHI",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-sapporo-16oz-draft",
+   "customerName": "Sapporo (16oz draft)",
+   "aliases": [
+    "draft sapporo",
+    "sapporo"
+   ],
+   "status": "mapped",
+   "posId": "draft-sapporo",
+   "posName": "(DRAFT) SAPPORO",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-sapporo-60oz-pitcher",
+   "customerName": "Sapporo (60oz pitcher)",
+   "aliases": [
+    "pitcher of sapporo"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-sapporo",
+   "posName": "(PITCHERS) SAPPORO",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-blue-moon-16oz-draft",
+   "customerName": "Blue Moon (16oz draft)",
+   "aliases": [
+    "draft blue moon",
+    "blue moon"
+   ],
+   "status": "mapped",
+   "posId": "draft-blue-moon",
+   "posName": "(DRAFT) BLUE MOON",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-blue-moon-60oz-pitcher",
+   "customerName": "Blue Moon (60oz pitcher)",
+   "aliases": [
+    "pitcher of blue moon"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-blue-moon",
+   "posName": "(PITCHERS) BLUE MOON",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-samuel-adams-16oz-draft",
+   "customerName": "Samuel Adams (16oz draft)",
+   "aliases": [
+    "draft samuel adams",
+    "samuel adams"
+   ],
+   "status": "mapped",
+   "posId": "draft-samuel-adams",
+   "posName": "(DRAFT) SAMUEL ADAMS",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-samuel-adams-60oz-pitcher",
+   "customerName": "Samuel Adams (60oz pitcher)",
+   "aliases": [
+    "pitcher of samuel adams"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-samuel-adams",
+   "posName": "(PITCHERS) SAMUEL ADAMS",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-lagunitas-ipa-16oz-draft",
+   "customerName": "Lagunitas IPA (16oz draft)",
+   "aliases": [
+    "draft lagunitas ipa",
+    "lagunitas ipa"
+   ],
+   "status": "mapped",
+   "posId": "draft-lagunitas-ipa",
+   "posName": "(DRAFT) LAGUNITAS IPA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-lagunitas-ipa-60oz-pitcher",
+   "customerName": "Lagunitas IPA (60oz pitcher)",
+   "aliases": [
+    "pitcher of lagunitas ipa"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-lagunitas-ipa",
+   "posName": "(PITCHERS) LAGUNITAS IPA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-fat-tire-16oz-draft",
+   "customerName": "Fat Tire (16oz draft)",
+   "aliases": [
+    "draft fat tire",
+    "fat tire"
+   ],
+   "status": "mapped",
+   "posId": "draft-fat-tire",
+   "posName": "(DRAFT) FAT TIRE",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-fat-tire-60oz-pitcher",
+   "customerName": "Fat Tire (60oz pitcher)",
+   "aliases": [
+    "pitcher of fat tire"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-fat-tire",
+   "posName": "(PITCHERS) FAT TIRE",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-sierra-nevada-16oz-draft",
+   "customerName": "Sierra Nevada (16oz draft)",
+   "aliases": [
+    "draft sierra nevada",
+    "sierra nevada"
+   ],
+   "status": "mapped",
+   "posId": "draft-sierra-nevada",
+   "posName": "(DRAFT) SIERRA NEVADA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "draft-beer-sierra-nevada-60oz-pitcher",
+   "customerName": "Sierra Nevada (60oz pitcher)",
+   "aliases": [
+    "pitcher of sierra nevada"
+   ],
+   "status": "mapped",
+   "posId": "pitchers-sierra-nevada",
+   "posName": "(PITCHERS) SIERRA NEVADA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-heineken",
+   "customerName": "Heineken",
+   "aliases": [
+    "heineken"
+   ],
+   "status": "mapped",
+   "posId": "heineken",
+   "posName": "HEINEKEN",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-bud-light",
+   "customerName": "Bud Light",
+   "aliases": [
+    "bud light"
+   ],
+   "status": "mapped",
+   "posId": "bud-light",
+   "posName": "BUD LIGHT",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-pacifico",
+   "customerName": "Pacifico",
+   "aliases": [
+    "pacifico"
+   ],
+   "status": "mapped",
+   "posId": "pacifico",
+   "posName": "PACIFICO",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-corona",
+   "customerName": "Corona",
+   "aliases": [
+    "corona"
+   ],
+   "status": "mapped",
+   "posId": "corona",
+   "posName": "CORONA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-terra-korean-beer-500ml",
+   "customerName": "Terra (Korean beer 500ml)",
+   "aliases": [
+    "terra"
+   ],
+   "status": "mapped",
+   "posId": "terra",
+   "posName": "TERRA",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-kloud-korean-beer-500ml",
+   "customerName": "Kloud (Korean beer 500ml)",
+   "aliases": [
+    "kloud"
+   ],
+   "status": "mapped",
+   "posId": "kloud",
+   "posName": "KLOUD",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "bottled-beer-non-alcoholic-beer",
+   "customerName": "Non-Alcoholic Beer",
+   "aliases": [
+    "n/a beer",
+    "non alcoholic beer"
+   ],
+   "status": "mapped",
+   "posId": "non-alcoholic-beer",
+   "posName": "NON-ALCOHOLIC BEER",
+   "posCategory": "BEER",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-rich-20",
+   "customerName": "Soju Bottle 375ml - Rich (20%)",
+   "aliases": [
+    "rich soju"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-red",
+   "posName": "SOJU - RED",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Rich = RED; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-rich-20",
+   "customerName": "Soju Martini - Rich (20%)",
+   "aliases": [
+    "rich soju martini"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-martini-red",
+   "posName": "SOJU MARTINI - RED",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Rich = RED; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-original-16-5",
+   "customerName": "Soju Bottle 375ml - Original (16.5%)",
+   "aliases": [
+    "original soju"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-green",
+   "posName": "SOJU - GREEN",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Original = GREEN; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-original-16-5",
+   "customerName": "Soju Martini - Original (16.5%)",
+   "aliases": [
+    "original soju martini"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-martini-green",
+   "posName": "SOJU MARTINI - GREEN",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Original = GREEN; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-saero-0-sugar",
+   "customerName": "Soju Bottle 375ml - Saero (0 sugar)",
+   "aliases": [
+    "saero soju"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-zero-sugar",
+   "posName": "SOJU - ZERO SUGAR",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Saero = ZERO SUGAR; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-saero-0-sugar",
+   "customerName": "Soju Martini - Saero (0 sugar)",
+   "aliases": [
+    "saero soju martini"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-martini-zero-sugar",
+   "posName": "SOJU MARTINI - ZERO SUGAR",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Saero = ZERO SUGAR; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-peach",
+   "customerName": "Soju Bottle 375ml - Peach",
+   "aliases": [
+    "peach soju"
+   ],
+   "status": "mapped",
+   "posId": "soju-peach",
+   "posName": "SOJU - PEACH",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-peach",
+   "customerName": "Soju Martini - Peach",
+   "aliases": [
+    "peach soju martini"
+   ],
+   "status": "mapped",
+   "posId": "soju-martini-peach",
+   "posName": "SOJU MARTINI - PEACH",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-apple",
+   "customerName": "Soju Bottle 375ml - Apple",
+   "aliases": [
+    "apple soju"
+   ],
+   "status": "mapped",
+   "posId": "soju-apple",
+   "posName": "SOJU - APPLE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-apple",
+   "customerName": "Soju Martini - Apple",
+   "aliases": [
+    "apple soju martini"
+   ],
+   "status": "mapped",
+   "posId": "soju-martini-apple",
+   "posName": "SOJU MARTINI - APPLE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-yogurt",
+   "customerName": "Soju Bottle 375ml - Yogurt",
+   "aliases": [
+    "yogurt soju"
+   ],
+   "status": "mapped",
+   "posId": "soju-yogurt",
+   "posName": "SOJU - YOGURT",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-yogurt",
+   "customerName": "Soju Martini - Yogurt",
+   "aliases": [
+    "yogurt soju martini"
+   ],
+   "status": "mapped",
+   "posId": "soju-martini-yogurt",
+   "posName": "SOJU MARTINI - YOGURT",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-citron",
+   "customerName": "Soju Bottle 375ml - Citron",
+   "aliases": [
+    "citron soju"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-lemon",
+   "posName": "SOJU - LEMON",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Citron = LEMON; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-citron",
+   "customerName": "Soju Martini - Citron",
+   "aliases": [
+    "citron soju martini"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-martini-lemon",
+   "posName": "SOJU MARTINI- LEMON",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Citron = LEMON; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-strawberry",
+   "customerName": "Soju Bottle 375ml - Strawberry",
+   "aliases": [
+    "strawberry soju"
+   ],
+   "status": "mapped",
+   "posId": "soju-strawberry",
+   "posName": "SOJU - STRAWBERRY",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-strawberry",
+   "customerName": "Soju Martini - Strawberry",
+   "aliases": [
+    "strawberry soju martini"
+   ],
+   "status": "mapped",
+   "posId": "soju-martini-strawberry",
+   "posName": "SOJU MARTINI - STRAWBERRY",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "korean-soju-soju-bottle-375ml-grape",
+   "customerName": "Soju Bottle 375ml - Grape",
+   "aliases": [
+    "grape soju"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-green-grape",
+   "posName": "SOJU - GREEN GRAPE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Grape = GREEN GRAPE; not confirmed."
+  },
+  {
+   "customerItemId": "korean-soju-soju-martini-grape",
+   "customerName": "Soju Martini - Grape",
+   "aliases": [
+    "grape soju martini"
+   ],
+   "status": "ambiguous",
+   "posId": "soju-martini-green-grape",
+   "posName": "SOJU MARTINI - GREEN GRAPE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null,
+   "note": "Assumed Grape = GREEN GRAPE; not confirmed."
+  },
+  {
+   "customerItemId": "rice-wine-sake-makgolli",
+   "customerName": "Makgolli",
+   "aliases": [
+    "makgeolli",
+    "makgolli",
+    "rice wine"
+   ],
+   "status": "mapped",
+   "posId": "makgoli",
+   "posName": "MAKGOLI",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-chung-ha-cold-sake",
+   "customerName": "Chung Ha (Cold Sake)",
+   "aliases": [
+    "chungha",
+    "chung ha"
+   ],
+   "status": "mapped",
+   "posId": "chung-ha-cold-sake",
+   "posName": "CHUNG HA (COLD SAKE)",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-house-hot-sake-small",
+   "customerName": "House Hot Sake - Small",
+   "aliases": [
+    "small hot sake"
+   ],
+   "status": "mapped",
+   "posId": "house-sake-s",
+   "posName": "HOUSE SAKE (S)",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-house-hot-sake-large",
+   "customerName": "House Hot Sake - Large",
+   "aliases": [
+    "large hot sake"
+   ],
+   "status": "mapped",
+   "posId": "house-sake-l",
+   "posName": "HOUSE SAKE (L)",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-baekseju",
+   "customerName": "Baekseju",
+   "aliases": [
+    "baekseju"
+   ],
+   "status": "mapped",
+   "posId": "baekseju",
+   "posName": "BAEKSEJU",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-plum-wine",
+   "customerName": "Plum Wine",
+   "aliases": [
+    "plum wine"
+   ],
+   "status": "mapped",
+   "posId": "plum-wine",
+   "posName": "PLUM WINE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-soju-slushie-mango-or-strawberry",
+   "customerName": "Soju Slushie (Mango or Strawberry)",
+   "aliases": [
+    "soju slushie"
+   ],
+   "status": "missing-in-pos",
+   "note": "No SOJU SLUSHIE button appears in the POS screenshots."
+  },
+  {
+   "customerItemId": "rice-wine-sake-soju-slushie-7oz-coronita",
+   "customerName": "Soju Slushie + 7oz Coronita",
+   "aliases": [
+    "slushie with coronita"
+   ],
+   "status": "missing-in-pos",
+   "note": "No button appears in the POS screenshots."
+  },
+  {
+   "customerItemId": "wine-merlot-house-wine-glass",
+   "customerName": "Merlot - House Wine (glass)",
+   "aliases": [
+    "glass of merlot"
+   ],
+   "status": "mapped",
+   "posId": "glass-melot-house-wine",
+   "posName": "(GLASS) MELOT HOUSE WINE",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-merlot-house-wine-bottle",
+   "customerName": "Merlot - House Wine (bottle)",
+   "aliases": [
+    "bottle of merlot"
+   ],
+   "status": "mapped",
+   "posId": "bottle-merlot",
+   "posName": "(BOTTLE) MERLOT",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-cabernet-sauvignon-highlands-41-glass",
+   "customerName": "Cabernet Sauvignon - Highlands 41 (glass)",
+   "aliases": [
+    "glass of cabernet sauvignon"
+   ],
+   "status": "mapped",
+   "posId": "glass-cab-highlands-41",
+   "posName": "(GLASS) CAB HIGHLANDS 41",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-cabernet-sauvignon-highlands-41-bottle",
+   "customerName": "Cabernet Sauvignon - Highlands 41 (bottle)",
+   "aliases": [
+    "bottle of cabernet sauvignon"
+   ],
+   "status": "mapped",
+   "posId": "bottle-cab-highlands-41",
+   "posName": "(BOTTLE) CAB HIGHLANDS 41",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-cabernet-sauvignon-maddalena-glass",
+   "customerName": "Cabernet Sauvignon - Maddalena (glass)",
+   "aliases": [
+    "glass of cabernet sauvignon"
+   ],
+   "status": "mapped",
+   "posId": "glass-cab-maddalena",
+   "posName": "(GLASS) CAB MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-cabernet-sauvignon-maddalena-bottle",
+   "customerName": "Cabernet Sauvignon - Maddalena (bottle)",
+   "aliases": [
+    "bottle of cabernet sauvignon"
+   ],
+   "status": "mapped",
+   "posId": "bottle-cab-maddalena",
+   "posName": "(BOTTLE) CAB MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-pinot-noir-highlands-41-glass",
+   "customerName": "Pinot Noir - Highlands 41 (glass)",
+   "aliases": [
+    "glass of pinot noir"
+   ],
+   "status": "mapped",
+   "posId": "glass-pinot-noir",
+   "posName": "(GLASS) PINOT. NOIR",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-pinot-noir-highlands-41-bottle",
+   "customerName": "Pinot Noir - Highlands 41 (bottle)",
+   "aliases": [
+    "bottle of pinot noir"
+   ],
+   "status": "mapped",
+   "posId": "bottle-pinot-noir",
+   "posName": "(BOTTLE) PINOT. NOIR",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-chardonnay-house-wine-glass",
+   "customerName": "Chardonnay - House Wine (glass)",
+   "aliases": [
+    "glass of chardonnay"
+   ],
+   "status": "mapped",
+   "posId": "glass-char-house",
+   "posName": "(GLASS) CHAR. HOUSE",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-chardonnay-house-wine-bottle",
+   "customerName": "Chardonnay - House Wine (bottle)",
+   "aliases": [
+    "bottle of chardonnay"
+   ],
+   "status": "mapped",
+   "posId": "bottle-char-house",
+   "posName": "(BOTTLE) CHAR. HOUSE",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-chardonnay-san-simon-glass",
+   "customerName": "Chardonnay - San Simon (glass)",
+   "aliases": [
+    "glass of chardonnay"
+   ],
+   "status": "ambiguous",
+   "posId": "glass-char-maddalena",
+   "posName": "(GLASS) CHAR. MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null,
+   "note": "Menu lists San Simon; POS button says MADDALENA at the same price."
+  },
+  {
+   "customerItemId": "wine-chardonnay-san-simon-bottle",
+   "customerName": "Chardonnay - San Simon (bottle)",
+   "aliases": [
+    "bottle of chardonnay"
+   ],
+   "status": "ambiguous",
+   "posId": "bottle-char-maddalena",
+   "posName": "(BOTTLE) CHAR. MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null,
+   "note": "Menu lists San Simon; POS button says MADDALENA at the same price."
+  },
+  {
+   "customerItemId": "wine-sauvignon-blanc-tierra-del-fuego-glass",
+   "customerName": "Sauvignon Blanc - Tierra del Fuego (glass)",
+   "aliases": [
+    "glass of sauvignon blanc"
+   ],
+   "status": "ambiguous",
+   "posId": "glass-sau-bl-house",
+   "posName": "(GLASS) SAU.BL. HOUSE",
+   "posCategory": "WINE",
+   "posItemNumber": null,
+   "note": "Assumed Tierra del Fuego is the HOUSE Sauvignon Blanc (prices match)."
+  },
+  {
+   "customerItemId": "wine-sauvignon-blanc-tierra-del-fuego-bottle",
+   "customerName": "Sauvignon Blanc - Tierra del Fuego (bottle)",
+   "aliases": [
+    "bottle of sauvignon blanc"
+   ],
+   "status": "ambiguous",
+   "posId": "bottle-sau-bl-house",
+   "posName": "(BOTTLE) SAU.BL. HOUSE",
+   "posCategory": "WINE",
+   "posItemNumber": null,
+   "note": "Assumed Tierra del Fuego is the HOUSE Sauvignon Blanc (prices match)."
+  },
+  {
+   "customerItemId": "wine-sauvignon-blanc-champion-new-zealand-glass",
+   "customerName": "Sauvignon Blanc - Champion (New Zealand) (glass)",
+   "aliases": [
+    "glass of sauvignon blanc"
+   ],
+   "status": "mapped",
+   "posId": "glass-sau-bl-new-zealand",
+   "posName": "(GLASS) SAU. BL. NEW ZEALAND",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-sauvignon-blanc-champion-new-zealand-bottle",
+   "customerName": "Sauvignon Blanc - Champion (New Zealand) (bottle)",
+   "aliases": [
+    "bottle of sauvignon blanc"
+   ],
+   "status": "mapped",
+   "posId": "bottle-sau-bl-new-zealand",
+   "posName": "(BOTTLE) SAU. BL. NEW ZEALAND",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-pinot-grigio-maddalena-glass",
+   "customerName": "Pinot Grigio - Maddalena (glass)",
+   "aliases": [
+    "glass of pinot grigio"
+   ],
+   "status": "mapped",
+   "posId": "glass-p-grigio-maddalena",
+   "posName": "(GLASS) P.GRIGIO MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "wine-pinot-grigio-maddalena-bottle",
+   "customerName": "Pinot Grigio - Maddalena (bottle)",
+   "aliases": [
+    "bottle of pinot grigio"
+   ],
+   "status": "mapped",
+   "posId": "bottle-p-grigio-maddalena",
+   "posName": "(BOTTLE) P.GRIGIO MADDALENA",
+   "posCategory": "WINE",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dessert-macaron-ice-cream-strawberry",
+   "customerName": "Macaron Ice Cream - Strawberry",
+   "aliases": [
+    "strawberry macaron"
+   ],
+   "status": "mapped",
+   "posId": "macaron-strawberry",
+   "posName": "MACARON - STRAWBERRY",
+   "posCategory": "DESSERT",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dessert-macaron-ice-cream-mango",
+   "customerName": "Macaron Ice Cream - Mango",
+   "aliases": [
+    "mango macaron"
+   ],
+   "status": "mapped",
+   "posId": "macaron-mango",
+   "posName": "MACARON - MANGO",
+   "posCategory": "DESSERT",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dessert-macaron-ice-cream-green-tea",
+   "customerName": "Macaron Ice Cream - Green Tea",
+   "aliases": [
+    "green tea macaron"
+   ],
+   "status": "mapped",
+   "posId": "macaron-green-tea",
+   "posName": "MACARON - GREEN TEA",
+   "posCategory": "DESSERT",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dessert-macaron-ice-cream-vanilla",
+   "customerName": "Macaron Ice Cream - Vanilla",
+   "aliases": [
+    "vanilla macaron"
+   ],
+   "status": "mapped",
+   "posId": "macaron-vanilla",
+   "posName": "MACARON - VANILLA",
+   "posCategory": "DESSERT",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "dessert-macaron-ice-cream-coffee",
+   "customerName": "Macaron Ice Cream - Coffee",
+   "aliases": [
+    "coffee macaron"
+   ],
+   "status": "mapped",
+   "posId": "macaron-coffee",
+   "posName": "MACARON - COFFEE",
+   "posCategory": "DESSERT",
+   "posItemNumber": null
+  }
+ ],
+ "posOnly": [
+  {
+   "posId": "beef-tongue-6oz",
+   "posName": "BEEF TONGUE 6oz",
+   "posCategory": "AYCE MEAT",
+   "status": "pos-only"
+  },
+  {
+   "posId": "scallop-8pcs",
+   "posName": "SCALLOP 8PCS",
+   "posCategory": "AYCE MEAT",
+   "status": "pos-only"
+  },
+  {
+   "posId": "rice-paper",
+   "posName": "RICE PAPER",
+   "posCategory": "AYCE APPS",
+   "status": "pos-only"
+  },
+  {
+   "posId": "garlic-jalapeno",
+   "posName": "GARLIC&JALAPENO",
+   "posCategory": "AYCE APPS",
+   "status": "pos-only"
+  },
+  {
+   "posId": "sesame-oil",
+   "posName": "SESAME OIL",
+   "posCategory": "AYCE APPS",
+   "status": "pos-only"
+  },
+  {
+   "posId": "bean-paste-ssamjang",
+   "posName": "BEAN PASTE SSAMJANG",
+   "posCategory": "AYCE APPS",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-side-dishes-1pack",
+   "posName": "EXTRA SIDE DISHES 1PACK",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "rice-rice-paper",
+   "posName": "RICE / RICE PAPER",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soup",
+   "posName": "SOUP",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-egg",
+   "posName": "EXTRA EGG",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-beef",
+   "posName": "EXTRA BEEF",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-chicken",
+   "posName": "EXTRA CHICKEN",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-spicy-pork",
+   "posName": "EXTRA SPICY PORK",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "extra-tofu",
+   "posName": "EXTRA TOFU",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "togo-12oz-kimchi",
+   "posName": "TOGO 12oz KIMCHI",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "togo-12oz-bean-sprout",
+   "posName": "TOGO 12oz BEAN SPROUT",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "togo-12oz-radish",
+   "posName": "TOGO 12oz RADISH",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "employee-drink",
+   "posName": "EMPLOYEE DRINK",
+   "posCategory": "SIDE ORDER",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-jinro-is-back",
+   "posName": "SOJU - JINRO IS BACK",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-grapefruit",
+   "posName": "SOJU - GRAPEFRUIT",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-melon",
+   "posName": "SOJU - MELON",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-martini-jinro-is-back",
+   "posName": "SOJU MARTINI - JINRO IS BACK",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-martini-grapefruit",
+   "posName": "SOJU MARTINI - GRAPEFRUIT",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "soju-martini-melon",
+   "posName": "SOJU MARTINI- MELON",
+   "posCategory": "KOREAN WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "cockage-fee",
+   "posName": "COCKAGE FEE",
+   "posCategory": "WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "creator-promo",
+   "posName": "CREATOR PROMO",
+   "posCategory": "WINE",
+   "status": "pos-only"
+  },
+  {
+   "posId": "birthday-promo",
+   "posName": "BIRTHDAY PROMO",
+   "posCategory": "DESSERT",
+   "status": "pos-only"
+  }
+ ]
+}
