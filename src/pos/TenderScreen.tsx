@@ -1,8 +1,8 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { posItem, tableLabel } from '../lib/menu';
 import { checkTotals, fmt, fromCents, toCents } from '../lib/money';
 import { actions, getState, now, usePos } from '../lib/store';
-import type { Check } from '../lib/types';
+import type { Check, Payment } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatLongTime } from './common';
 import { IconCard, IconCash, IconCheckBadge, IconMinusBadge, IconPrinter, IconSearchPerson, IconTerminal } from './icons';
 import { takePendingPayment } from './OrderScreen';
@@ -49,48 +49,99 @@ export function cashFlow() {
   });
 }
 
-export function creditFlow() {
+function CardSlip({ check, payment, copy }: { check: Check; payment: Payment; copy: 'MERCHANT COPY' | 'CUSTOMER COPY' }) {
+  const row = (a: ReactNode, b: ReactNode, bold = false) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: bold ? 'bold' : 'normal' }}>
+      <span>{a}</span>
+      <span>{b}</span>
+    </div>
+  );
+  return (
+    <div data-testid={`card-slip-${copy === 'MERCHANT COPY' ? 'merchant' : 'customer'}`} style={{ fontFamily: 'Courier New, monospace', fontSize: 12, background: '#fff', padding: 12, border: '1px dashed #999', width: 236 }}>
+      <div style={{ textAlign: 'center', fontWeight: 'bold' }}>JANCHI KOREAN BBQ</div>
+      <div style={{ textAlign: 'center' }}>** TRAINING **</div>
+      <div style={{ textAlign: 'center', margin: '4px 0' }}>{formatLongTime(payment.at)}</div>
+      {row(`Table ${tableLabel(check.tableId)}`, `Chk ${check.number}`)}
+      {row('Server', check.server)}
+      <hr />
+      {row('CREDIT SALE', '')}
+      {row('Card', 'CONTACTLESS')}
+      {row('Auth', 'APPROVED')}
+      <hr />
+      {row('AMOUNT', fmt(payment.amount), true)}
+      <br />
+      {row('TIP', '__________')}
+      <br />
+      {row('TOTAL', '__________')}
+      {copy === 'MERCHANT COPY' && (
+        <>
+          <br />
+          <div>X_________________________</div>
+          <div style={{ textAlign: 'center', fontSize: 10 }}>SIGNATURE</div>
+        </>
+      )}
+      <div style={{ textAlign: 'center', fontWeight: 'bold', marginTop: 6 }}>{copy}</div>
+    </div>
+  );
+}
+
+function CardReader({ close }: { close: () => void }) {
+  const [stage, setStage] = useState<'tap' | 'processing'>('tap');
   const bal = balanceOf();
-  if (bal <= 0) return dialogs.message('This check has no balance.');
-  dialogs.keypad({
-    title: 'Credit Card',
-    subtitle: (
-      <>
-        Balance: <b>{fmt(bal)}</b> &mdash; amount to charge
-      </>
-    ),
-    decimal: true,
-    initial: fmt(bal),
-    onEnter: (v) => {
-      const amt = parseFloat(v);
-      if (!amt || amt <= 0) return;
-      dialogs.custom((close) => (
-        <Modal w={420} title="Credit Card">
-          <div style={{ padding: 20, textAlign: 'center', fontSize: 15 }}>
-            <IconTerminal size={56} />
-            <div style={{ margin: '10px 0' }}>
-              Amount: <b>{fmt(Math.min(amt, bal))}</b>
-            </div>
-            <div style={{ color: '#555', fontSize: 13 }}>Have the guest tap, insert, or swipe on the card terminal.</div>
-            <div style={{ color: '#888', fontSize: 11, marginTop: 6 }}>Training simulator: no card data is collected or sent.</div>
+  const tap = () => {
+    setStage('processing');
+    setTimeout(() => {
+      close();
+      const p = actions.pay('credit', bal);
+      const s = getState();
+      const check = s.activeCheckId ? s.checks[s.activeCheckId] : null;
+      if (!p || !check) return;
+      actions.print();
+      dialogs.custom((done) => (
+        <Modal w={560} title="Credit Card - Approved (receipts printed)">
+          <div style={{ padding: 12, display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <CardSlip check={check} payment={p} copy="MERCHANT COPY" />
+            <CardSlip check={check} payment={p} copy="CUSTOMER COPY" />
           </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: 14 }}>
-            <DlgButton onClick={close}>Cancel</DlgButton>
-            <DlgButton
-              blue
-              onClick={() => {
-                close();
-                const p = actions.pay('credit', amt);
-                if (p) dialogs.message(<div style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', color: '#2a8a3a' }}>APPROVED {fmt(p.amount)}</div>, 'Credit Card');
-              }}
-            >
-              Card Approved
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 12px 12px' }}>
+            <DlgButton blue onClick={done}>
+              OK
             </DlgButton>
           </div>
         </Modal>
       ));
-    },
-  });
+    }, 900);
+  };
+  return (
+    <Modal w={420} title="Credit Card">
+      <div style={{ padding: 20, textAlign: 'center', fontSize: 15 }}>
+        <IconTerminal size={56} />
+        <div style={{ margin: '10px 0' }}>
+          Amount: <b>{fmt(bal)}</b>
+        </div>
+        {stage === 'tap' ? (
+          <div style={{ color: '#555', fontSize: 13 }}>Have the guest tap their card on the card reader.</div>
+        ) : (
+          <div style={{ color: '#1c5bb8', fontSize: 14, fontWeight: 'bold' }}>Processing...</div>
+        )}
+        <div style={{ color: '#888', fontSize: 11, marginTop: 6 }}>Training simulator: no card data is collected or sent.</div>
+      </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: 14 }}>
+        <DlgButton onClick={close} style={{ visibility: stage === 'tap' ? 'visible' : 'hidden' }}>
+          Cancel
+        </DlgButton>
+        <DlgButton blue onClick={tap} style={{ visibility: stage === 'tap' ? 'visible' : 'hidden' }}>
+          Tap Card on Reader
+        </DlgButton>
+      </div>
+    </Modal>
+  );
+}
+
+/** Credit Card: the guest taps the card on the reader for the balance; merchant and customer copies print. */
+export function creditFlow() {
+  if (balanceOf() <= 0) return dialogs.message('This check has no balance.');
+  dialogs.custom((close) => <CardReader close={close} />);
 }
 
 function gratuityFlow(check: Check, subtotal: number) {
