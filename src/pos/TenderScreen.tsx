@@ -104,7 +104,14 @@ function CardReader({ close }: { close: () => void }) {
             <CardSlip check={check} payment={p} copy="CUSTOMER COPY" />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 12px 12px' }}>
-            <DlgButton blue onClick={done}>
+            <DlgButton
+              blue
+              onClick={() => {
+                done();
+                // Paid in full: the check closes and the POS returns to the Dine-in screen.
+                if (balanceOf() <= 0) actions.leaveTender();
+              }}
+            >
               OK
             </DlgButton>
           </div>
