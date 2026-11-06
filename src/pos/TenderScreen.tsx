@@ -110,7 +110,7 @@ function gratuityFlow(check: Check, subtotal: number) {
   });
 }
 
-function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
+export function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
   const t = checkTotals(check, taxRate);
   const row = (a: ReactNode, b: ReactNode, bold = false) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: bold ? 'bold' : 'normal' }}>

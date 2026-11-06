@@ -3,8 +3,9 @@ import { sections } from '../lib/menu';
 import { checkTotals, fmt } from '../lib/money';
 import { actions, usePos } from '../lib/store';
 import type { Check, TableDef } from '../lib/types';
-import { BluuLogo, HeaderClock, dialogs, formatClock, useNow } from './common';
-import { IconForkSpoon, IconMinusBadge, IconPerson, IconPrinter, IconReceiptDollar } from './icons';
+import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatClock, useNow } from './common';
+import { IconCheckBadge, IconForkSpoon, IconMinusBadge, IconPerson, IconPrinter, IconReceiptDollar } from './icons';
+import { Receipt } from './TenderScreen';
 
 function elapsed(ms: number) {
   const m = Math.max(0, Math.floor(ms / 60000));
@@ -62,10 +63,30 @@ export function FloorScreen() {
   const settings = usePos((s) => s.settings);
   const nowMs = useNow(15000);
   const [tenderMode, setTenderMode] = useState(false);
+  // Printer icon: tap to arm (red badge -> green check), then tap a table to print its check.
+  const [printMode, setPrintMode] = useState(false);
   const sec = sections.find((s) => s.id === section) ?? sections[0];
 
   const onTable = (t: TableDef) => {
     const checkId = tableChecks[t.id];
+    if (printMode) {
+      setPrintMode(false);
+      if (!checkId) return dialogs.message(`Table ${t.label} has no open check to print.`, 'Print');
+      actions.print(checkId);
+      const check = checks[checkId];
+      return dialogs.custom((close) => (
+        <Modal w={400} title={`Print Check - ${t.label} (simulated)`}>
+          <div style={{ padding: 12 }}>
+            <Receipt check={check} taxRate={settings.taxRate} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 12px 12px' }}>
+            <DlgButton blue onClick={close}>
+              OK
+            </DlgButton>
+          </div>
+        </Modal>
+      ));
+    }
     if (tenderMode) {
       setTenderMode(false);
       if (!checkId) return dialogs.message(`Table ${t.label} has no open check.`, 'Tender');
@@ -114,10 +135,21 @@ export function FloorScreen() {
           {settings.serverName}
         </div>
         <div className="pos-header-sep" style={{ left: 429 }} />
-        <div className="pos-abs" style={{ left: 436, top: 18 }} title="Printer">
+        <div
+          role="button"
+          data-testid="floor-printer"
+          data-armed={printMode}
+          className="pos-abs"
+          style={{ left: 436, top: 18, cursor: 'pointer' }}
+          title="Print check"
+          onClick={() => {
+            setTenderMode(false);
+            setPrintMode((m) => !m);
+          }}
+        >
           <IconPrinter size={28} />
           <div className="pos-abs" style={{ left: 18, top: -4 }}>
-            <IconMinusBadge size={12} />
+            {printMode ? <IconCheckBadge size={12} /> : <IconMinusBadge size={12} />}
           </div>
         </div>
         <div className="pos-abs" style={{ left: 478, top: 21, border: '2px solid #333', borderRadius: 4, padding: '1px 4px', fontSize: 12, fontWeight: 'bold', color: '#3c6fb8' }}>
@@ -162,6 +194,11 @@ export function FloorScreen() {
           Send a photo of the PATIO tab to add these tables.
         </div>
       )}
+      {printMode && (
+        <div className="pos-abs" style={{ left: 32, top: 132, fontSize: 14, color: '#2a8a3a', fontWeight: 'bold' }}>
+          Select a table to print its check.
+        </div>
+      )}
       {tenderMode && (
         <div className="pos-abs" style={{ left: 32, top: 132, fontSize: 14, color: '#1c5bb8', fontWeight: 'bold' }}>
           Select a table to tender.
@@ -171,7 +208,10 @@ export function FloorScreen() {
       {rightBtn('Information', 80, () => dialogs.notInSimulator('Information'), { blue: true })}
       {rightBtn('Move/Join', 148, () => dialogs.notInSimulator('Move/Join'))}
       {rightBtn('Link Table', 213, () => dialogs.notInSimulator('Link Table'))}
-      {rightBtn('Tender', 278, () => setTenderMode((m) => !m), { active: tenderMode })}
+      {rightBtn('Tender', 278, () => {
+        setPrintMode(false);
+        setTenderMode((m) => !m);
+      }, { active: tenderMode })}
       {rightBtn('Quick Serve', 343, () => dialogs.notInSimulator('Quick Serve'))}
       {rightBtn('Cash Drawer', 408, () => dialogs.notInSimulator('Cash Drawer'))}
       {rightBtn('Refund', 473, () => dialogs.notInSimulator('Refund'))}

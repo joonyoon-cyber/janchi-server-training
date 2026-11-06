@@ -23,6 +23,7 @@ corrected.
 | 11 | Floor-plan **amount** on a table tile. | **Assumption:** shown as the check balance including tax (the same number as Amount Due on the order screen). Not confirmed whether the real tile includes tax. |
 | 12 | Gratuity base. | **Assumption:** the 15/18/20% shortcuts are calculated on the pre-tax subtotal. |
 | 13 | Check number format (`10-096`, `10-070`). | **Assumption:** month + sequence, e.g. `10-101`. |
+| 14 | **Printing a check from Dine-in** (confirmed by the restaurant: tap the printer icon, badge turns from red to a green check, tap a table, its check prints). | Implemented. **Assumption:** print mode switches off after one check is printed, and tapping the icon again cancels it. The "Select a table to print its check" hint line is a simulator aid. |
 
 ## Buttons shown but disabled
 

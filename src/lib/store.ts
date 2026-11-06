@@ -324,8 +324,9 @@ export const actions = {
     return payment;
   },
 
-  print() {
-    const c = activeCheck();
+  /** Print a check: the active one (tender screen) or a given one (Dine-in printer mode). */
+  print(checkId?: string) {
+    const c = checkId ? state.checks[checkId] : activeCheck();
     if (c) emit({ type: 'print', checkId: c.id });
   },
 
