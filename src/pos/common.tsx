@@ -88,7 +88,8 @@ type Dialog =
       title: string;
       subtitle?: ReactNode;
       initial?: string;
-      decimal?: boolean;
+      /** Dollar amount entered in cents (2, 0, 00 -> 20.00), as on BLUU money pads. */
+      money?: boolean;
       quick?: { label: string; value: string }[];
       onEnter: (value: string) => void;
     }
@@ -154,15 +155,18 @@ function DlgButton({ children, onClick, blue, style }: { children: ReactNode; on
 }
 
 function KeypadDialog({ d }: { d: Extract<Dialog, { kind: 'keypad' }> }) {
-  const [v, setV] = useState(d.initial ?? '');
+  // Money pads enter cents like the real BLUU pads: 2, 0, 00 -> 20.00.
+  // `initial` and quick values are given in dollars and kept as cents digits here.
+  const toDigits = (dollars: string) => (dollars ? String(Math.round(parseFloat(dollars) * 100)) : '');
+  const [v, setV] = useState(d.money ? toDigits(d.initial ?? '') : d.initial ?? '');
   const press = (k: string) => {
-    if (k === 'C') return setV('');
+    if (k === 'C' || k === 'Clear') return setV('');
     if (k === '←') return setV((x) => x.slice(0, -1));
-    if (k === '.' && (!d.decimal || v.includes('.'))) return;
-    if (v.includes('.') && v.split('.')[1].length >= 2) return;
-    setV((x) => (x === '0' && k !== '.' ? k : x + k).slice(0, 9));
+    setV((x) => (x === '0' ? k : x + k).replace(/^0+(?=\d)/, '').slice(0, d.money ? 8 : 9));
   };
-  const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', d.decimal ? '.' : 'C', '0', '←'];
+  const keys = d.money ? ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', 'Clear', '00'] : ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'C', '0', '←'];
+  const shown = d.money ? (parseInt(v || '0', 10) / 100).toFixed(2) : v || '0';
+  const result = d.money ? (parseInt(v || '0', 10) / 100).toFixed(2) : v || '0';
   return (
     <Modal w={340} title={d.title}>
       <div style={{ padding: 12 }}>
@@ -171,12 +175,20 @@ function KeypadDialog({ d }: { d: Extract<Dialog, { kind: 'keypad' }> }) {
           data-testid="keypad-display"
           style={{ background: '#fff', border: '1px solid #9aa3b2', height: 40, fontSize: 24, textAlign: 'right', padding: '4px 10px', marginBottom: 8, fontWeight: 'bold' }}
         >
-          {v || '0'}
+          {shown}
+          {d.money && (
+            <button aria-label="Backspace" style={{ marginLeft: 10, border: 'none', background: 'transparent', cursor: 'pointer', verticalAlign: 'middle' }} onClick={() => press('←')}>
+              <svg width="30" height="20" viewBox="0 0 40 26">
+                <path d="M12 2h24a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H12L2 13z" fill="#c6cdd6" />
+                <path d="M19 8l10 10M29 8 19 18" stroke="#fff" strokeWidth="3" />
+              </svg>
+            </button>
+          )}
         </div>
         {d.quick && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
             {d.quick.map((q) => (
-              <button key={q.label} className="pos-btn" style={{ position: 'relative', height: 32, flex: '1 0 22%', fontSize: 12 }} onClick={() => setV(q.value)}>
+              <button key={q.label} className="pos-btn" style={{ position: 'relative', height: 32, flex: '1 0 22%', fontSize: 12 }} onClick={() => setV(d.money ? toDigits(q.value) : q.value)}>
                 {q.label}
               </button>
             ))}
@@ -184,7 +196,7 @@ function KeypadDialog({ d }: { d: Extract<Dialog, { kind: 'keypad' }> }) {
         )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
           {keys.map((k) => (
-            <button key={k} className="pos-btn" style={{ position: 'relative', height: 48, fontSize: 20, fontWeight: 'bold' }} onClick={() => press(k)}>
+            <button key={k} data-testid={`keypad-${k}`} className="pos-btn" style={{ position: 'relative', height: 48, fontSize: k === 'Clear' ? 16 : 20, fontWeight: 'bold' }} onClick={() => press(k)}>
               {k}
             </button>
           ))}
@@ -198,7 +210,7 @@ function KeypadDialog({ d }: { d: Extract<Dialog, { kind: 'keypad' }> }) {
             style={{ flex: 1 }}
             onClick={() => {
               setDialog(null);
-              d.onEnter(v || '0');
+              d.onEnter(result);
             }}
           >
             Enter

@@ -29,7 +29,7 @@ export function cashFlow() {
         Balance: <b>{fmt(bal)}</b> &mdash; enter cash received
       </>
     ),
-    decimal: true,
+    money: true,
     quick,
     onEnter: (v) => {
       const tendered = parseFloat(v);
@@ -156,7 +156,7 @@ function gratuityFlow(check: Check, subtotal: number) {
   dialogs.keypad({
     title: 'Gratuity',
     subtitle: <>Subtotal {fmt(subtotal)} &mdash; enter gratuity amount</>,
-    decimal: true,
+    money: true,
     initial: check.gratuity ? fmt(check.gratuity) : '',
     quick: [
       { label: '15%', value: pct(15) },
