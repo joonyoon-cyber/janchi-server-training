@@ -152,7 +152,7 @@ export function MainScreen() {
       <Tile x={765} y={386} icon={<IconCard size={ic} />} label="Tender" onClick={() => requireLogin(() => actions.goto('tenderList'))} />
       <Tile x={454} y={512} icon={<IconCashierIn size={ic} />} label="Cashier In" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier In'))} />
       <Tile x={610} y={512} icon={<IconCashierOut size={ic} />} label="Cashier Out" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier Out'))} />
-      <Tile x={765} y={512} icon={<IconTip size={ic} />} label="Tip Adjustments" onClick={() => requireLogin(() => dialogs.notInSimulator('Tip Adjustments'))} />
+      <Tile x={765} y={512} icon={<IconTip size={ic} />} label="Tip Adjustments" onClick={() => requireLogin(() => actions.goto('tipAdjust'))} />
       <Tile x={454} y={638} icon={<IconGift size={ic} />} label="Gift Card" onClick={() => requireLogin(() => dialogs.notInSimulator('Gift Card'))} />
       <Tile x={610} y={638} icon={<IconDrawer size={ic} />} label="Cash Drawer" onClick={() => requireLogin(() => dialogs.notInSimulator('Cash Drawer'))} />
     </div>

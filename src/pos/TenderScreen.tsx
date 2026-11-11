@@ -65,8 +65,8 @@ function CardSlip({ check, payment, copy }: { check: Check; payment: Payment; co
       {row('Server', check.server)}
       <hr />
       {row('CREDIT SALE', '')}
-      {row('Card', 'CONTACTLESS')}
-      {row('Auth', 'APPROVED')}
+      {row('Card', `CONTACTLESS ...${payment.cardLast4 ?? ''}`)}
+      {row('Approval', payment.approvalNo ?? 'APPROVED')}
       <hr />
       {row('AMOUNT', fmt(payment.amount), true)}
       <br />

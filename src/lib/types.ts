@@ -96,6 +96,13 @@ export interface Payment {
   tendered?: number;
   change?: number;
   at: number;
+  /** Credit only: simulated processor references shown on Tip Adjustments. */
+  approvalNo?: string;
+  troutD?: string;
+  /** Simulated last 4 digits (no real card data is ever collected). */
+  cardLast4?: string;
+  /** Tip written on the signed merchant copy, entered later via Tip Adjustments. */
+  tip?: number;
 }
 
 export type OrderType = 'dine-in' | 'takeout';
@@ -118,7 +125,7 @@ export interface Check {
   closedAt?: number;
 }
 
-export type Screen = 'main' | 'floor' | 'order' | 'tender' | 'tenderList';
+export type Screen = 'main' | 'floor' | 'order' | 'tender' | 'tenderList' | 'tipAdjust';
 
 export type PosEvent =
   | { type: 'seat'; tableId: string; guests: number; checkId: string }
@@ -137,6 +144,7 @@ export type PosEvent =
   | { type: 'payment'; checkId: string; tableId: string; method: PayMethod; amount: number; tendered?: number; change?: number }
   | { type: 'close-check'; checkId: string; tableId: string }
   | { type: 'leave-tender-unpaid'; checkId: string; tableId: string; balance: number }
-  | { type: 'print'; checkId: string };
+  | { type: 'print'; checkId: string }
+  | { type: 'tip-adjust'; checkId: string; tableId: string; paymentId: string; tip: number };
 
 export type LoggedEvent = PosEvent & { t: number };

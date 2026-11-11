@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { posItem, tableLabel } from './menu';
 import { checkTotals, fromCents, toCents } from './money';
-import type { Check, LoggedEvent, OrderLine, PayMethod, PosEvent, Screen } from './types';
+import type { Check, LoggedEvent, OrderLine, PayMethod, Payment, PosEvent, Screen } from './types';
 
 export interface Settings {
   /** Sales tax percent. 7.25 matches the receipts in the reference photos. */
@@ -171,7 +171,7 @@ export const actions = {
   },
 
   goto(screen: Screen) {
-    set({ ...state, screen, activeCheckId: screen === 'main' || screen === 'floor' || screen === 'tenderList' ? null : state.activeCheckId });
+    set({ ...state, screen, activeCheckId: screen === 'main' || screen === 'floor' || screen === 'tenderList' || screen === 'tipAdjust' ? null : state.activeCheckId });
   },
 
   setSection(section: string) {
@@ -364,10 +364,25 @@ export const actions = {
     const applied = fromCents(Math.min(toCents(amount), toCents(balance)));
     if (applied <= 0) return null;
     const change = method === 'cash' && tendered !== undefined ? fromCents(toCents(tendered) - toCents(applied)) : undefined;
-    const payment = { id: uid('p'), method, amount: applied, tendered, change, at: now() };
+    const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
+    const payment: Payment = { id: uid('p'), method, amount: applied, tendered, change, at: now() };
+    if (method === 'credit') {
+      payment.approvalNo = digits(5) + 'ABCDEF'[Math.floor(Math.random() * 6)];
+      payment.troutD = digits(7);
+      payment.cardLast4 = digits(4);
+    }
     set(updateCheck(c.id, (ch) => ({ ...ch, payments: [...ch.payments, payment] })));
     emit({ type: 'payment', checkId: c.id, tableId: c.tableId, method, amount: applied, tendered, change });
     return payment;
+  },
+
+  /** Tip Adjustments > Credit Gratuity: record the tip the guest wrote on the signed slip. */
+  adjustTip(checkId: string, paymentId: string, tip: number) {
+    const c = state.checks[checkId];
+    if (!c) return;
+    const t = fromCents(Math.max(0, toCents(tip)));
+    set(updateCheck(checkId, (ch) => ({ ...ch, payments: ch.payments.map((p) => (p.id === paymentId ? { ...p, tip: t } : p)) })));
+    emit({ type: 'tip-adjust', checkId, tableId: c.tableId, paymentId, tip: t });
   },
 
   /** Print a check: the active one (tender screen) or a given one (Dine-in printer mode). */

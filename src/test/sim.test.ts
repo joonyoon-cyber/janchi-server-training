@@ -121,6 +121,23 @@ describe('login, quick serve and tender list', () => {
   });
 });
 
+describe('tip adjustments', () => {
+  it('credit payments get approval/TroutD refs and a tip can be added later', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('C1', 2);
+    actions.addItem('combo-s');
+    actions.submitOrder();
+    const id = getState().tableChecks.C1;
+    actions.openTender(id);
+    const p = actions.pay('credit', checkTotals(getState().checks[id], 7.25).balance)!;
+    expect(p.approvalNo).toMatch(/^\d{5}[A-F]$/);
+    expect(p.troutD).toMatch(/^\d{7}$/);
+    actions.leaveTender();
+    actions.adjustTip(id, p.id, 20);
+    expect(getState().checks[id].payments[0].tip).toBe(20);
+  });
+});
+
 describe('hand-written scenarios', () => {
   for (const sc of scenarios) {
     it(`perfect play scores 100: ${sc.id}`, () => {
