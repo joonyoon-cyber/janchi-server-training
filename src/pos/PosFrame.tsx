@@ -4,6 +4,7 @@ import { DialogHost } from './common';
 import { FloorScreen } from './FloorScreen';
 import { MainScreen } from './MainScreen';
 import { OrderScreen } from './OrderScreen';
+import { TenderListScreen } from './TenderListScreen';
 import { TenderScreen } from './TenderScreen';
 
 export type Zoom = 'fit' | 'actual';
@@ -41,6 +42,7 @@ export function PosFrame({ zoom }: { zoom: Zoom }) {
             {screen === 'floor' && <FloorScreen />}
             {screen === 'order' && <OrderScreen />}
             {screen === 'tender' && <TenderScreen />}
+            {screen === 'tenderList' && <TenderListScreen />}
             <DialogHost />
           </div>
         </div>

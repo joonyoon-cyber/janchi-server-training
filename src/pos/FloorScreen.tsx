@@ -42,7 +42,7 @@ function TableTile({ t, check, taxRate, nowMs, onClick }: { t: TableDef; check?:
             {elapsed(nowMs - check.openedAt)}
           </div>
           <div className="pos-abs" style={{ right: 4, top: 44, fontSize: 13, color: '#333', maxWidth: t.w - 8, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            {check.server}
+            {check.server.split(' ')[0].toUpperCase()}
           </div>
           <div className="pos-abs" style={{ left: 6, bottom: 4, fontSize: 16, color: '#3b3bd0' }}>
             {check.guests}
@@ -61,6 +61,7 @@ export function FloorScreen() {
   const checks = usePos((s) => s.checks);
   const tableChecks = usePos((s) => s.tableChecks);
   const settings = usePos((s) => s.settings);
+  const currentUser = usePos((s) => s.currentUser);
   const nowMs = useNow(15000);
   const [tenderMode, setTenderMode] = useState(false);
   // Printer icon: tap to arm (red badge -> green check), then tap a table to print its check.
@@ -132,7 +133,7 @@ export function FloorScreen() {
           <IconPerson size={30} />
         </div>
         <div className="pos-abs" style={{ left: 330, top: 24, fontSize: 13, width: 92, textAlign: 'center', overflow: 'hidden' }}>
-          {settings.serverName}
+          {currentUser ?? settings.serverName}
         </div>
         <div className="pos-header-sep" style={{ left: 429 }} />
         <div

@@ -27,6 +27,7 @@ function writePref(key: string, v: string) {
 function SettingsDialog({ onClose }: { onClose: () => void }) {
   const settings = usePos((s) => s.settings);
   const [name, setName] = useState(settings.serverName);
+  const [loginId, setLoginId] = useState(settings.loginId);
   const [tax, setTax] = useState(String(settings.taxRate));
   const [mgr, setMgr] = useState(settings.requireManagerForVoid);
   const [pin, setPin] = useState(settings.managerPin);
@@ -38,7 +39,8 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
           e.preventDefault();
           const rate = parseFloat(tax);
           actions.updateSettings({
-            serverName: name.trim().toUpperCase().slice(0, 12) || 'TRAINEE',
+            serverName: name.trim().replace(/\s+/g, ' ').slice(0, 24) || 'Trainee',
+            loginId: loginId || '1234',
             taxRate: Number.isFinite(rate) && rate >= 0 && rate < 20 ? rate : settings.taxRate,
             requireManagerForVoid: mgr,
             managerPin: pin || '1234',
@@ -48,8 +50,12 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
       >
         <h2 className="text-lg font-semibold">Simulator settings</h2>
         <label className="block text-sm">
-          Your name (shown as the server on the POS)
+          Your name (first and last; shown as the server on your checks)
           <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full rounded bg-white px-2 py-1.5 text-slate-900" />
+        </label>
+        <label className="block text-sm">
+          Your Log-in ID (typed on the POS Log-in keypad)
+          <input value={loginId} inputMode="numeric" onChange={(e) => setLoginId(e.target.value.replace(/\D/g, '').slice(0, 8))} className="mt-1 w-32 rounded bg-white px-2 py-1.5 text-slate-900" />
         </label>
         <label className="block text-sm">
           Sales tax rate (%)

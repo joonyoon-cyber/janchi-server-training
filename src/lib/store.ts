@@ -1,12 +1,15 @@
 import { useSyncExternalStore } from 'react';
-import { posItem } from './menu';
+import { posItem, tableLabel } from './menu';
 import { checkTotals, fromCents, toCents } from './money';
 import type { Check, LoggedEvent, OrderLine, PayMethod, PosEvent, Screen } from './types';
 
 export interface Settings {
   /** Sales tax percent. 7.25 matches the receipts in the reference photos. */
   taxRate: number;
+  /** Server name printed on checks (first word shows on floor-plan tiles). */
   serverName: string;
+  /** Employee ID typed on the Log-in keypad. */
+  loginId: string;
   /** Not verified on the real POS; off by default. */
   requireManagerForVoid: boolean;
   managerPin: string;
@@ -23,13 +26,16 @@ export interface PosState {
   settings: Settings;
   /** Milliseconds added to the wall clock (scenarios set a story time). */
   clockOffset: number;
+  /** Employee who last logged in on the Log-in keypad; owns new checks. */
+  currentUser: string | null;
 }
 
 const STORAGE_KEY = 'janchi-pos-sim:v1';
 
 export const defaultSettings: Settings = {
   taxRate: 7.25,
-  serverName: 'TRAINEE',
+  serverName: 'Trainee',
+  loginId: '1234',
   requireManagerForVoid: false,
   managerPin: '1234',
 };
@@ -41,9 +47,10 @@ export function initialState(settings: Settings = defaultSettings): PosState {
     activeCheckId: null,
     checks: {},
     tableChecks: {},
-    nextCheckSeq: 101,
+    nextCheckSeq: 1,
     settings,
     clockOffset: 0,
+    currentUser: null,
   };
 }
 
@@ -116,6 +123,33 @@ export function activeCheck(s: PosState = state): Check | null {
   return s.activeCheckId ? s.checks[s.activeCheckId] ?? null : null;
 }
 
+export const isTakeout = (c: Check) => c.orderType === 'takeout';
+
+/** "Take out" for Quick Serve orders, otherwise the table name. */
+export const checkPlace = (c: Check) => (isTakeout(c) ? 'Take out' : tableLabel(c.tableId));
+
+/** Where the order screen goes after Order / Close / a closed check. */
+const homeFor = (c: Check): Screen => (isTakeout(c) ? 'main' : 'floor');
+
+function newCheck(tableId: string, guests: number, orderType: Check['orderType']): Check {
+  return {
+    id: uid('c'),
+    orderType,
+    // Matches the reference photos: 10-021 ... 10-034 on the same day.
+    number: `10-${String(state.nextCheckSeq).padStart(3, '0')}`,
+    tableId,
+    server: state.currentUser ?? state.settings.serverName,
+    guests,
+    openedAt: now(),
+    lines: [],
+    voids: [],
+    rounds: 0,
+    payments: [],
+    gratuity: 0,
+    status: 'open',
+  };
+}
+
 // ---- Session-level actions -----------------------------------------------
 
 export const actions = {
@@ -137,7 +171,7 @@ export const actions = {
   },
 
   goto(screen: Screen) {
-    set({ ...state, screen, activeCheckId: screen === 'main' || screen === 'floor' ? null : state.activeCheckId });
+    set({ ...state, screen, activeCheckId: screen === 'main' || screen === 'floor' || screen === 'tenderList' ? null : state.activeCheckId });
   },
 
   setSection(section: string) {
@@ -146,32 +180,44 @@ export const actions = {
 
   // ---- Tables ------------------------------------------------------------
 
+  /** Log-in keypad accepted: this employee owns any check opened next. */
+  login(name: string) {
+    set({ ...state, currentUser: name });
+    emit({ type: 'login', name });
+  },
+
   seatTable(tableId: string, guests: number) {
-    const id = uid('c');
-    const month = new Date(now()).getMonth() + 1;
-    const check: Check = {
-      id,
-      number: `${month}-${String(state.nextCheckSeq).padStart(3, '0')}`,
-      tableId,
-      server: state.settings.serverName,
-      guests,
-      openedAt: now(),
-      lines: [],
-      voids: [],
-      rounds: 0,
-      payments: [],
-      gratuity: 0,
-      status: 'open',
-    };
+    const check = newCheck(tableId, guests, 'dine-in');
     set({
       ...state,
-      checks: { ...state.checks, [id]: check },
-      tableChecks: { ...state.tableChecks, [tableId]: id },
+      checks: { ...state.checks, [check.id]: check },
+      tableChecks: { ...state.tableChecks, [tableId]: check.id },
       nextCheckSeq: state.nextCheckSeq + 1,
-      activeCheckId: id,
+      activeCheckId: check.id,
       screen: 'order',
     });
-    emit({ type: 'seat', tableId, guests, checkId: id });
+    emit({ type: 'seat', tableId, guests, checkId: check.id });
+  },
+
+  /** Quick Serve: a takeout order with no table. Paid later through Tender on the main screen. */
+  quickServe() {
+    const check = newCheck(`TO-${state.nextCheckSeq}`, 1, 'takeout');
+    set({
+      ...state,
+      checks: { ...state.checks, [check.id]: check },
+      nextCheckSeq: state.nextCheckSeq + 1,
+      activeCheckId: check.id,
+      screen: 'order',
+    });
+    emit({ type: 'quick-serve', tableId: check.tableId, checkId: check.id });
+  },
+
+  /** Open any open check on the order screen (Edit on the Tender list, Recall). */
+  openCheck(checkId: string) {
+    const c = state.checks[checkId];
+    if (!c) return;
+    if (!isTakeout(c)) return actions.openTable(c.tableId);
+    set({ ...state, activeCheckId: checkId, screen: 'order' });
   },
 
   openTable(tableId: string) {
@@ -255,7 +301,7 @@ export const actions = {
         items: fresh.map((l) => ({ posId: l.posId, qty: l.qty })),
       });
     }
-    set({ ...state, screen: 'floor', activeCheckId: null });
+    set({ ...state, screen: homeFor(c), activeCheckId: null });
   },
 
   /** "Close" on the order screen: unsent items are discarded. */
@@ -271,10 +317,10 @@ export const actions = {
       // Nothing was ever ordered: release the table.
       const { [c.tableId]: _released, ...tableChecks } = state.tableChecks;
       const { [c.id]: _dropped, ...checks } = state.checks;
-      set({ ...state, checks, tableChecks, screen: 'floor', activeCheckId: null });
+      set({ ...state, checks, tableChecks, screen: homeFor(c), activeCheckId: null });
       return;
     }
-    set({ ...updateCheck(c.id, (ch) => ({ ...ch, lines: kept })), screen: 'floor', activeCheckId: null });
+    set({ ...updateCheck(c.id, (ch) => ({ ...ch, lines: kept })), screen: homeFor(c), activeCheckId: null });
   },
 
   voidSent(lineId: string, qty: number) {
@@ -343,7 +389,7 @@ export const actions = {
       set({
         ...updateCheck(c.id, (ch) => ({ ...ch, status: 'closed', closedAt: now() })),
         tableChecks,
-        screen: 'floor',
+        screen: homeFor(c),
         activeCheckId: null,
       });
       emit({ type: 'close-check', checkId: c.id, tableId: c.tableId });

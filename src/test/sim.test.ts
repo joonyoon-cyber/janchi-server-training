@@ -85,6 +85,42 @@ describe('store', () => {
   });
 });
 
+describe('login, quick serve and tender list', () => {
+  it('logged-in employee owns new checks; numbers look like 10-001', () => {
+    actions.reset({ persist: false });
+    actions.login('Joon Young');
+    actions.seatTable('C3', 2);
+    const c = getState().checks[getState().tableChecks.C3];
+    expect(c.server).toBe('Joon Young');
+    expect(c.number).toBe('10-001');
+  });
+  it('quick serve makes a takeout check with no table, paid later from Tender', () => {
+    actions.reset({ persist: false });
+    actions.login('Joon Young');
+    actions.quickServe();
+    const id = getState().activeCheckId!;
+    expect(getState().checks[id].orderType).toBe('takeout');
+    actions.addItem('kfc');
+    actions.submitOrder();
+    expect(getState().screen).toBe('main'); // takeout goes back to the main screen
+    expect(Object.keys(getState().tableChecks)).toHaveLength(0);
+    actions.goto('tenderList');
+    actions.openTender(id);
+    actions.pay('credit', checkTotals(getState().checks[id], 7.25).balance);
+    expect(actions.leaveTender()).toBe('closed');
+    expect(getState().screen).toBe('main');
+    expect(getState().checks[id].status).toBe('closed');
+  });
+  it('an empty takeout order is discarded on Close', () => {
+    actions.reset({ persist: false });
+    actions.quickServe();
+    const id = getState().activeCheckId!;
+    actions.leaveOrderScreen();
+    expect(getState().checks[id]).toBeUndefined();
+    expect(getState().screen).toBe('main');
+  });
+});
+
 describe('hand-written scenarios', () => {
   for (const sc of scenarios) {
     it(`perfect play scores 100: ${sc.id}`, () => {

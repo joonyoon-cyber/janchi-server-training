@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { GRID_COLUMNS, GRID_ROWS, categories, itemsInCategory, posItem, tableLabel } from '../lib/menu';
+import { GRID_COLUMNS, GRID_ROWS, categories, itemsInCategory, posItem } from '../lib/menu';
 import { checkTotals, fmt } from '../lib/money';
-import { actions, getState, usePos } from '../lib/store';
+import { actions, checkPlace, getState, isTakeout, usePos } from '../lib/store';
 import type { OrderLine } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './common';
-import { IconCancelAll, IconForkSpoon, IconGuests, IconModifierBadge, IconPerson, IconVoidLine } from './icons';
+import { IconCancelAll, IconBag, IconForkSpoon, IconGuests, IconModifierBadge, IconPerson, IconVoidLine } from './icons';
 import { modifierOptions } from './modifiers';
 
 const GRID_X = 185;
@@ -97,6 +97,7 @@ export function OrderScreen() {
 
   if (!check) return null;
   const totals = checkTotals(check, settings.taxRate, true);
+  const takeout = isTakeout(check);
   const inOrder = new Set(lines.map((l) => l.posId));
   const hasNew = lines.some((l) => l.status === 'new');
 
@@ -141,11 +142,11 @@ export function OrderScreen() {
         <div className="pos-abs" style={{ left: 16, top: 15 }}>
           <BluuLogo height={34} />
         </div>
-        <div className="pos-abs" style={{ left: 152, top: 17 }}>
-          <IconForkSpoon size={28} color="#3c6fb8" />
+        <div className="pos-abs" style={{ left: takeout ? 148 : 152, top: 17 }}>
+          {takeout ? <IconBag size={26} color="#3c6fb8" /> : <IconForkSpoon size={28} color="#3c6fb8" />}
         </div>
-        <div className="pos-abs" data-testid="order-table" style={{ left: 186, top: 22, fontSize: 16, color: '#3c6fb8', fontWeight: 'bold' }}>
-          {tableLabel(check.tableId)}
+        <div className="pos-abs" data-testid="order-table" style={{ left: takeout ? 180 : 186, top: 22, fontSize: 16, color: '#3c6fb8', fontWeight: 'bold' }}>
+          {checkPlace(check)}
         </div>
         <div className="pos-header-sep" style={{ left: 270 }} />
         <div className="pos-abs" style={{ left: 284, top: 16 }}>
@@ -162,6 +163,12 @@ export function OrderScreen() {
           {check.guests}
         </div>
         <div className="pos-header-sep" style={{ left: 516 }} />
+        {takeout && (
+          <div className="pos-abs" style={{ left: 516, top: 8, width: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', fontSize: 9, color: '#333' }}>
+            <IconBag size={24} />
+            Takeout
+          </div>
+        )}
         <div className="pos-header-sep" style={{ left: 617 }} />
         <div className="pos-header-sep" style={{ left: 720 }} />
         <ModText style={{ right: 8, top: 10 }} />
@@ -298,14 +305,29 @@ export function OrderScreen() {
       {btn('︿', 966, 408, 50, 70, () => scroll(listRef.current, -90))}
       {btn('﹀', 966, 482, 50, 70, () => scroll(listRef.current, 90))}
 
-      {btn('Assign Seat', 726, 580, 84, 46, () => dialogs.notInSimulator('Assign Seat'))}
-      {btn('−', 820, 580, 50, 46, () => dialogs.notInSimulator('Seat −'), 'pos-btn-dark')}
-      {btn('+', 877, 580, 50, 46, () => dialogs.notInSimulator('Seat +'), 'pos-btn-dark')}
-      <div role="button" className="pos-abs" style={{ left: 935, top: 584, width: 82, textAlign: 'center', fontSize: 12.5, cursor: 'pointer' }} onClick={() => dialogs.notInSimulator('Select Cust.')}>
-        Select
-        <br />
-        Cust.
-      </div>
+      {takeout ? (
+        <>
+          {/* Takeout: customer box replaces the Assign Seat row */}
+          <div className="pos-abs" style={{ left: 718, top: 556, width: 210, height: 82, fontSize: 10.5, color: '#556', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', borderTop: '1px solid #c3c8d2' }}>
+            <span style={{ padding: 4, borderRight: '1px solid #c3c8d2', borderBottom: '1px solid #c3c8d2' }}>Customer</span>
+            <span style={{ padding: 4, borderBottom: '1px solid #c3c8d2' }}>Point</span>
+            <span style={{ padding: 4, borderRight: '1px solid #c3c8d2' }}>Date Visited</span>
+            <span style={{ padding: 4 }}>Count Visited</span>
+          </div>
+          {btn('Search Cust.', 934, 566, 60, 40, () => dialogs.notInSimulator('Search Cust.'))}
+        </>
+      ) : (
+        <>
+          {btn('Assign Seat', 726, 580, 84, 46, () => dialogs.notInSimulator('Assign Seat'))}
+          {btn('−', 820, 580, 50, 46, () => dialogs.notInSimulator('Seat −'), 'pos-btn-dark')}
+          {btn('+', 877, 580, 50, 46, () => dialogs.notInSimulator('Seat +'), 'pos-btn-dark')}
+          <div role="button" className="pos-abs" style={{ left: 935, top: 584, width: 82, textAlign: 'center', fontSize: 12.5, cursor: 'pointer' }} onClick={() => dialogs.notInSimulator('Select Cust.')}>
+            Select
+            <br />
+            Cust.
+          </div>
+        </>
+      )}
 
       {/* Bottom action bar */}
       <button data-testid="order-Close" className="pos-btn pos-btn-blue" style={{ left: 22, top: 662, width: 102, height: 100, fontSize: 14 }} onClick={() => {

@@ -235,3 +235,32 @@ export const IconModifierBadge = () => (
     <rect x="13" y="11" width="5" height="4" fill="#5aa0e6" />
   </svg>
 );
+
+export const IconChecklist = (p: P) => (
+  <Svg {...p}>
+    <rect x="5" y="4" width="22" height="24" rx="2" />
+    <path d="M9 11l2 2 4-4M9 20l2 2 4-4M18 12h5M18 21h5" />
+  </Svg>
+);
+
+export const IconCar = (p: P) => (
+  <Svg {...p}>
+    <path d="M5 21v-5l3-7h16l3 7v5zM5 16h22" />
+    <path d="M7 21v4h4v-4M21 21v4h4v-4" />
+  </Svg>
+);
+
+export const IconTruck = (p: P) => (
+  <Svg {...p}>
+    <path d="M3 7h16v15H3zM19 12h6l4 5v5H19" />
+    <circle cx="9" cy="24" r="2.5" />
+    <circle cx="24" cy="24" r="2.5" />
+  </Svg>
+);
+
+export const IconBag = (p: P) => (
+  <Svg {...p}>
+    <path d="M7 10h18l-1 18H8z" />
+    <path d="M12 13V8a4 4 0 0 1 8 0v5" />
+  </Svg>
+);

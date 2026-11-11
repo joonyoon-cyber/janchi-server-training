@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { tableLabel } from '../lib/menu';
 import { checkTotals, fmt } from '../lib/money';
-import { actions, getState, usePos } from '../lib/store';
+import { actions, checkPlace, getState } from '../lib/store';
 import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './common';
+import { requireLogin } from './LoginPad';
 import {
   IconCashierIn,
   IconCashierOut,
@@ -24,7 +24,7 @@ import {
   IconCard,
 } from './icons';
 
-/** Lists open checks; used by Recall and Tender on the main screen. */
+/** Lists open checks; used by Recall on the main screen. */
 export function openCheckPicker(title: string, onPick: (checkId: string) => void) {
   dialogs.custom((close) => {
     const s = getState();
@@ -43,7 +43,7 @@ export function openCheckPicker(title: string, onPick: (checkId: string) => void
                 onPick(c.id);
               }}
             >
-              <b>{tableLabel(c.tableId)}</b>
+              <b>{checkPlace(c)}</b>
               <span>Check {c.number}</span>
               <span>{c.server}</span>
               <span style={{ color: '#d0303a', fontWeight: 'bold' }}>{fmt(checkTotals(c, s.settings.taxRate).balance)}</span>
@@ -74,7 +74,6 @@ function Tile({ x, y, icon, label, onClick }: { x: number; y: number; icon: Reac
 }
 
 export function MainScreen() {
-  const settings = usePos((s) => s.settings);
   const side = (y: number, icon: ReactNode, label: string, selected: boolean, onClick: () => void) => (
     <div
       role="button"
@@ -124,7 +123,7 @@ export function MainScreen() {
         <IconPerson size={22} />
       </div>
       <div className="pos-abs" style={{ left: 330, top: 80, fontSize: 13 }}>
-        POS 13[14] &nbsp; <span style={{ color: '#555' }}>{settings.serverName}</span>
+        POS 13[14]
       </div>
       {[
         [750, <IconHeadset size={24} />, 'Support'],
@@ -147,15 +146,15 @@ export function MainScreen() {
       <div className="pos-abs" style={{ left: 223, top: 146, fontSize: 22, fontWeight: 'bold', fontStyle: 'italic', color: '#222' }}>
         JANCHI KOREAN BBQ&nbsp;&nbsp;BAR
       </div>
-      <Tile x={454} y={260} icon={<IconForkSpoon size={ic} />} label="Dine-in" onClick={() => actions.goto('floor')} />
-      <Tile x={765} y={260} icon={<IconQuickServe size={ic} />} label="Quick Serve" onClick={() => dialogs.notInSimulator('Quick Serve')} />
-      <Tile x={454} y={386} icon={<IconRecall size={ic} />} label="Recall" onClick={() => openCheckPicker('Recall', (id) => actions.openTable(getState().checks[id].tableId))} />
-      <Tile x={765} y={386} icon={<IconCard size={ic} />} label="Tender" onClick={() => openCheckPicker('Tender', (id) => actions.openTender(id))} />
-      <Tile x={454} y={512} icon={<IconCashierIn size={ic} />} label="Cashier In" onClick={() => dialogs.notInSimulator('Cashier In')} />
-      <Tile x={610} y={512} icon={<IconCashierOut size={ic} />} label="Cashier Out" onClick={() => dialogs.notInSimulator('Cashier Out')} />
-      <Tile x={765} y={512} icon={<IconTip size={ic} />} label="Tip Adjustments" onClick={() => dialogs.notInSimulator('Tip Adjustments')} />
-      <Tile x={454} y={638} icon={<IconGift size={ic} />} label="Gift Card" onClick={() => dialogs.notInSimulator('Gift Card')} />
-      <Tile x={610} y={638} icon={<IconDrawer size={ic} />} label="Cash Drawer" onClick={() => dialogs.notInSimulator('Cash Drawer')} />
+      <Tile x={454} y={260} icon={<IconForkSpoon size={ic} />} label="Dine-in" onClick={() => requireLogin(() => actions.goto('floor'))} />
+      <Tile x={765} y={260} icon={<IconQuickServe size={ic} />} label="Quick Serve" onClick={() => requireLogin(() => actions.quickServe())} />
+      <Tile x={454} y={386} icon={<IconRecall size={ic} />} label="Recall" onClick={() => requireLogin(() => openCheckPicker('Recall', (id) => actions.openCheck(id)))} />
+      <Tile x={765} y={386} icon={<IconCard size={ic} />} label="Tender" onClick={() => requireLogin(() => actions.goto('tenderList'))} />
+      <Tile x={454} y={512} icon={<IconCashierIn size={ic} />} label="Cashier In" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier In'))} />
+      <Tile x={610} y={512} icon={<IconCashierOut size={ic} />} label="Cashier Out" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier Out'))} />
+      <Tile x={765} y={512} icon={<IconTip size={ic} />} label="Tip Adjustments" onClick={() => requireLogin(() => dialogs.notInSimulator('Tip Adjustments'))} />
+      <Tile x={454} y={638} icon={<IconGift size={ic} />} label="Gift Card" onClick={() => requireLogin(() => dialogs.notInSimulator('Gift Card'))} />
+      <Tile x={610} y={638} icon={<IconDrawer size={ic} />} label="Cash Drawer" onClick={() => requireLogin(() => dialogs.notInSimulator('Cash Drawer'))} />
     </div>
   );
 }

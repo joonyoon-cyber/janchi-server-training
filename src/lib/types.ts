@@ -98,8 +98,12 @@ export interface Payment {
   at: number;
 }
 
+export type OrderType = 'dine-in' | 'takeout';
+
 export interface Check {
   id: string;
+  /** Missing on checks saved before takeout existed: treat as dine-in. */
+  orderType?: OrderType;
   number: string;
   tableId: string;
   server: string;
@@ -114,10 +118,12 @@ export interface Check {
   closedAt?: number;
 }
 
-export type Screen = 'main' | 'floor' | 'order' | 'tender';
+export type Screen = 'main' | 'floor' | 'order' | 'tender' | 'tenderList';
 
 export type PosEvent =
   | { type: 'seat'; tableId: string; guests: number; checkId: string }
+  | { type: 'login'; name: string }
+  | { type: 'quick-serve'; tableId: string; checkId: string }
   | { type: 'open-table'; tableId: string; checkId: string }
   | { type: 'add-item'; checkId: string; posId: string; qty: number }
   | { type: 'remove-line'; checkId: string; posId: string; qty: number }

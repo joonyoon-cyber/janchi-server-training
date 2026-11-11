@@ -22,8 +22,11 @@ corrected.
 | 10 | Floor-plan tile icon seen on **W6** (person/card icon). | Not reproduced; meaning unknown. |
 | 11 | Floor-plan **amount** on a table tile. | **Assumption:** shown as the check balance including tax (the same number as Amount Due on the order screen). Not confirmed whether the real tile includes tax. |
 | 12 | Gratuity base. | **Assumption:** the 15/18/20% shortcuts are calculated on the pre-tax subtotal. |
-| 13 | Check number format (`10-096`, `10-070`). | **Assumption:** month + sequence, e.g. `10-101`. |
+| 13 | Check number format (`10-021` … `10-034` on one day in the Tender list photo). | **Assumption:** `10-` + a 3-digit sequence starting at `10-001` in each simulator session. What the `10` means (terminal? day?) and when the sequence resets is unknown. |
 | 14 | **Printing a check from Dine-in** (confirmed by the restaurant: tap the printer icon, badge turns from red to a green check, tap a table, its check prints). | Implemented. **Assumption:** print mode switches off after one check is printed, and tapping the icon again cancels it. The "Select a table to print its check" hint line is a simulator aid. |
+| 15 | **Log-in keypad** (confirmed: every main-screen button asks for the employee's Log-in ID first; the logged-in employee becomes the server on new tables and Quick Serve orders). | Implemented. The simulator has one employee: the trainee, whose name and Log-in ID (default `1234`) are set in Settings. A wrong ID shows "Invalid Log-in ID." The real error message and whether IDs are masked on screen are not known. |
+| 16 | **Tender list** (confirmed: main screen > Tender lists all open tables and takeout orders; selecting one shows its items on the right; Tender opens the same payment screen as Dine-in > Tender > table). | Implemented, sorted newest check first. **Assumptions:** takeout cards read `Take out(SERVER NAME)`; *Table Name* sorts by table; *Edit* opens the order screen; *My Order* shows only your checks. *Change Order Type*, *Server*, *Reprint Kitchen Memo*, *Check No Search* and *POS SEARCH* are disabled; *Eat in*, *Drive-Thru* and *Delivery* show no orders. |
+| 17 | **Quick Serve** (confirmed: opens the order screen as a takeout order; paid later through main screen > Tender). | Implemented with the "Take out" header, the Takeout icon and the customer box in place of Assign Seat. **Assumptions:** *Order* and *Close* return to the main screen; a takeout order with nothing ordered is discarded; a paid takeout check returns to the main screen. |
 
 ## Buttons shown but disabled
 

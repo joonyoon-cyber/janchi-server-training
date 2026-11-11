@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { posItem, tableLabel } from '../lib/menu';
+import { posItem } from '../lib/menu';
 import { checkTotals, fmt, fromCents, toCents } from '../lib/money';
-import { actions, getState, now, usePos } from '../lib/store';
+import { actions, checkPlace, getState, isTakeout, now, usePos } from '../lib/store';
 import type { Check, Payment } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatLongTime } from './common';
 import { IconCard, IconCash, IconCheckBadge, IconMinusBadge, IconPrinter, IconSearchPerson, IconTerminal } from './icons';
@@ -61,7 +61,7 @@ function CardSlip({ check, payment, copy }: { check: Check; payment: Payment; co
       <div style={{ textAlign: 'center', fontWeight: 'bold' }}>JANCHI KOREAN BBQ</div>
       <div style={{ textAlign: 'center' }}>** TRAINING **</div>
       <div style={{ textAlign: 'center', margin: '4px 0' }}>{formatLongTime(payment.at)}</div>
-      {row(`Table ${tableLabel(check.tableId)}`, `Chk ${check.number}`)}
+      {row(checkPlace(check), `Chk ${check.number}`)}
       {row('Server', check.server)}
       <hr />
       {row('CREDIT SALE', '')}
@@ -181,7 +181,7 @@ export function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
       <div style={{ textAlign: 'center', fontWeight: 'bold' }}>JANCHI KOREAN BBQ</div>
       <div style={{ textAlign: 'center' }}>165 N. Moorpark Rd. Thousand Oaks</div>
       <div style={{ textAlign: 'center', marginBottom: 6 }}>** TRAINING - NOT A RECEIPT **</div>
-      {row(`Table ${tableLabel(check.tableId)}`, `Check ${check.number}`)}
+      {row(isTakeout(check) ? 'Take out' : `Table ${checkPlace(check)}`, `Check ${check.number}`)}
       {row(`Server ${check.server}`, `Guests ${check.guests}`)}
       <hr />
       {check.lines.map((l) => row(`${l.qty} ${posItem(l.posId).label}${l.modifier ? ` (${l.modifier})` : ''}`, fmt(l.qty * l.unitPrice)))}
@@ -252,7 +252,7 @@ export function TenderScreen() {
           <BluuLogo height={34} />
         </div>
         <div className="pos-abs" data-testid="tender-table" style={{ left: 168, top: 22, fontSize: 17, color: '#3c6fb8', fontWeight: 'bold' }}>
-          {tableLabel(check.tableId)}
+          {checkPlace(check)}
         </div>
         <div className="pos-abs" style={{ left: 272, top: 22, fontSize: 17, color: '#3c6fb8', fontWeight: 'bold' }}>
           {check.number}
@@ -294,7 +294,7 @@ export function TenderScreen() {
 
       {/* Right summary panel */}
       <div className="pos-abs" style={{ left: 685, top: 78, width: 330, height: 62, background: 'linear-gradient(#4f84ea, #3a6fdc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 'bold', color: '#1b2540' }}>
-        {tableLabel(check.tableId)}
+        {checkPlace(check)}
       </div>
       <div className="pos-abs" style={{ left: 685, top: 148, width: 330, textAlign: 'center', fontSize: 12, color: '#2f5fb4', lineHeight: 1.6 }}>
         {formatLongTime(check.openedAt)} ~ {formatLongTime(now())}
@@ -339,7 +339,7 @@ export function TenderScreen() {
         style={{ left: 895, top: 568, width: 110, height: 56, fontSize: 13 }}
         onClick={() =>
           dialogs.custom((close) => (
-            <Modal w={420} title={`Order Sum - ${tableLabel(check.tableId)}`}>
+            <Modal w={420} title={`Order Sum - ${checkPlace(check)}`}>
               <div style={{ padding: 12 }}>
                 <Receipt check={check} taxRate={settings.taxRate} />
               </div>
