@@ -126,16 +126,7 @@ export default function App() {
       <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-800 bg-slate-900 px-3 py-1.5 text-slate-100">
         <div className="mr-auto leading-tight">
           <div className="text-sm font-semibold">Janchi POS Trainer</div>
-          <div className="text-[10px] text-amber-300">
-            Training simulator · not connected to the live POS ·{' '}
-            <a className="text-slate-400 underline" href="privacy.html" target="_blank" rel="noreferrer">
-              Privacy
-            </a>{' '}
-            ·{' '}
-            <a className="text-slate-400 underline" href="terms.html" target="_blank" rel="noreferrer">
-              Terms
-            </a>
-          </div>
+          <div className="text-[10px] text-amber-300">Training simulator · not connected to the live POS</div>
         </div>
         <div className="flex rounded-md bg-slate-800 p-0.5 text-xs font-semibold">
           {MODES.map((m) => (
@@ -206,6 +197,15 @@ export default function App() {
           )}
         </main>
       )}
+      <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-slate-800 bg-slate-900 px-3 py-1 text-xs text-slate-400">
+        <span>© 2026 Janchi Korean BBQ &amp; Bar · Server training simulator</span>
+        <a className="text-sky-300 underline" href="privacy.html" target="_blank" rel="noreferrer">
+          Privacy Policy
+        </a>
+        <a className="text-sky-300 underline" href="terms.html" target="_blank" rel="noreferrer">
+          Terms of Service
+        </a>
+      </footer>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
     </div>
   );
