@@ -1,3 +1,4 @@
+import { posItem } from './menu';
 import type { Check } from './types';
 
 /** All arithmetic is done in integer cents to avoid floating point drift. */
@@ -45,7 +46,8 @@ export function checkTotals(check: Check, taxRate: number, includeUnsent = false
   const lines = check.lines.filter((l) => includeUnsent || l.status === 'sent');
   const orderCents = lines.reduce((s, l) => s + toCents(l.unitPrice) * l.qty, 0);
   const subtotalCents = orderCents;
-  const tax = taxCents(subtotalCents, taxRate);
+  const taxable = lines.filter((l) => !posItem(l.posId).taxExempt).reduce((s, l) => s + toCents(l.unitPrice) * l.qty, 0);
+  const tax = taxCents(taxable, taxRate);
   const amountDue = subtotalCents + tax;
   // 128.40 subtotal for 6 guests -> 23.11 tip, as on the reference photo.
   const autoTip = check.orderType === 'takeout' ? 0 : autoTipCents(subtotalCents, check.guests);

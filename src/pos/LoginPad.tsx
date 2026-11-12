@@ -6,9 +6,11 @@ import { dialogs } from './common';
  * The BLUU number pad dialog: title bar, entry line with backspace, keys
  * 7-9 / 4-6 / 1-3 / 0 Clear 00, and tall Close / Ok buttons.
  */
-function BluuPad({ title, masked, prefix, close, onOk }: { title: string; masked?: boolean; prefix: string; close: () => void; onOk: (value: string) => void }) {
+function BluuPad({ title, masked, money, prefix, close, onOk }: { title: string; masked?: boolean; money?: boolean; prefix: string; close: () => void; onOk: (value: string) => void }) {
   const [v, setV] = useState('');
-  const press = (k: string) => setV((x) => (x + k).slice(0, 8));
+  const press = (k: string) => setV((x) => (x + k).replace(/^0+(?=\d)/, '').slice(0, 8));
+  // Money pads enter cents: 5, 00 -> 5.00 (Open Price on the gift certificate video).
+  const shown = money ? (v ? (parseInt(v, 10) / 100).toFixed(2) : '') : v;
   const key = (label: string, col: number, row: number, onClick: () => void) => (
     <button
       key={label}
@@ -28,7 +30,7 @@ function BluuPad({ title, masked, prefix, close, onOk }: { title: string; masked
           {title}
         </div>
         <div className="pos-abs" data-testid={`${prefix}-display`} style={{ left: 8, top: 56, width: 228, height: 44, fontSize: masked ? 24 : 30, letterSpacing: masked ? 6 : 0, padding: masked ? '8px 10px' : '2px 10px', textAlign: masked ? 'left' : 'right', fontWeight: masked ? 'normal' : 'bold', color: '#222' }}>
-          {masked ? '●'.repeat(v.length) : v}
+          {masked ? '●'.repeat(v.length) : shown}
         </div>
         <div className="pos-abs" style={{ left: 237, top: 58, width: 1, height: 40, background: '#333' }} />
         <button className="pos-abs" aria-label="Backspace" style={{ left: 254, top: 64, width: 46, height: 28, border: 'none', background: 'transparent', cursor: 'pointer' }} onClick={() => setV((x) => x.slice(0, -1))}>
@@ -51,7 +53,7 @@ function BluuPad({ title, masked, prefix, close, onOk }: { title: string; masked
           style={{ left: 245, top: 264, width: 75, height: 154, fontSize: 15 }}
           onClick={() => {
             close();
-            onOk(v);
+            onOk(money ? (parseInt(v || '0', 10) / 100).toFixed(2) : v);
           }}
         >
           Ok
@@ -61,8 +63,8 @@ function BluuPad({ title, masked, prefix, close, onOk }: { title: string; masked
   );
 }
 
-export function bluuPad(title: string, prefix: string, onOk: (value: string) => void, masked = false) {
-  dialogs.custom((close) => <BluuPad title={title} prefix={prefix} masked={masked} close={close} onOk={onOk} />);
+export function bluuPad(title: string, prefix: string, onOk: (value: string) => void, masked = false, money = false) {
+  dialogs.custom((close) => <BluuPad title={title} prefix={prefix} masked={masked} money={money} close={close} onOk={onOk} />);
 }
 
 /**

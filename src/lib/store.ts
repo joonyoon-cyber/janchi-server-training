@@ -243,19 +243,20 @@ export const actions = {
   // ---- Order entry -------------------------------------------------------
 
   /** Returns the id of the line that received the item. */
-  addItem(posId: string, qty = 1, modifier?: string): string | null {
+  addItem(posId: string, qty = 1, modifier?: string, price?: number): string | null {
     const c = activeCheck();
     if (!c) return null;
     const item = posItem(posId);
+    const unitPrice = price ?? item.price;
     const last = c.lines[c.lines.length - 1];
     let lineId: string;
     let lines: OrderLine[];
-    if (last && last.status === 'new' && last.posId === posId && last.modifier === modifier) {
+    if (last && last.status === 'new' && last.posId === posId && last.modifier === modifier && last.unitPrice === unitPrice) {
       lineId = last.id;
       lines = c.lines.map((l) => (l.id === last.id ? { ...l, qty: l.qty + qty } : l));
     } else {
       lineId = uid('l');
-      lines = [...c.lines, { id: lineId, posId, qty, unitPrice: item.price, status: 'new', round: 0, modifier }];
+      lines = [...c.lines, { id: lineId, posId, qty, unitPrice, status: 'new', round: 0, modifier }];
     }
     set(updateCheck(c.id, (ch) => ({ ...ch, lines })));
     emit({ type: 'add-item', checkId: c.id, posId, qty });

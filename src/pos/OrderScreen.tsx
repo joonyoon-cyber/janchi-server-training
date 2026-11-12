@@ -5,6 +5,7 @@ import { actions, checkPlace, getState, isTakeout, usePos } from '../lib/store';
 import type { OrderLine } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './common';
 import { IconCancelAll, IconBag, IconForkSpoon, IconGuests, IconModifierBadge, IconPerson, IconVoidLine } from './icons';
+import { bluuPad } from './LoginPad';
 import { modifierOptions } from './modifiers';
 
 const GRID_X = 185;
@@ -83,6 +84,14 @@ export function OrderScreen() {
   const settings = usePos((s) => s.settings);
   const check = checkId ? checks[checkId] : null;
   const [cat, setCat] = useState(categories[0].id);
+  const [catPage, setCatPage] = useState(1);
+  const lastCatPage = Math.max(...categories.map((c) => c.page));
+  // ▲ / ▼ page through the menu groups; the first group of the page is selected (gift card video).
+  const goCatPage = (p: number) => {
+    const page = Math.min(lastCatPage, Math.max(1, p));
+    setCatPage(page);
+    setCat(categories.find((c) => c.page === page)!.id);
+  };
   const [selected, setSelected] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const catRef = useRef<HTMLDivElement>(null);
@@ -107,6 +116,21 @@ export function OrderScreen() {
   };
 
   const onItem = (posId: string) => {
+    if (posItem(posId).openPrice) {
+      // Gift certificates: the amount is typed on the Open Price pad (cents entry).
+      return bluuPad(
+        'Open Price',
+        'open-price',
+        (v) => {
+          const price = parseFloat(v);
+          if (!price) return;
+          const id = actions.addItem(posId, 1, undefined, price);
+          if (id) setSelected(id);
+        },
+        false,
+        true,
+      );
+    }
     const lineId = actions.addItem(posId);
     if (lineId) {
       setSelected(lineId);
@@ -127,6 +151,11 @@ export function OrderScreen() {
       actions.openTender(check.id);
     };
     if (!hasNew) return go();
+    // Items that never go to the kitchen (gift certificates) are sent without asking.
+    if (lines.filter((l) => l.status === 'new').every((l) => posItem(l.posId).noKitchen)) {
+      actions.sendOrder(false);
+      return go();
+    }
     // Tender before Order: the real POS asks whether to print the kitchen ticket, then sends the items.
     dialogs.custom((close) => (
       <>
@@ -208,7 +237,7 @@ export function OrderScreen() {
 
       {/* Menu groups */}
       <div ref={catRef} className="pos-abs" style={{ left: 0, top: 70, width: 182, height: 526, overflow: 'hidden' }}>
-        {categories.map((c, i) => (
+        {categories.filter((c) => c.page === catPage).map((c, i) => (
           <div
             key={c.id}
             role="button"
@@ -221,8 +250,8 @@ export function OrderScreen() {
           </div>
         ))}
       </div>
-      {btn('▲', 10, 606, 80, 42, () => scroll(catRef.current, -111))}
-      {btn('▼', 94, 606, 80, 42, () => scroll(catRef.current, 111))}
+      {btn('▲', 10, 606, 80, 42, () => goCatPage(catPage - 1))}
+      {btn('▼', 94, 606, 80, 42, () => goCatPage(catPage + 1))}
 
       {/* Menu item grid */}
       <div className="pos-abs" style={{ left: GRID_X - 2, top: GRID_Y - 2, width: CELL_W * GRID_COLUMNS + 4, height: CELL_H * GRID_ROWS + 4, background: '#d7dbe6' }} />
@@ -238,10 +267,12 @@ export function OrderScreen() {
             width: CELL_W,
             height: CELL_H,
             background: it.color ?? undefined,
+            color: it.color === '#111111' ? '#fff' : undefined,
           }}
           onClick={() => onItem(it.id)}
         >
           <div>{it.label}</div>
+          {it.openPrice && <div className="pos-abs" style={{ right: 2, top: 2, width: 10, height: 10, borderRadius: 2, background: '#a23ad6' }} />}
           <div className="price">{fmt(it.price)}</div>
           {it.modifierIcon && (
             <div className="pos-abs" style={{ left: 3, bottom: 3 }}>

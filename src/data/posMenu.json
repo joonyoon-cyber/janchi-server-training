@@ -1,77 +1,97 @@
 {
- "_source": "Transcribed from BLUU back-office POS menu screenshot (8.webp) and live POS photos, 10/24/2026. Grid is 4 columns x 8 rows per page; row 8 col 4 holds the page navigator.",
+ "_source": "Transcribed from BLUU back-office POS menu screenshot (8.webp) and live POS photos, 10/24/2026. Grid is 4 columns x 8 rows per page; row 8 col 4 holds the page navigator. CERTIFICATE (gift certificate) group is on page 2 of the menu groups (from the gift card video, 11/6/2026).",
  "gridColumns": 4,
  "gridRows": 8,
  "categories": [
   {
    "id": "ayce-meat",
    "label": "AYCE MEAT",
-   "color": "#0f4c66"
+   "color": "#0f4c66",
+   "page": 1
   },
   {
    "id": "ayce-apps",
    "label": "AYCE APPS",
-   "color": "#0f4c66"
+   "color": "#0f4c66",
+   "page": 1
   },
   {
    "id": "ayce-price",
    "label": "AYCE PRICE",
-   "color": "#ff2a10"
+   "color": "#ff2a10",
+   "page": 1
   },
   {
    "id": "ayce-ultimate",
    "label": "AYCE ULTIMATE",
-   "color": "#0f4c66"
+   "color": "#0f4c66",
+   "page": 1
   },
   {
    "id": "combo",
    "label": "COMBO",
-   "color": "#6b2d0c"
+   "color": "#6b2d0c",
+   "page": 1
   },
   {
    "id": "appetizer",
    "label": "APPETIZER",
-   "color": "#24601a"
+   "color": "#24601a",
+   "page": 1
   },
   {
    "id": "lunch",
    "label": "LUNCH",
-   "color": "#33c21a"
+   "color": "#33c21a",
+   "page": 1
   },
   {
    "id": "dinner",
    "label": "DINNER",
-   "color": "#7a0ac6"
+   "color": "#7a0ac6",
+   "page": 1
   },
   {
    "id": "side-order",
    "label": "SIDE ORDER",
-   "color": "#e8278a"
+   "color": "#e8278a",
+   "page": 1
   },
   {
    "id": "beverage",
    "label": "BEVERAGE",
-   "color": "#5e4566"
+   "color": "#5e4566",
+   "page": 1
   },
   {
    "id": "beer",
    "label": "BEER",
-   "color": "#6d0a6d"
+   "color": "#6d0a6d",
+   "page": 1
   },
   {
    "id": "korean-wine",
    "label": "KOREAN WINE",
-   "color": "#6d0a6d"
+   "color": "#6d0a6d",
+   "page": 1
   },
   {
    "id": "wine",
    "label": "WINE",
-   "color": "#6d0a6d"
+   "color": "#6d0a6d",
+   "page": 1
   },
   {
    "id": "dessert",
    "label": "DESSERT",
-   "color": "#12b48a"
+   "color": "#12b48a",
+   "page": 1
+  },
+  {
+   "id": "certificate",
+   "label": "CERTIFICATE",
+   "color": "#7f93e8",
+   "page": 2
   }
  ],
  "items": [
@@ -2439,6 +2459,19 @@
    "col": 4,
    "price": 0.0,
    "color": "#19b6f0"
+  },
+  {
+   "id": "certificate",
+   "label": "CERTIFICATE",
+   "category": "certificate",
+   "page": 1,
+   "row": 1,
+   "col": 1,
+   "price": 0,
+   "color": "#111111",
+   "openPrice": true,
+   "taxExempt": true,
+   "noKitchen": true
   }
  ]
 }

@@ -16,8 +16,9 @@ describe('money', () => {
 });
 
 describe('POS menu data', () => {
-  it('has the 14 categories in the original order', () => {
-    expect(categories.map((c) => c.label)).toEqual([
+  it('has the 14 categories on page 1 in the original order, CERTIFICATE on page 2', () => {
+    expect(categories.filter((c) => c.page === 2).map((c) => c.label)).toEqual(['CERTIFICATE']);
+    expect(categories.filter((c) => c.page === 1).map((c) => c.label)).toEqual([
       'AYCE MEAT', 'AYCE APPS', 'AYCE PRICE', 'AYCE ULTIMATE', 'COMBO', 'APPETIZER', 'LUNCH', 'DINNER',
       'SIDE ORDER', 'BEVERAGE', 'BEER', 'KOREAN WINE', 'WINE', 'DESSERT',
     ]);
@@ -193,6 +194,19 @@ describe('automatic 18% tip for parties of 5+', () => {
     expect([a.amount, b.amount]).toEqual([80.41, 80.41]);
     expect([a.preGratuity, b.preGratuity]).toEqual([11.56, 11.55]);
     expect(actions.leaveTender()).toBe('closed');
+  });
+});
+
+describe('gift certificate', () => {
+  it('open price, no tax, sent without a kitchen ticket', () => {
+    actions.reset({ persist: false });
+    actions.quickServe();
+    actions.addItem('certificate', 1, undefined, 5);
+    const id = getState().activeCheckId!;
+    const t = checkTotals(getState().checks[id], 7.25, true);
+    expect([t.subtotal, t.tax, t.totalDue]).toEqual([5, 0, 5]);
+    actions.sendOrder(false);
+    expect(getState().checks[id].lines[0].status).toBe('sent');
   });
 });
 

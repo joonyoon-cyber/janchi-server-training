@@ -4,6 +4,8 @@ export interface PosCategory {
   id: string;
   label: string;
   color: string;
+  /** Page of the menu-group column (▲ / ▼ switch pages). */
+  page: number;
 }
 
 export interface PosItem {
@@ -22,6 +24,12 @@ export interface PosItem {
   countsAsMeat?: boolean;
   /** The real button shows the small modifier icon in its corner. */
   modifierIcon?: boolean;
+  /** Price is typed on the Open Price pad when rung in (gift certificates). */
+  openPrice?: boolean;
+  /** Not taxed (gift certificates). */
+  taxExempt?: boolean;
+  /** Needs no kitchen ticket, so Tender does not ask "Print Kitchen Order?". */
+  noKitchen?: boolean;
 }
 
 export interface CustomerMenuItem {

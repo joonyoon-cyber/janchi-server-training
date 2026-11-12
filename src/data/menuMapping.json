@@ -2917,6 +2917,12 @@
    "posName": "BIRTHDAY PROMO",
    "posCategory": "DESSERT",
    "status": "pos-only"
+  },
+  {
+   "posId": "certificate",
+   "posName": "CERTIFICATE",
+   "posCategory": "CERTIFICATE",
+   "status": "pos-only"
   }
  ]
 }
