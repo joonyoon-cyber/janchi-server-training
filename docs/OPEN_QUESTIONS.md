@@ -35,12 +35,12 @@ corrected.
 
 These buttons look like the real POS. Pressing them shows a message saying they are not part of the simulator yet. They do **not** pretend to work:
 
-Main screen: Quick Serve, Cashier In, Cashier Out, Tip Adjustments, Gift Card, Cash Drawer, Announcement, Operations, and the top-right icons.
+Main screen: Cashier In, Cashier Out, Gift Card, Cash Drawer, Announcement, Operations, and the top-right icons.
 Dine-in: Information, Move/Join, Link Table, Quick Serve, Cash Drawer, Refund.
 Order screen: Split, Combine, Price Change, Discount, Input Customer Information, Kitchen Memo, Last Receipt, Assign Seat and its − / +, Select Cust.
 Tender screen: Offline C.C., Gift Card, Gratuity, Total Amount, ︿ / ﹀, customer search.
 
-Implemented on main / Dine-in / tender: **Recall** and **Tender** (main screen) list open checks; **Tender** on Dine-in lets you tap a table to tender it; **Order Sum** shows the check summary.
+Implemented on main / Dine-in / tender: Dine-in, Quick Serve, **Recall** (open checks), **Tender** (Tender list), **Tip Adjustments**; **Tender** and the printer icon on Dine-in; **Even Amount Split** and **Order Sum** on the tender screen.
 
 ## Menu mapping questions
 
