@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { categories, GRID_COLUMNS, GRID_ROWS, mappings, posItem, posItems } from '../lib/menu';
 import { checkTotals, taxCents } from '../lib/money';
-import { actions, getState } from '../lib/store';
+import { actions, evenSplit, getState } from '../lib/store';
 import { getRun, startScenario } from '../training/engine';
 import { generateScenario } from '../training/generator';
 import { scenarios } from '../training/scenarios';
@@ -135,6 +135,29 @@ describe('tip adjustments', () => {
     actions.leaveTender();
     actions.adjustTip(id, p.id, 20);
     expect(getState().checks[id].payments[0].tip).toBe(20);
+  });
+});
+
+describe('even amount split', () => {
+  it('splits evenly, extra cents to the first shares', () => {
+    expect(evenSplit(100, 3)).toEqual([33.34, 33.33, 33.33]);
+    expect(evenSplit(167.1, 2)).toEqual([83.55, 83.55]);
+  });
+  it('each payment takes the next share; mixed card and cash close the check', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('M5', 2);
+    actions.addItem('premium-ayce-dinner', 4); // 155.80 + tax 11.30 = 167.10, like the M5 photo
+    actions.submitOrder();
+    const id = getState().tableChecks.M5;
+    actions.openTender(id);
+    actions.splitEvenly(2);
+    expect(getState().checks[id].splits).toEqual([83.55, 83.55]);
+    expect(actions.pay('credit', 1000)!.amount).toBe(83.55); // never more than the share
+    const cash = actions.pay('cash', 100, 100)!;
+    expect(cash.amount).toBe(83.55);
+    expect(cash.change).toBe(16.45);
+    expect(getState().checks[id].splits).toEqual([0, 0]);
+    expect(actions.leaveTender()).toBe('closed');
   });
 });
 

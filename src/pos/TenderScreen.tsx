@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { posItem } from '../lib/menu';
 import { checkTotals, fmt, fromCents, toCents } from '../lib/money';
-import { actions, checkPlace, getState, isTakeout, now, usePos } from '../lib/store';
+import { actions, checkPlace, dueNow, evenSplit, getState, isTakeout, now, usePos } from '../lib/store';
 import type { Check, Payment } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatLongTime } from './common';
 import { IconCard, IconCash, IconCheckBadge, IconMinusBadge, IconPrinter, IconSearchPerson, IconTerminal } from './icons';
+import { bluuPad } from './LoginPad';
 import { takePendingPayment } from './OrderScreen';
 
 function balanceOf(): number {
@@ -13,8 +14,65 @@ function balanceOf(): number {
   return c ? checkTotals(c, s.settings.taxRate).balance : 0;
 }
 
+/** Amount for the next payment: the next unpaid split share, or the balance. */
+function dueOf(): number {
+  const s = getState();
+  const c = s.activeCheckId ? s.checks[s.activeCheckId] : null;
+  return c ? dueNow(c, s.settings.taxRate) : 0;
+}
+
+/** " (Split 2 of 3)" while an even split is being paid. */
+function splitNote(): string {
+  const s = getState();
+  const c = s.activeCheckId ? s.checks[s.activeCheckId] : null;
+  const i = c?.splits?.findIndex((x) => x > 0) ?? -1;
+  return c?.splits && i >= 0 ? ` (Split ${i + 1} of ${c.splits.length})` : '';
+}
+
+function SplitAmounts({ close, ways }: { close: () => void; ways: number }) {
+  const amounts = evenSplit(balanceOf(), ways);
+  return (
+    <Modal w={420} title={`Even Amount Split - ${ways} customers`}>
+      <div data-testid="split-amounts" style={{ padding: '12px 18px', fontSize: 16 }}>
+        {amounts.map((a, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 4px', borderBottom: '1px solid #cfd5da' }}>
+            <span>Customer {i + 1}</span>
+            <b>{fmt(a)}</b>
+          </div>
+        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 4px', color: '#555', fontSize: 14 }}>
+          <span>Balance</span>
+          <span>{fmt(balanceOf())}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: '0 14px 14px' }}>
+        <DlgButton onClick={close}>Cancel</DlgButton>
+        <DlgButton
+          blue
+          onClick={() => {
+            close();
+            actions.splitEvenly(ways);
+          }}
+        >
+          Apply
+        </DlgButton>
+      </div>
+    </Modal>
+  );
+}
+
+function evenSplitFlow() {
+  if (balanceOf() <= 0) return dialogs.message('This check has no balance.');
+  bluuPad('Please enter the number of customers', 'split', (v) => {
+    const n = parseInt(v, 10);
+    if (!n || n < 1) return dialogs.message('Please enter the number of customers.', 'Even Amount Split');
+    if (toCents(balanceOf()) < n) return dialogs.message('The balance is too small to split that many ways.', 'Even Amount Split');
+    dialogs.custom((close) => <SplitAmounts close={close} ways={n} />);
+  });
+}
+
 export function cashFlow() {
-  const bal = balanceOf();
+  const bal = dueOf();
   if (bal <= 0) return dialogs.message('This check has no balance.');
   const next = (step: number) => fromCents(Math.ceil(toCents(bal) / (step * 100)) * step * 100);
   const quick = [
@@ -26,7 +84,8 @@ export function cashFlow() {
     title: 'Cash',
     subtitle: (
       <>
-        Balance: <b>{fmt(bal)}</b> &mdash; enter cash received
+        {splitNote() ? 'Amount due' : 'Balance'}: <b>{fmt(bal)}</b>
+        {splitNote()} &mdash; enter cash received
       </>
     ),
     money: true,
@@ -87,7 +146,8 @@ function CardSlip({ check, payment, copy }: { check: Check; payment: Payment; co
 
 function CardReader({ close }: { close: () => void }) {
   const [stage, setStage] = useState<'tap' | 'processing'>('tap');
-  const bal = balanceOf();
+  const bal = dueOf();
+  const note = splitNote();
   const tap = () => {
     setStage('processing');
     setTimeout(() => {
@@ -125,6 +185,7 @@ function CardReader({ close }: { close: () => void }) {
         <IconTerminal size={56} />
         <div style={{ margin: '10px 0' }}>
           Amount: <b>{fmt(bal)}</b>
+          {note}
         </div>
         {stage === 'tap' ? (
           <div style={{ color: '#555', fontSize: 13 }}>Have the guest tap their card on the card reader.</div>
@@ -280,8 +341,22 @@ export function TenderScreen() {
       {payBtn('Offline C.C.', 511, 78, <IconTerminal size={44} />, () => dialogs.notInSimulator('Offline C.C.'))}
       {payBtn('Gift Card', 12, 216, <IconCash size={44} />, () => dialogs.notInSimulator('Gift Card payment'))}
 
+      {check.splits && (
+        <div className="pos-abs" data-testid="tender-splits" style={{ left: 196, top: 236, width: 300, fontSize: 13, color: '#333' }}>
+          <div style={{ fontWeight: 'bold', color: '#2f5a9c', paddingBottom: 4 }}>Even Amount Split</div>
+          {check.splits.map((x, i) => {
+            const next = i === check.splits!.findIndex((y) => y > 0);
+            return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 6px', background: next ? '#dbe6fa' : 'transparent', fontWeight: next ? 'bold' : 'normal' }}>
+                <span>Customer {i + 1}</span>
+                <span style={{ color: x > 0 ? '#d0303a' : '#2a8a3a' }}>{x > 0 ? fmt(x) : 'Paid'}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {check.payments.length > 0 && (
-        <div className="pos-abs" data-testid="tender-payments" style={{ left: 196, top: 236, width: 300, fontSize: 13, color: '#333' }}>
+        <div className="pos-abs" data-testid="tender-payments" style={{ left: 196, top: check.splits ? 270 + check.splits.length * 27 : 236, width: 300, fontSize: 13, color: '#333' }}>
           {check.payments.map((p) => (
             <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 2px' }}>
               <span>{p.method === 'cash' ? `Cash ${fmt(p.tendered ?? p.amount)}` : 'Credit Card'}</span>
@@ -404,7 +479,7 @@ export function TenderScreen() {
       <button className="pos-btn" style={{ left: 258, top: 672, width: 62, height: 68 }} onClick={() => dialogs.notInSimulator('Customer Search')}>
         <IconSearchPerson size={36} />
       </button>
-      <button className="pos-btn" style={{ left: 330, top: 672, width: 92, height: 68, fontSize: 12.5 }} onClick={() => dialogs.notInSimulator('Even Amount Split')}>
+      <button className="pos-btn" style={{ left: 330, top: 672, width: 92, height: 68, fontSize: 12.5 }} data-testid="tender-even-split" onClick={evenSplitFlow}>
         Even Amount
         <br />
         Split

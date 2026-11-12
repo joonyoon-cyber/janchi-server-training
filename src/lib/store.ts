@@ -125,6 +125,19 @@ export function activeCheck(s: PosState = state): Check | null {
 
 export const isTakeout = (c: Check) => c.orderType === 'takeout';
 
+export function evenSplit(total: number, ways: number): number[] {
+  const cents = toCents(total);
+  const base = Math.floor(cents / ways);
+  return Array.from({ length: ways }, (_, i) => fromCents(base + (i < cents - base * ways ? 1 : 0)));
+}
+
+/** What the next payment should be: the next unpaid split share, or the whole balance. */
+export function dueNow(c: Check, taxRate: number): number {
+  const { balance } = checkTotals(c, taxRate);
+  const share = c.splits?.find((x) => x > 0);
+  return share !== undefined ? Math.min(share, balance) : balance;
+}
+
 /** "Take out" for Quick Serve orders, otherwise the table name. */
 export const checkPlace = (c: Check) => (isTakeout(c) ? 'Take out' : tableLabel(c.tableId));
 
@@ -357,11 +370,21 @@ export const actions = {
   },
 
   /** Returns the payment record (with change for cash). */
+  /** Even Amount Split: divide the balance into `ways` shares (extra cents go to the first shares). */
+  splitEvenly(ways: number) {
+    const c = activeCheck();
+    if (!c || ways < 1) return;
+    const amounts = evenSplit(checkTotals(c, state.settings.taxRate).balance, ways);
+    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined })));
+    emit({ type: 'split', checkId: c.id, ways, amounts });
+  },
+
   pay(method: PayMethod, amount: number, tendered?: number) {
     const c = activeCheck();
     if (!c) return null;
     const { balance } = checkTotals(c, state.settings.taxRate);
-    const applied = fromCents(Math.min(toCents(amount), toCents(balance)));
+    const due = dueNow(c, state.settings.taxRate);
+    const applied = fromCents(Math.min(toCents(amount), toCents(balance), toCents(due)));
     if (applied <= 0) return null;
     const change = method === 'cash' && tendered !== undefined ? fromCents(toCents(tendered) - toCents(applied)) : undefined;
     const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
@@ -371,7 +394,13 @@ export const actions = {
       payment.troutD = digits(7);
       payment.cardLast4 = digits(4);
     }
-    set(updateCheck(c.id, (ch) => ({ ...ch, payments: [...ch.payments, payment] })));
+    // With a split, the payment goes to the first share that is still owed.
+    let splits = c.splits;
+    if (splits) {
+      const i = splits.findIndex((x) => x > 0);
+      if (i >= 0) splits = splits.map((x, j) => (j === i ? fromCents(Math.max(0, toCents(x) - toCents(applied))) : x));
+    }
+    set(updateCheck(c.id, (ch) => ({ ...ch, payments: [...ch.payments, payment], splits })));
     emit({ type: 'payment', checkId: c.id, tableId: c.tableId, method, amount: applied, tendered, change });
     return payment;
   },

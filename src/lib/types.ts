@@ -120,6 +120,8 @@ export interface Check {
   voids: VoidRecord[];
   rounds: number;
   payments: Payment[];
+  /** Even Amount Split: remaining amount of each guest's share (0 once paid). */
+  splits?: number[];
   gratuity: number;
   status: 'open' | 'closed';
   closedAt?: number;
@@ -145,6 +147,7 @@ export type PosEvent =
   | { type: 'close-check'; checkId: string; tableId: string }
   | { type: 'leave-tender-unpaid'; checkId: string; tableId: string; balance: number }
   | { type: 'print'; checkId: string }
+  | { type: 'split'; checkId: string; ways: number; amounts: number[] }
   | { type: 'tip-adjust'; checkId: string; tableId: string; paymentId: string; tip: number };
 
 export type LoggedEvent = PosEvent & { t: number };
