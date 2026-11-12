@@ -122,6 +122,8 @@ export interface Check {
   payments: Payment[];
   /** Even Amount Split: remaining amount of each guest's share (0 once paid). */
   splits?: number[];
+  /** Gratuity added to each split share (part of `gratuity`). */
+  splitTips?: number[];
   gratuity: number;
   status: 'open' | 'closed';
   closedAt?: number;

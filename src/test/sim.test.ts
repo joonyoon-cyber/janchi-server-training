@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { categories, GRID_COLUMNS, GRID_ROWS, mappings, posItem, posItems } from '../lib/menu';
 import { checkTotals, taxCents } from '../lib/money';
-import { actions, evenSplit, getState } from '../lib/store';
+import { actions, dueNow, evenSplit, getState } from '../lib/store';
 import { getRun, startScenario } from '../training/engine';
 import { generateScenario } from '../training/generator';
 import { scenarios } from '../training/scenarios';
@@ -152,7 +152,10 @@ describe('even amount split', () => {
     actions.openTender(id);
     actions.splitEvenly(2);
     expect(getState().checks[id].splits).toEqual([83.55, 83.55]);
-    expect(actions.pay('credit', 1000)!.amount).toBe(83.55); // never more than the share
+    actions.setGratuity(10); // gratuity for customer 1 only
+    expect(getState().checks[id].splits).toEqual([93.55, 83.55]);
+    expect(actions.pay('credit', 1000)!.amount).toBe(93.55); // never more than the share
+    expect(dueNow(getState().checks[id], 7.25)).toBe(83.55);
     const cash = actions.pay('cash', 100, 100)!;
     expect(cash.amount).toBe(83.55);
     expect(cash.change).toBe(16.45);
