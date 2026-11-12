@@ -365,23 +365,7 @@ export const actions = {
   setGratuity(amount: number) {
     const c = activeCheck();
     if (!c) return;
-    const cents = Math.max(0, toCents(amount));
-    const i = c.splits?.findIndex((x) => x > 0) ?? -1;
-    if (c.splits && i >= 0) {
-      // Split check: the gratuity belongs to the share being paid now.
-      const tips = c.splitTips ?? c.splits.map(() => 0);
-      const delta = cents - toCents(tips[i]);
-      set(
-        updateCheck(c.id, (ch) => ({
-          ...ch,
-          gratuity: fromCents(toCents(ch.gratuity) + delta),
-          splitTips: tips.map((t, j) => (j === i ? fromCents(cents) : t)),
-          splits: ch.splits!.map((x, j) => (j === i ? fromCents(toCents(x) + delta) : x)),
-        })),
-      );
-    } else {
-      set(updateCheck(c.id, (ch) => ({ ...ch, gratuity: fromCents(cents) })));
-    }
+    set(updateCheck(c.id, (ch) => ({ ...ch, gratuity: Math.max(0, fromCents(toCents(amount))) })));
     emit({ type: 'gratuity', checkId: c.id, amount });
   },
 
@@ -391,7 +375,7 @@ export const actions = {
     const c = activeCheck();
     if (!c || ways < 1) return;
     const amounts = evenSplit(checkTotals(c, state.settings.taxRate).balance, ways);
-    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined, splitTips: ways > 1 ? amounts.map(() => 0) : undefined })));
+    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined })));
     emit({ type: 'split', checkId: c.id, ways, amounts });
   },
 

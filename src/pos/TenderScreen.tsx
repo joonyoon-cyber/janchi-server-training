@@ -213,17 +213,12 @@ export function creditFlow() {
 }
 
 function gratuityFlow(check: Check, subtotal: number) {
-  // On a split check the gratuity is asked for each share separately.
-  const i = check.splits?.findIndex((x) => x > 0) ?? -1;
-  const split = !!check.splits && i >= 0;
-  const base = split ? fromCents(Math.round(toCents(subtotal) / check.splits!.length)) : subtotal;
-  const current = split ? check.splitTips?.[i] ?? 0 : check.gratuity;
-  const pct = (p: number) => fmt(fromCents(Math.round(toCents(base) * p) / 100));
+  const pct = (p: number) => fmt(fromCents(Math.round(toCents(subtotal) * p) / 100));
   dialogs.keypad({
-    title: split ? `Gratuity - Customer ${i + 1} of ${check.splits!.length}` : 'Gratuity',
-    subtitle: <>{split ? 'Share subtotal' : 'Subtotal'} {fmt(base)} &mdash; enter gratuity amount</>,
+    title: 'Gratuity',
+    subtitle: <>Subtotal {fmt(subtotal)} &mdash; enter gratuity amount</>,
     money: true,
-    initial: current ? fmt(current) : '',
+    initial: check.gratuity ? fmt(check.gratuity) : '',
     quick: [
       { label: '15%', value: pct(15) },
       { label: '18%', value: pct(18) },
@@ -354,7 +349,6 @@ export function TenderScreen() {
             return (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 6px', background: next ? '#dbe6fa' : 'transparent', fontWeight: next ? 'bold' : 'normal' }}>
                 <span>Customer {i + 1}</span>
-                {(check.splitTips?.[i] ?? 0) > 0 && <span style={{ color: '#555' }}>Gratuity {fmt(check.splitTips![i])}</span>}
                 <span style={{ color: x > 0 ? '#d0303a' : '#2a8a3a' }}>{x > 0 ? fmt(x) : 'Paid'}</span>
               </div>
             );
