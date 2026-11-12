@@ -276,6 +276,7 @@ export function TenderScreen() {
 
   if (!check) return null;
   const t = checkTotals(check, settings.taxRate);
+  const takeout = isTakeout(check);
   const mins = Math.floor((now() - check.openedAt) / 60000);
 
   const payBtn = (label: string, x: number, y: number, icon: ReactNode, onClick: () => void) => (
@@ -310,7 +311,7 @@ export function TenderScreen() {
           <BluuLogo height={34} />
         </div>
         <div className="pos-abs" data-testid="tender-table" style={{ left: 168, top: 22, fontSize: 17, color: '#3c6fb8', fontWeight: 'bold' }}>
-          {checkPlace(check)}
+          {takeout ? 'Take Out' : checkPlace(check)}
         </div>
         <div className="pos-abs" style={{ left: 272, top: 22, fontSize: 17, color: '#3c6fb8', fontWeight: 'bold' }}>
           {check.number}
@@ -364,7 +365,50 @@ export function TenderScreen() {
         </div>
       )}
 
-      {/* Right summary panel */}
+      {/* Right summary panel. Takeout (Quick Serve) shows the item list instead of the table banner. */}
+      {takeout ? (
+        <>
+          <div className="pos-abs" data-testid="tender-takeout-items" style={{ left: 692, top: 78, width: 322, height: 296, border: '1px solid #bcc3cf', background: '#f7f9fa' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 74px 52px', fontSize: 11.5, color: '#333', textAlign: 'center', padding: '6px 0', borderBottom: '1px solid #bcc3cf' }}>
+              <span>Qty</span>
+              <span>Menu Name</span>
+              <span>Unit Price</span>
+              <span>Price</span>
+            </div>
+            <div style={{ height: 262, overflowY: 'auto' }}>
+              {check.lines.map((l) => (
+                <div key={l.id} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 74px 52px', fontSize: 11, padding: '4px 0', background: '#dfe5ee', borderBottom: '1px solid #c8ced8' }}>
+                  <span style={{ textAlign: 'center' }}>{l.qty}</span>
+                  <span>{posItem(l.posId).label}</span>
+                  <span style={{ textAlign: 'center' }}>@ {fmt(l.unitPrice)} / pc</span>
+                  <span style={{ textAlign: 'right', paddingRight: 4 }}>{fmt(l.qty * l.unitPrice)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pos-abs" style={{ left: 692, top: 380, width: 316, fontSize: 14.5 }}>
+        {rows.filter(([label]) => ['Amount Due', 'Gratuity', 'Total Due', 'Total Received'].includes(label)).map(([label, value, link]) => (
+          <div
+            key={label}
+            data-testid={`tender-row-${label}`}
+            role={link ? 'button' : undefined}
+            onClick={link ? gratuityDisabled : undefined}
+            style={{ borderTop: '1px solid #bcc3cf', padding: '4px 6px', display: 'flex', justifyContent: 'space-between', cursor: link ? 'pointer' : 'default' }}
+          >
+            <span style={{ fontWeight: 'bold', color: link ? '#3c6fd8' : '#222' }}>{label}</span>
+            <span style={{ color: '#4a6fd0', fontSize: 15.5 }}>{value}</span>
+          </div>
+        ))}
+        <div style={{ borderTop: '1px solid #bcc3cf', padding: '6px 6px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 'bold', fontSize: 18 }}>Balance</span>
+          <span data-testid="tender-balance" style={{ color: '#3a62c0', fontSize: 25, fontWeight: 'bold' }}>
+            {fmt(t.balance)}
+          </span>
+        </div>
+          </div>
+        </>
+      ) : (
+        <>
       <div className="pos-abs" style={{ left: 685, top: 78, width: 330, height: 62, background: 'linear-gradient(#4f84ea, #3a6fdc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 'bold', color: '#1b2540' }}>
         {checkPlace(check)}
       </div>
@@ -396,6 +440,8 @@ export function TenderScreen() {
           </span>
         </div>
       </div>
+        </>
+      )}
 
       <button className="pos-btn" style={{ left: 675, top: 568, width: 105, height: 56, fontSize: 13 }} onClick={() => dialogs.notInSimulator('Total Amount')}>
         Total Amount

@@ -140,7 +140,7 @@ export type PosEvent =
   | { type: 'remove-line'; checkId: string; posId: string; qty: number }
   | { type: 'set-qty'; checkId: string; posId: string; from: number; to: number }
   | { type: 'cancel-all'; checkId: string }
-  | { type: 'submit'; checkId: string; tableId: string; round: number; items: { posId: string; qty: number }[] }
+  | { type: 'submit'; checkId: string; tableId: string; round: number; items: { posId: string; qty: number }[]; kitchenPrint: boolean }
   | { type: 'void-sent'; checkId: string; posId: string; qty: number }
   | { type: 'discard-unsent'; checkId: string; items: { posId: string; qty: number }[] }
   | { type: 'open-tender'; checkId: string; tableId: string }

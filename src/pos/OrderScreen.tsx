@@ -121,10 +121,41 @@ export function OrderScreen() {
     })();
 
   const toPayment = (kind: 'cash' | 'credit' | null) => {
-    if (hasNew) return dialogs.message('There are new items that have not been ordered. Press Order first.');
-    if (!lines.length) return dialogs.message('There are no ordered items on this check.');
-    pendingPayment = kind;
-    actions.openTender(check.id);
+    if (!lines.length) return dialogs.message('There are no items on this check.');
+    const go = () => {
+      pendingPayment = kind;
+      actions.openTender(check.id);
+    };
+    if (!hasNew) return go();
+    // Tender before Order: the real POS asks whether to print the kitchen ticket, then sends the items.
+    dialogs.custom((close) => (
+      <>
+        <div className="pos-modal-backdrop" style={{ background: 'rgba(20,30,50,0.15)' }} />
+        <div className="pos-modal" data-testid="kitchen-prompt" style={{ left: 170, top: 150, width: 690, height: 400, background: '#f4f6f6', borderRadius: 2 }}>
+          <div className="pos-abs" style={{ left: 0, top: 0, width: 688, height: 52, background: '#e6ecee', color: '#2a5cab', fontSize: 17, padding: '15px 18px' }}>
+            Accept
+          </div>
+          <div className="pos-abs" style={{ left: 0, top: 205, width: 688, textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#222' }}>
+            Print Kitchen Order?
+          </div>
+          {(['Yes', 'No'] as const).map((label, i) => (
+            <button
+              key={label}
+              data-testid={`kitchen-${label}`}
+              className={`pos-btn ${label === 'Yes' ? 'pos-btn-navy' : ''}`}
+              style={{ left: 214 + i * 136, top: 318, width: 124, height: 44, fontSize: 13, ...(label === 'No' ? { background: 'linear-gradient(#c9ccd1, #b6bac1)', color: '#fff' } : {}) }}
+              onClick={() => {
+                close();
+                actions.sendOrder(label === 'Yes');
+                go();
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </>
+    ));
   };
 
   const scroll = (el: HTMLDivElement | null, dy: number) => el?.scrollBy({ top: dy, behavior: 'smooth' });

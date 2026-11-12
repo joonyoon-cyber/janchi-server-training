@@ -292,8 +292,20 @@ export const actions = {
     emit({ type: 'cancel-all', checkId: c.id });
   },
 
-  /** "Order": send unsent lines and return to the floor plan. */
+  /** "Order": send unsent lines and return to the floor plan (or main screen for takeout). */
   submitOrder() {
+    const c = activeCheck();
+    if (!c) return;
+    actions.sendOrder(true);
+    set({ ...state, screen: homeFor(c), activeCheckId: null });
+  },
+
+  /**
+   * Send unsent lines without leaving the screen. Used when Tender / Cash /
+   * Credit Card is pressed before Order: the POS asks "Print Kitchen Order?"
+   * and sends the items either way (No = no kitchen ticket, e.g. macarons).
+   */
+  sendOrder(kitchenPrint: boolean) {
     const c = activeCheck();
     if (!c) return;
     const fresh = c.lines.filter((l) => l.status === 'new');
@@ -312,9 +324,9 @@ export const actions = {
         tableId: c.tableId,
         round,
         items: fresh.map((l) => ({ posId: l.posId, qty: l.qty })),
+        kitchenPrint,
       });
     }
-    set({ ...state, screen: homeFor(c), activeCheckId: null });
   },
 
   /** "Close" on the order screen: unsent items are discarded. */
