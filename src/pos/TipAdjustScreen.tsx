@@ -107,8 +107,8 @@ function ReceiptPrompt({ close, payment }: { close: () => void; payment: Payment
           Receipt
         </div>
         <div className="pos-abs" style={{ left: 0, top: 66, width: 638, textAlign: 'center', fontSize: 18, fontWeight: 'bold', lineHeight: 1.35 }}>
-          {line('Subtotal', payment.amount)}
-          {line('Pre Gratuity', 0)}
+          {line('Subtotal', payment.amount - (payment.preGratuity ?? 0))}
+          {line('Pre Gratuity', payment.preGratuity ?? 0)}
           {line('Gratuity', payment.tip ?? 0)}
           {line('Amount Due', payment.amount + (payment.tip ?? 0))}
           <div style={{ marginTop: 14 }}>Print Receipt?</div>
@@ -163,7 +163,7 @@ function CreditGratuity({ close, row }: { close: () => void; row: Row }) {
         {info('Receipt No.', receiptNo(row), 270)}
         {info('Date / Time', mdy(row.payment.at), 310)}
         {info('Approval No.', row.payment.approvalNo ?? '', 350)}
-        {info('Pre Gratuity', fmt(0), 390, true)}
+        {info('Pre Gratuity', fmt(row.payment.preGratuity ?? 0), 390, true)}
         {info('Gratuity', fmt(row.payment.tip ?? 0), 430, true)}
         <Pad
           x={380}
@@ -310,8 +310,8 @@ export function TipAdjustScreen() {
                 {cell(r.payment.approvalNo ?? '')}
                 {cell(r.payment.troutD ?? '')}
                 {cell(r.check.server.toUpperCase(), 'left')}
-                {cell(fmt(r.payment.amount), 'right')}
-                {cell(fmt(0), 'right')}
+                {cell(fmt(r.payment.amount - (r.payment.preGratuity ?? 0)), 'right')}
+                {cell(fmt(r.payment.preGratuity ?? 0), 'right')}
                 {cell(fmt(tip), 'right')}
                 {cell(fmt(r.payment.amount + tip), 'right')}
               </div>

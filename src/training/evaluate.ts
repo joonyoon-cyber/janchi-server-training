@@ -1,5 +1,5 @@
 import { isAycePackage, isMeat, posItem, sectionOfTable, sections, tableLabel } from '../lib/menu';
-import { checkTotals, fmt, fromCents, taxCents, toCents } from '../lib/money';
+import { AUTO_TIP_MIN_GUESTS, AUTO_TIP_PERCENT, checkTotals, fmt, fromCents, taxCents, toCents } from '../lib/money';
 import type { PosState } from '../lib/store';
 import type { Check } from '../lib/types';
 import type { ItemReq, OrderStage, PayStage, RunState, Scenario, StagedEvent, Stage, StageRecord } from './types';
@@ -303,7 +303,9 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         ev.paymentMistakes.push(`Entered ${fmt(first.tendered ?? 0)} as cash received; the guest handed you ${fmt(st.cashGiven)}`);
       }
     }
-    const exp = expectedTotals(expectedPartyItems(sc, st.party), pos.settings.taxRate, st.gratuityPct ?? 0);
+    // The POS adds the 18% tip by itself for parties of 5+; the server must not add another.
+    const tipPct = st.gratuityPct ?? (sc.parties[st.party] >= AUTO_TIP_MIN_GUESTS ? AUTO_TIP_PERCENT : 0);
+    const exp = expectedTotals(expectedPartyItems(sc, st.party), pos.settings.taxRate, tipPct);
     if (check) {
       const t = checkTotals(check, pos.settings.taxRate);
       possible += 1;
@@ -311,12 +313,12 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         ev.correct.push(`Check total ${fmt(t.amountDue)} is correct`);
         ok += 1;
       } else ev.paymentMistakes.push(`Check total was ${fmt(t.amountDue)}; it should have been ${fmt(exp.amountDue)}`);
-      if (st.gratuityPct) {
+      if (tipPct) {
         possible += 1;
         if (Math.abs(t.gratuity - exp.gratuity) < 0.015) {
-          ev.correct.push(`Added ${st.gratuityPct}% gratuity (${fmt(t.gratuity)})`);
+          ev.correct.push(`Party of ${sc.parties[st.party]}: ${tipPct}% gratuity (${fmt(t.gratuity)}) was included`);
           ok += 1;
-        } else ev.paymentMistakes.push(`Gratuity was ${fmt(t.gratuity)}; ${st.gratuityPct}% of the subtotal is ${fmt(exp.gratuity)}`);
+        } else ev.paymentMistakes.push(`Gratuity was ${fmt(t.gratuity)}; it should be the automatic ${tipPct}% (${fmt(exp.gratuity)}). Don't add a gratuity on top of it.`);
       } else if (t.gratuity > 0) {
         ev.paymentMistakes.push(`Added a ${fmt(t.gratuity)} gratuity that was not required`);
       }

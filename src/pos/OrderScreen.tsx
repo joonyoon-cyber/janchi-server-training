@@ -285,8 +285,16 @@ export function OrderScreen() {
         Void Line
       </button>
 
-      {/* Totals */}
-      <div className="pos-abs" style={{ left: 724, top: 406, width: 236, height: 148, fontSize: 12.5, color: '#3d4a62' }}>
+      {/* Totals. With a tip (party of 5+) a Surcharge / Tip line appears on top, as on the real POS. */}
+      {totals.gratuity > 0 && (
+        <div className="pos-abs" data-testid="order-tip-row" style={{ left: 724, top: 403, width: 236, height: 20, fontSize: 12.5, color: '#8a93a3', borderBottom: '1px solid #b9bfca' }}>
+          <span className="pos-abs" style={{ left: 4, top: 2 }}>Surcharge</span>
+          <span className="pos-abs" style={{ left: 84, top: 2 }}>{fmt(totals.surcharge)}</span>
+          <span className="pos-abs" style={{ left: 140, top: 2 }}>Tip</span>
+          <span className="pos-abs" data-testid="order-tip" style={{ right: 4, top: 2 }}>{fmt(totals.gratuity)}</span>
+        </div>
+      )}
+      <div className="pos-abs" style={{ left: 724, top: totals.gratuity > 0 ? 424 : 406, width: 236, height: 148, fontSize: 12.5, color: '#3d4a62' }}>
         <div className="pos-abs" style={{ left: 4, top: 6 }}>Discount</div>
         <div className="pos-abs" style={{ right: 4, top: 6, color: '#222' }}>{fmt(totals.discount)}</div>
         <div className="pos-abs" style={{ left: 4, top: 24 }}>Cash Discount</div>
@@ -299,7 +307,7 @@ export function OrderScreen() {
         <div className="pos-abs" style={{ left: 0, top: 110, width: 236, borderTop: '1px solid #b9bfca' }} />
         <div className="pos-abs" style={{ left: 4, top: 124 }}>Amount Due</div>
         <div className="pos-abs" data-testid="order-amount-due" style={{ right: 4, top: 112, fontSize: 28, fontWeight: 'bold', color: 'var(--pos-blue-text)' }}>
-          {fmt(totals.amountDue)}
+          {fmt(totals.totalDue)}
         </div>
       </div>
       {btn('︿', 966, 408, 50, 70, () => scroll(listRef.current, -90))}

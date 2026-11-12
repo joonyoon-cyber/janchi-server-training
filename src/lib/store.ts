@@ -382,13 +382,19 @@ export const actions = {
   pay(method: PayMethod, amount: number, tendered?: number) {
     const c = activeCheck();
     if (!c) return null;
-    const { balance } = checkTotals(c, state.settings.taxRate);
+    const { balance, gratuity } = checkTotals(c, state.settings.taxRate);
     const due = dueNow(c, state.settings.taxRate);
     const applied = fromCents(Math.min(toCents(amount), toCents(balance), toCents(due)));
     if (applied <= 0) return null;
     const change = method === 'cash' && tendered !== undefined ? fromCents(toCents(tendered) - toCents(applied)) : undefined;
     const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
     const payment: Payment = { id: uid('p'), method, amount: applied, tendered, change, at: now() };
+    // The party tip rides along with the payments; on a split it is divided equally.
+    const tipLeft = toCents(gratuity) - c.payments.reduce((s, p) => s + toCents(p.preGratuity ?? 0), 0);
+    const share = c.splits ? c.splits.findIndex((x) => x > 0) : -1;
+    const tipShare = share >= 0 ? toCents(evenSplit(gratuity, c.splits!.length)[share]) : tipLeft;
+    const pre = Math.max(0, Math.min(tipShare, tipLeft, toCents(applied)));
+    if (pre > 0) payment.preGratuity = fromCents(pre);
     if (method === 'credit') {
       payment.approvalNo = digits(5) + 'ABCDEF'[Math.floor(Math.random() * 6)];
       payment.troutD = digits(7);

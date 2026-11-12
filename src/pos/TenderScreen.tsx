@@ -127,6 +127,7 @@ function CardSlip({ check, payment, copy }: { check: Check; payment: Payment; co
       {row('Card', `CONTACTLESS ...${payment.cardLast4 ?? ''}`)}
       {row('Approval', payment.approvalNo ?? 'APPROVED')}
       <hr />
+      {(payment.preGratuity ?? 0) > 0 && row('Incl. 18% gratuity', fmt(payment.preGratuity ?? 0))}
       {row('AMOUNT', fmt(payment.amount), true)}
       <br />
       {row('TIP', '__________')}
@@ -249,7 +250,8 @@ export function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
       <hr />
       {row('Subtotal', fmt(t.subtotal))}
       {row('Tax', fmt(t.tax))}
-      {t.gratuity > 0 && row('Gratuity', fmt(t.gratuity))}
+      {t.autoTip > 0 && row('Gratuity 18% (party of 5+)', fmt(t.autoTip))}
+      {t.gratuity - t.autoTip > 0.001 && row('Gratuity', fmt(t.gratuity - t.autoTip))}
       {row('TOTAL', fmt(t.totalDue), true)}
       {check.payments.map((p) => row(p.method === 'cash' ? `CASH ${fmt(p.tendered ?? p.amount)}` : 'CREDIT CARD', fmt(p.amount)))}
       {check.payments.filter((p) => p.change).map((p) => row('CHANGE', fmt(p.change ?? 0)))}

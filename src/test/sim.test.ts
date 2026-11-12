@@ -161,6 +161,41 @@ describe('even amount split', () => {
   });
 });
 
+describe('automatic 18% tip for parties of 5+', () => {
+  it('matches the reference photo: 128.40 + 9.31 tax + 23.11 tip = 160.82', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('B7', 6);
+    actions.addItem('premium-ayce-dinner', 2);
+    actions.addItem('beef-tongue-6oz', 2);
+    actions.addItem('kfc');
+    const id = getState().activeCheckId!;
+    const t = checkTotals(getState().checks[id], 7.25, true);
+    expect([t.subtotal, t.tax, t.gratuity, t.totalDue]).toEqual([128.4, 9.31, 23.11, 160.82]);
+  });
+  it('no automatic tip for 4 guests', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('B7', 4);
+    actions.addItem('premium-ayce-dinner', 4);
+    expect(checkTotals(getState().checks[getState().activeCheckId!], 7.25, true).gratuity).toBe(0);
+  });
+  it('a split divides the tip equally (Pre Gratuity on each payment)', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('B7', 6);
+    actions.addItem('premium-ayce-dinner', 2);
+    actions.addItem('beef-tongue-6oz', 2);
+    actions.addItem('kfc');
+    actions.submitOrder();
+    const id = getState().tableChecks.B7;
+    actions.openTender(id);
+    actions.splitEvenly(2);
+    const a = actions.pay('credit', 1000)!;
+    const b = actions.pay('credit', 1000)!;
+    expect([a.amount, b.amount]).toEqual([80.41, 80.41]);
+    expect([a.preGratuity, b.preGratuity]).toEqual([11.56, 11.55]);
+    expect(actions.leaveTender()).toBe('closed');
+  });
+});
+
 describe('hand-written scenarios', () => {
   for (const sc of scenarios) {
     it(`perfect play scores 100: ${sc.id}`, () => {

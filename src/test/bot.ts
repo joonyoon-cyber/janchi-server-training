@@ -65,10 +65,7 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
       case 'pay': {
         const checkId = run.partyChecks[st.party];
         actions.openTender(checkId);
-        if (st.gratuityPct) {
-          const sub = checkTotals(getState().checks[checkId], s.settings.taxRate).subtotal;
-          actions.setGratuity(fromCents(Math.round((toCents(sub) * st.gratuityPct) / 100)));
-        }
+        // The 18% party-of-5+ tip is added by the POS itself; nothing to enter.
         const method = opts.payMethodOverride ?? st.method;
         const bal = checkTotals(getState().checks[checkId], s.settings.taxRate).balance;
         if (method === 'cash') {

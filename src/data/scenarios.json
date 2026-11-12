@@ -398,7 +398,7 @@
       "id": "party-of-six",
       "title": "Party of Six (Gratuity)",
       "level": "advanced",
-      "summary": "Large party: 18% gratuity applies to parties of 5 or more.",
+      "summary": "Large party: the POS adds an 18% tip automatically for 5 or more guests. Check the total and don't add another gratuity.",
       "time": { "weekday": 6, "hour": 19, "minute": 15 },
       "parties": { "p1": 6 },
       "targetSeconds": 360,

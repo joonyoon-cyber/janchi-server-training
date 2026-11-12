@@ -101,6 +101,8 @@ export interface Payment {
   troutD?: string;
   /** Simulated last 4 digits (no real card data is ever collected). */
   cardLast4?: string;
+  /** Part of `amount` that is the automatic party tip ("Pre Gratuity" on Tip Adjustments). */
+  preGratuity?: number;
   /** Tip written on the signed merchant copy, entered later via Tip Adjustments. */
   tip?: number;
 }

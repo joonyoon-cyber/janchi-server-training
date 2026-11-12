@@ -24,6 +24,16 @@ export interface Totals {
   totalDue: number;
   totalReceived: number;
   balance: number;
+  /** Automatic 18% tip for parties of AUTO_TIP_MIN_GUESTS or more (part of `gratuity`). */
+  autoTip: number;
+}
+
+/** House rule: 18% tip is added automatically for parties of 5 or more (on the pre-tax subtotal). */
+export const AUTO_TIP_PERCENT = 18;
+export const AUTO_TIP_MIN_GUESTS = 5;
+
+export function autoTipCents(subtotalCents: number, guests: number): number {
+  return guests >= AUTO_TIP_MIN_GUESTS ? Math.round((subtotalCents * AUTO_TIP_PERCENT) / 100) : 0;
 }
 
 /**
@@ -37,7 +47,9 @@ export function checkTotals(check: Check, taxRate: number, includeUnsent = false
   const subtotalCents = orderCents;
   const tax = taxCents(subtotalCents, taxRate);
   const amountDue = subtotalCents + tax;
-  const gratuity = toCents(check.gratuity);
+  // 128.40 subtotal for 6 guests -> 23.11 tip, as on the reference photo.
+  const autoTip = check.orderType === 'takeout' ? 0 : autoTipCents(subtotalCents, check.guests);
+  const gratuity = autoTip + toCents(check.gratuity);
   const totalDue = amountDue + gratuity;
   const received = check.payments.reduce((s, p) => s + toCents(p.amount), 0);
   return {
@@ -51,5 +63,6 @@ export function checkTotals(check: Check, taxRate: number, includeUnsent = false
     totalDue: fromCents(totalDue),
     totalReceived: fromCents(received),
     balance: fromCents(totalDue - received),
+    autoTip: fromCents(autoTip),
   };
 }
