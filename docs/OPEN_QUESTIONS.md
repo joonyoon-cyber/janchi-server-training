@@ -21,7 +21,7 @@ corrected.
 | 9 | **Cash / Credit Card / Tender with unsent items** on the order screen. | **Assumption:** shows "press Order first". The real POS might send automatically. |
 | 10 | Floor-plan tile icon seen on **W6** (person/card icon). | Not reproduced; meaning unknown. |
 | 11 | Floor-plan **amount** on a table tile. | **Assumption:** shown as the check balance including tax (the same number as Amount Due on the order screen). Not confirmed whether the real tile includes tax. |
-| 12 | Gratuity base. | The automatic 18% party tip is on the pre-tax subtotal (confirmed by the reference photo: 128.40 → 23.11). The manual *Gratuity* button on the tender screen is usually never used (confirmed); it still works in the simulator, and Training Mode flags any gratuity a trainee adds by hand. |
+| 12 | Gratuity base. | The automatic 18% party tip is on the pre-tax subtotal (confirmed by the reference photo: 128.40 → 23.11). The manual *Gratuity* button on the tender screen is usually never used (confirmed); it is disabled in the simulator (shows a note pointing to the automatic tip and Tip Adjustments). |
 | 13 | Check number format (`10-021` … `10-034` on one day in the Tender list photo). | **Assumption:** `10-` + a 3-digit sequence starting at `10-001` in each simulator session. What the `10` means (terminal? day?) and when the sequence resets is unknown. |
 | 14 | **Printing a check from Dine-in** (confirmed by the restaurant: tap the printer icon, badge turns from red to a green check, tap a table, its check prints). | Implemented. **Assumption:** print mode switches off after one check is printed, and tapping the icon again cancels it. The "Select a table to print its check" hint line is a simulator aid. |
 | 15 | **Log-in keypad** (confirmed: every main-screen button asks for the employee's Log-in ID first; the logged-in employee becomes the server on new tables and Quick Serve orders). | Implemented. The simulator has one employee: the trainee, whose name and Log-in ID (default `1234`) are set in Settings. A wrong ID shows "Invalid Log-in ID." The real error message and whether IDs are masked on screen are not known. |
@@ -37,7 +37,7 @@ These buttons look like the real POS. Pressing them shows a message saying they 
 Main screen: Quick Serve, Cashier In, Cashier Out, Tip Adjustments, Gift Card, Cash Drawer, Announcement, Operations, and the top-right icons.
 Dine-in: Information, Move/Join, Link Table, Quick Serve, Cash Drawer, Refund.
 Order screen: Split, Combine, Price Change, Discount, Input Customer Information, Kitchen Memo, Last Receipt, Assign Seat and its − / +, Select Cust.
-Tender screen: Offline C.C., Gift Card, Total Amount, ︿ / ﹀, customer search.
+Tender screen: Offline C.C., Gift Card, Gratuity, Total Amount, ︿ / ﹀, customer search.
 
 Implemented on main / Dine-in / tender: **Recall** and **Tender** (main screen) list open checks; **Tender** on Dine-in lets you tap a table to tender it; **Order Sum** shows the check summary.
 
@@ -59,6 +59,6 @@ Full list in `src/data/menuMapping.json` (`status: "ambiguous"` or `"missing-in-
 
 * **AYCE participation:** the printed AYCE menu says *"All party members at each table must order from the SAME AYCE menu choice and no exception."* The training spec says guests with disabilities are the exception. The simulator follows the spec and includes a scenario for it. **Please confirm with management**, since this conflicts with the printed menu.
 * **Weekend lunch:** Premium lunch ($33.95) is "Monday–Friday, excluding Sat/Sun & holidays". The *Saturday Lunch Pricing* scenario expects **PREMIUM AYCE (DINNER)** at lunchtime on a Saturday. Confirm that this is how servers ring it.
-* **18% gratuity, party of 5+ (confirmed):** the POS adds an 18% tip automatically on the pre-tax subtotal for 5 or more guests. It shows as *Tip* on the order screen (Surcharge / Tip line) and is included in Amount Due; on the tender screen it is the *Gratuity* row. Split payments divide it equally (shown as *Pre Gratuity* in Tip Adjustments). **Assumption:** it applies to any dine-in party of 5+, AYCE or à la carte, and never to takeout.
+* **18% gratuity, party of 5+ (confirmed):** the POS adds an 18% tip automatically on the pre-tax subtotal for 5 or more guests. It shows as *Tip* on the order screen (Surcharge / Tip line) and is included in Amount Due; on the tender screen it is the *Gratuity* row. Split payments divide it equally (shown as *Pre Gratuity* in Tip Adjustments). It applies to any dine-in party of 5+, AYCE or à la carte (confirmed), and not to takeout.
 * **Galbi limit:** "25. GALBI ONLY 1PC" (+$3.95) is limited to 1 per person. The evaluation flags more than one per guest.
 * **Tax rate:** 7.25% reproduces both reference receipts exactly. It can be changed in Settings.

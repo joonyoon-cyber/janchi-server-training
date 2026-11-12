@@ -213,21 +213,16 @@ export function creditFlow() {
   dialogs.custom((close) => <CardReader close={close} />);
 }
 
-function gratuityFlow(check: Check, subtotal: number) {
-  const pct = (p: number) => fmt(fromCents(Math.round(toCents(subtotal) * p) / 100));
-  dialogs.keypad({
-    title: 'Gratuity',
-    subtitle: <>Subtotal {fmt(subtotal)} &mdash; enter gratuity amount</>,
-    money: true,
-    initial: check.gratuity ? fmt(check.gratuity) : '',
-    quick: [
-      { label: '15%', value: pct(15) },
-      { label: '18%', value: pct(18) },
-      { label: '20%', value: pct(20) },
-      { label: 'None', value: '0' },
-    ],
-    onEnter: (v) => actions.setGratuity(parseFloat(v) || 0),
-  });
+/** The manual Gratuity button is disabled: the 18% party tip is automatic and tips go in Tip Adjustments. */
+function gratuityDisabled() {
+  dialogs.message(
+    <>
+      Gratuity is disabled in the simulator.
+      <br />
+      The 18% tip for parties of 5 or more is added automatically, and tips from signed card slips are entered in <b>Tip Adjustments</b>.
+    </>,
+    'Gratuity',
+  );
 }
 
 export function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
@@ -387,7 +382,7 @@ export function TenderScreen() {
             key={label}
             data-testid={`tender-row-${label}`}
             role={link ? 'button' : undefined}
-            onClick={link ? () => gratuityFlow(check, t.subtotal) : undefined}
+            onClick={link ? gratuityDisabled : undefined}
             style={{ borderTop: '1px solid #bcc3cf', padding: '4px 6px', display: 'flex', justifyContent: 'space-between', cursor: link ? 'pointer' : 'default' }}
           >
             <span style={{ fontWeight: 'bold', color: link ? '#3c6fd8' : '#222' }}>{label}</span>
@@ -429,7 +424,7 @@ export function TenderScreen() {
       >
         Order Sum
       </button>
-      <button data-testid="tender-Gratuity" className="pos-btn" style={{ left: 675, top: 633, width: 104, height: 105, fontSize: 15 }} onClick={() => gratuityFlow(check, t.subtotal)}>
+      <button data-testid="tender-Gratuity" className="pos-btn" style={{ left: 675, top: 633, width: 104, height: 105, fontSize: 15 }} onClick={gratuityDisabled}>
         Gratuity
       </button>
       <button
