@@ -5,6 +5,8 @@ export type Level = 'beginner' | 'intermediate' | 'advanced';
 export interface ItemReq {
   posId: string;
   qty: number;
+  /** Open-price items (gift certificates): the amount the guest asked for. */
+  price?: number;
 }
 
 export interface DecisionOption {
@@ -32,6 +34,8 @@ export interface SeatStage extends StageBase {
   section?: string;
   /** Specific table the host asked for. */
   tableId?: string;
+  /** Counter guest: start a Quick Serve (takeout) order instead of seating a table. */
+  takeout?: boolean;
 }
 
 export interface OrderStage extends StageBase {
@@ -47,6 +51,8 @@ export interface OrderStage extends StageBase {
   overLimit?: { requested: ItemReq[] };
   /** This round should also include whatever meat was deferred from that stage. */
   remainderOf?: string;
+  /** Expected answer to "Print Kitchen Order?" (false for macarons rung straight to Tender). */
+  kitchenPrint?: boolean;
 }
 
 export interface VoidStage extends StageBase {
@@ -69,6 +75,8 @@ export interface PayStage extends StageBase {
   gratuityPct?: number;
   /** Ask the trainee how much change to hand back. */
   askChange?: boolean;
+  /** Guests split the check evenly this many ways (Even Amount Split), all paying by `method`. */
+  split?: number;
 }
 
 export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage;
@@ -85,6 +93,8 @@ export interface Scenario {
   stages: Stage[];
   targetSeconds: number;
   generated?: boolean;
+  /** Test mode: time is the leaderboard tiebreaker, so it is not part of the table score. */
+  noTimeScore?: boolean;
 }
 
 // ---- Run-time record --------------------------------------------------------
@@ -97,6 +107,8 @@ export interface StageRecord {
   /** Items sent with Order while this stage was active (order stages). */
   submitted?: ItemReq[];
   submitTable?: string;
+  /** Answer given to "Print Kitchen Order?" (true when sent with Order). */
+  kitchenPrint?: boolean;
   interruptShown?: boolean;
   /** seat */
   seatedTable?: string;

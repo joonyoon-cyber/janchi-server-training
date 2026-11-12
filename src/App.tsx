@@ -6,8 +6,19 @@ import { HelpPanel } from './training/HelpPanel';
 import { Results } from './training/Results';
 import { ScenarioPanel } from './training/ScenarioPanel';
 import { ScenarioPicker } from './training/ScenarioPicker';
+import { Leaderboard } from './training/Leaderboard';
+import { TestScreens } from './training/TestMode';
+import { testActions, useTest } from './training/testRun';
+import { signInWithGoogle, signOut, useAuth } from './lib/supabase';
 
-type Mode = 'practice' | 'training';
+type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard';
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'practice', label: 'Free Play' },
+  { id: 'scenarios', label: 'Scenarios' },
+  { id: 'test', label: 'Test' },
+  { id: 'leaderboard', label: 'Leaderboard' },
+];
 
 function readPref<T extends string>(key: string, fallback: T): T {
   try {
@@ -74,7 +85,13 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
-  const [mode, setModeState] = useState<Mode>(() => readPref<Mode>('janchi-pos-sim:mode', 'practice'));
+  const [mode, setModeState] = useState<Mode>(() => {
+    const m = readPref<string>('janchi-pos-sim:mode', 'practice');
+    // A Test in progress is not kept across reloads; 'training' was the old name of Scenarios.
+    return m === 'training' ? 'scenarios' : m === 'test' ? 'practice' : MODES.some((x) => x.id === m) ? (m as Mode) : 'practice';
+  });
+  const auth = useAuth();
+  const test = useTest();
   const [zoom, setZoomState] = useState<Zoom>(() => readPref<Zoom>('janchi-pos-sim:zoom', 'fit'));
   const [showSide, setShowSide] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -82,8 +99,11 @@ export default function App() {
 
   const setMode = (m: Mode) => {
     if (m === mode) return;
-    if (mode === 'training' && run && !result && !confirm('Leave the scenario in progress? It will not be scored.')) return;
-    if (m === 'practice') {
+    if (mode === 'scenarios' && run && !result && !confirm('Leave the scenario in progress? It will not be scored.')) return;
+    if (mode === 'test' && (test.phase === 'table' || test.phase === 'between') && !confirm('Quit the Test? This run will not be saved.')) return;
+    if (mode === 'test') testActions.quit();
+    if (m !== 'practice' && mode === 'practice') quitScenario();
+    if (m === 'practice' || m === 'leaderboard') {
       quitScenario();
       actions.loadPractice();
     }
@@ -95,8 +115,11 @@ export default function App() {
     writePref('janchi-pos-sim:zoom', z);
   };
 
-  const inScenario = mode === 'training' && run && !result;
-  const sideContent = mode === 'practice' ? <HelpPanel /> : inScenario && run ? <ScenarioPanel run={run} /> : null;
+  const inTestTable = mode === 'test' && test.phase === 'table' && !!run && !result;
+  const inScenario = (mode === 'scenarios' && !!run && !result) || inTestTable;
+  const testLabel = inTestTable ? `Table ${test.index + 1} of ${test.tables.length}` : undefined;
+  const sideContent = mode === 'practice' ? <HelpPanel /> : inScenario && run ? <ScenarioPanel run={run} testLabel={testLabel} /> : null;
+  const showPos = mode === 'practice' || inScenario;
 
   return (
     <div className="flex h-full flex-col bg-slate-950">
@@ -106,9 +129,9 @@ export default function App() {
           <div className="text-[10px] text-amber-300">Training simulator · not connected to the live POS</div>
         </div>
         <div className="flex rounded-md bg-slate-800 p-0.5 text-xs font-semibold">
-          {(['practice', 'training'] as Mode[]).map((m) => (
-            <button key={m} data-testid={`mode-${m}`} className={`rounded px-3 py-1 capitalize ${mode === m ? 'bg-sky-600' : 'text-slate-300'}`} onClick={() => setMode(m)}>
-              {m}
+          {MODES.map((m) => (
+            <button key={m.id} data-testid={`mode-${m.id}`} className={`rounded px-3 py-1 ${mode === m.id ? 'bg-sky-600' : 'text-slate-300'}`} onClick={() => setMode(m.id)}>
+              {m.label}
             </button>
           ))}
         </div>
@@ -135,11 +158,27 @@ export default function App() {
         <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => setSettingsOpen(true)}>
           Settings
         </button>
+        {auth.session ? (
+          <span className="flex items-center gap-2 text-xs text-slate-300">
+            {auth.profile?.display_name ?? auth.session.user.email}
+            <button className="rounded border border-slate-600 px-2 py-1" onClick={() => signOut()}>
+              Sign out
+            </button>
+          </span>
+        ) : (
+          <button data-testid="sign-in" className="rounded bg-white px-2 py-1 text-xs font-semibold text-slate-900" onClick={() => signInWithGoogle()}>
+            Sign in with Google
+          </button>
+        )}
       </header>
 
-      {mode === 'training' && !inScenario ? (
+      {!showPos ? (
         <main className="min-h-0 flex-1 overflow-y-auto">
-          {result && run ? (
+          {mode === 'leaderboard' ? (
+            <Leaderboard auth={auth} />
+          ) : mode === 'test' ? (
+            <TestScreens auth={auth} onLeaderboard={() => setMode('leaderboard')} />
+          ) : result && run ? (
             <Results scenario={run.scenario} ev={result} onRetry={() => startScenario(run.scenario)} onExit={() => quitScenario()} />
           ) : (
             <ScenarioPicker onStart={(s) => startScenario(s)} />

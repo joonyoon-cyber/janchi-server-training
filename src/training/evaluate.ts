@@ -94,6 +94,10 @@ export function expectedForStage(sc: Scenario, st: OrderStage, records: StageRec
 /** Everything a party should end up paying for, after voids. */
 export function expectedPartyItems(sc: Scenario, party: string): ItemReq[] {
   const m = new Map<string, number>();
+  const prices = new Map<string, number>();
+  sc.stages.forEach((st) => {
+    if (st.party === party && st.kind === 'order') st.expect.forEach((i) => i.price !== undefined && prices.set(i.posId, i.price));
+  });
   sc.stages.forEach((st) => {
     if (st.party !== party) return;
     if (st.kind === 'order') {
@@ -102,12 +106,13 @@ export function expectedPartyItems(sc: Scenario, party: string): ItemReq[] {
     }
     if (st.kind === 'void') m.set(st.item.posId, (m.get(st.item.posId) ?? 0) - st.item.qty);
   });
-  return [...m].filter(([, q]) => q > 0).map(([posId, qty]) => ({ posId, qty }));
+  return [...m].filter(([, q]) => q > 0).map(([posId, qty]) => (prices.has(posId) ? { posId, qty, price: prices.get(posId) } : { posId, qty }));
 }
 
 export function expectedTotals(items: ItemReq[], taxRate: number, gratuityPct = 0) {
-  const sub = items.reduce((s, i) => s + toCents(posItem(i.posId).price) * i.qty, 0);
-  const tax = taxCents(sub, taxRate);
+  const price = (i: ItemReq) => toCents(i.price ?? posItem(i.posId).price) * i.qty;
+  const sub = items.reduce((s, i) => s + price(i), 0);
+  const tax = taxCents(items.filter((i) => !posItem(i.posId).taxExempt).reduce((s, i) => s + price(i), 0), taxRate);
   const grat = Math.round((sub * gratuityPct) / 100);
   return { subtotal: fromCents(sub), amountDue: fromCents(sub + tax), totalDue: fromCents(sub + tax + grat), gratuity: fromCents(grat) };
 }
@@ -173,6 +178,11 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     switch (st.kind) {
       case 'seat': {
         const t = rec.seatedTable!;
+        if (st.takeout) {
+          score('table', 1);
+          ev.correct.push('Started a Quick Serve (takeout) order');
+          break;
+        }
         const okTable = st.tableId ? t === st.tableId : st.section ? sectionOfTable(t) === st.section : true;
         score('table', okTable ? 1 : 0);
         if (okTable) ev.correct.push(`Seated the party at ${tableLabel(t)}`);
@@ -243,6 +253,12 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
           else ev.incorrect.push(`Did not apply the guest's change before sending: "${st.interrupt.say}"`);
         }
         if (rec.submitTable && run.partyTables[st.party] !== rec.submitTable) ev.incorrect.push('Order sent on the wrong table');
+        if (st.kitchenPrint !== undefined && rec.kitchenPrint !== undefined) {
+          const ok = rec.kitchenPrint === st.kitchenPrint;
+          score('submit', ok ? 1 : 0);
+          if (ok) ev.correct.push(st.kitchenPrint ? 'Printed the kitchen order' : 'Rang it straight to Tender without a kitchen ticket');
+          else ev.incorrect.push(st.kitchenPrint ? 'The kitchen order was not printed' : 'Printed a kitchen ticket the kitchen does not need (macarons go straight to Tender: answer No)');
+        }
         break;
       }
       case 'void': {
@@ -279,6 +295,15 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     const elsewhere = pays.filter((e) => e.type === 'payment' && e.tableId !== table);
     let ok = 1;
     let possible = 1;
+    if (st.split) {
+      possible += 1;
+      const split = window.find((e) => e.type === 'split' && e.ways === st.split);
+      if (split && mine.length === st.split) {
+        ok += 1;
+        ev.correct.push(`Split the check ${st.split} ways and took ${st.split} payments`);
+      } else if (!split) ev.paymentMistakes.push(`The guests wanted to split the check ${st.split} ways: use Even Amount Split`);
+      else ev.paymentMistakes.push(`Took ${mine.length} payments; the check was split ${st.split} ways`);
+    }
     elsewhere.forEach((e) => {
       if (e.type === 'payment') ev.paymentMistakes.push(`Took a ${e.method} payment of ${fmt(e.amount)} on ${tableLabel(e.tableId)} instead of ${tableLabel(table)}`);
     });
@@ -379,7 +404,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
 
   // ---- Time ----
   const ratio = ev.durationSec / Math.max(1, sc.targetSeconds);
-  score('time', ratio <= 1 ? 1 : Math.max(0, (3 - ratio) / 2));
+  if (!sc.noTimeScore) score('time', ratio <= 1 ? 1 : Math.max(0, (3 - ratio) / 2));
 
   // ---- Score ----
   const labels: Record<keyof typeof WEIGHTS, string> = {

@@ -12,6 +12,10 @@ export interface BotOptions {
   mutateOrder?: (stageId: string, items: ItemReq[]) => ItemReq[];
   cashOverride?: number;
   payMethodOverride?: 'cash' | 'credit';
+  /** Always press Order (prints a kitchen ticket) even for macarons. */
+  alwaysOrder?: boolean;
+  /** Ignore the guests' request to split the check. */
+  noSplit?: boolean;
 }
 
 export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
@@ -29,6 +33,11 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
     }
     switch (st.kind) {
       case 'seat': {
+        if (st.takeout) {
+          actions.goto('main');
+          actions.quickServe();
+          break;
+        }
         actions.goto('floor');
         const table =
           st.tableId ?? allTables().find((t) => (!st.section || t.section === st.section) && !s.tableChecks[t.id])!.id;
@@ -36,7 +45,7 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         break;
       }
       case 'order': {
-        actions.openTable(run.partyTables[st.party]);
+        actions.openCheck(run.partyChecks[st.party]);
         let items = expectedForStage(sc, st, run.records);
         if (st.overLimit) {
           let room = 4;
@@ -47,8 +56,9 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
           }
         }
         if (opts.mutateOrder) items = opts.mutateOrder(st.id, items);
-        items.forEach((i) => actions.addItem(i.posId, i.qty));
-        actions.submitOrder();
+        items.forEach((i) => actions.addItem(i.posId, i.qty, undefined, i.price));
+        if (st.kitchenPrint === false && !opts.alwaysOrder) actions.sendOrder(false);
+        else actions.submitOrder();
         break;
       }
       case 'void': {
@@ -67,6 +77,12 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         actions.openTender(checkId);
         // The 18% party-of-5+ tip is added by the POS itself; nothing to enter.
         const method = opts.payMethodOverride ?? st.method;
+        if (st.split && !opts.noSplit) {
+          actions.splitEvenly(st.split);
+          for (let i = 0; i < st.split; i++) actions.pay('credit', 100000);
+          actions.leaveTender();
+          break;
+        }
         const bal = checkTotals(getState().checks[checkId], s.settings.taxRate).balance;
         if (method === 'cash') {
           const given = opts.cashOverride ?? st.cashGiven ?? bal;

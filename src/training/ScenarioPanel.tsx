@@ -42,7 +42,8 @@ function Line({ who, text, current, italic }: { who?: string; text: string; curr
   );
 }
 
-export function ScenarioPanel({ run }: { run: RunState }) {
+/** `testLabel` (e.g. "Table 3 of 20") replaces the scenario title in Test mode so it gives nothing away. */
+export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: string }) {
   useTraining();
   const t = useNow(1000);
   const tableChecks = usePos((s) => s.tableChecks);
@@ -64,12 +65,12 @@ export function ScenarioPanel({ run }: { run: RunState }) {
       <div className="border-b border-slate-700 px-4 py-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-300">{sc.level} training</div>
-            <div className="font-semibold leading-tight">{sc.title}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-300">{testLabel ? 'Test' : `${sc.level} training`}</div>
+            <div className="font-semibold leading-tight">{testLabel ?? sc.title}</div>
           </div>
           <div className="text-right">
             <div className="font-mono text-lg tabular-nums" title="Elapsed time">{fmtSec(elapsed)}</div>
-            <div className="text-[11px] text-slate-400">target {fmtSec(sc.targetSeconds)}</div>
+            {!testLabel && <div className="text-[11px] text-slate-400">target {fmtSec(sc.targetSeconds)}</div>}
           </div>
         </div>
         <div className="mt-1 text-xs text-slate-400">
@@ -137,7 +138,7 @@ export function ScenarioPanel({ run }: { run: RunState }) {
               Skip step
             </button>
             <button className="rounded border border-slate-500 px-2 py-1 text-slate-300 hover:bg-slate-700" onClick={() => endScenario()}>
-              End &amp; score now
+              {testLabel ? 'End this table' : <>End &amp; score now</>}
             </button>
           </div>
         </div>

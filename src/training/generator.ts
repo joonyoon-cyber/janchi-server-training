@@ -83,9 +83,38 @@ const APPETIZERS: Record<string, [string, string]> = {
 const SPOKEN = { ...MEATS, ...AYCE_APPS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
 const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 
-const rnd = (n: number) => Math.floor(Math.random() * n);
+/** Random source; Test mode swaps in a seeded one so a run can be rebuilt from its seed. */
+let rand: () => number = Math.random;
+const rnd = (n: number) => Math.floor(rand() * n);
 const pick = <T,>(a: T[]): T => a[rnd(a.length)];
-const chance = (p: number) => Math.random() < p;
+const chance = (p: number) => rand() < p;
+
+/** Small deterministic PRNG (mulberry32). */
+export function seededRng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Forces specific choices (Test mode recipe); anything left out is random. */
+export interface GenOptions {
+  rng?: () => number;
+  alaCarte?: boolean;
+  guests?: number;
+  ultimate?: boolean;
+  drinks?: 'none' | 'with' | 'before' | 'after';
+  over?: boolean;
+  extraRounds?: number;
+  interrupt?: boolean;
+  voidDrink?: boolean;
+  pay?: 'none' | 'cash' | 'credit' | 'split';
+  lunch?: boolean;
+}
 function sample<T>(a: T[], k: number): T[] {
   const c = [...a];
   const out: T[] = [];
@@ -140,17 +169,28 @@ function capFirst(s: string) {
 
 let genSeq = 0;
 
-export function generateScenario(level: Level): Scenario {
+export function generateScenario(level: Level, opts: GenOptions = {}): Scenario {
+  const prev = rand;
+  rand = opts.rng ?? Math.random;
+  try {
+    return build(level, opts);
+  } finally {
+    rand = prev;
+  }
+}
+
+function build(level: Level, opts: GenOptions): Scenario {
   const taxRate = getState().settings.taxRate;
   const section = pick(['ABC', 'MYW']);
   const sectionName = section === 'ABC' ? 'A B C BAR' : 'M Y W';
-  const alaCarte = level !== 'beginner' && chance(0.3);
+  const alaCarte = opts.alaCarte ?? (level !== 'beginner' && chance(0.3));
   const advanced = level === 'advanced';
   let guests = alaCarte ? 2 + rnd(2) : 2 + rnd(advanced ? 5 : 3);
   if (advanced && !alaCarte && chance(0.35)) guests = 5 + rnd(2);
+  if (opts.guests) guests = opts.guests;
 
   const weekday = rnd(7);
-  const lunch = chance(0.3);
+  const lunch = opts.lunch ?? chance(0.3);
   const time = lunch ? { weekday, hour: 12, minute: 5 + rnd(50) } : { weekday, hour: 17 + rnd(4), minute: rnd(60) };
   const isWeekdayLunch = lunch && weekday >= 1 && weekday <= 5;
 
@@ -171,14 +211,15 @@ export function generateScenario(level: Level): Scenario {
   let summary: string;
 
   if (!alaCarte) {
-    const ultimate = level !== 'beginner' && chance(0.2);
+    const ultimate = opts.ultimate ?? (level !== 'beginner' && chance(0.2));
     const pkgId = ultimate ? 'ultimate-ayce' : isWeekdayLunch ? 'premium-ayce-lunch' : 'premium-ayce-dinner';
     const pkgSay = ultimate ? pick(['the Ultimate all you can eat', 'Ultimate AYCE']) : pick(['Premium all you can eat', 'the Premium AYCE', 'all you can eat']);
     const pkg: ItemReq[] = [{ posId: pkgId, qty: guests }];
     if (guests === 1) pkg.push({ posId: 'single-person-extra', qty: 1 });
-    const drinks = chance(0.75) ? drinkOrder(guests) : [];
-    const seq = drinks.length ? pick(['with', 'before', 'after']) : 'none';
-    const over = advanced && chance(0.4);
+    const wantDrinks = opts.drinks ? opts.drinks !== 'none' : chance(0.75);
+    const drinks = wantDrinks ? drinkOrder(guests) : [];
+    const seq = drinks.length ? (opts.drinks && opts.drinks !== 'none' ? opts.drinks : pick(['with', 'before', 'after'])) : 'none';
+    const over = opts.over ?? (advanced && chance(0.4));
     const first = meatRound(over ? 5 : 2 + rnd(3));
     const apps = level !== 'beginner' && chance(0.35) ? [{ posId: pick(Object.keys(AYCE_APPS)), qty: 1 }] : [];
     const intro = pick([`We'll all do ${pkgSay}.`, `${capFirst(pkgSay)} for all ${NUM[guests] ?? guests} of us, please.`, `We're doing ${pkgSay}.`]);
@@ -211,14 +252,14 @@ export function generateScenario(level: Level): Scenario {
     }
 
     // modification before sending a follow-up round (intermediate+)
-    const extraRounds = over ? 1 : level === 'beginner' ? rnd(2) : 1 + rnd(2);
+    const extraRounds = over ? 1 : opts.extraRounds ?? (level === 'beginner' ? rnd(2) : 1 + rnd(2));
     for (let r = 0; r < extraRounds; r++) {
       const more = meatRound(1 + rnd(4));
       if (overStageId && r === 0) {
         order({ expect: more.slice(0, 0), remainderOf: overStageId, say: pick(['Can we get the rest of what we asked for?', 'We are ready for the rest of our meat order.']) });
         continue;
       }
-      if (level !== 'beginner' && r === 0 && chance(0.35) && more.length) {
+      if (r === 0 && more.length && (opts.interrupt ?? (level !== 'beginner' && chance(0.35)))) {
         // guest changes one quantity mid-entry
         const target = more[0];
         const changed = target.qty > 1 ? { ...target, qty: target.qty - 1 } : null;
@@ -260,15 +301,16 @@ export function generateScenario(level: Level): Scenario {
   }
 
   // void after sending (advanced)
-  if (advanced && chance(0.35)) {
+  if (opts.voidDrink ?? (advanced && chance(0.35))) {
     const drink = allItems.find((i) => DRINKS[i.posId]);
     if (drink) stages.push({ id: id(), kind: 'void', party: p, item: { posId: drink.posId, qty: 1 }, say: `Sorry, could you cancel one ${DRINKS[drink.posId][0]}? We don't need it after all.` });
   }
 
-  if (level !== 'beginner') {
-    const ayce = !alaCarte;
-    const gratuityPct = ayce && guests >= 5 ? 18 : undefined;
-    const method = chance(0.5) ? 'cash' : 'credit';
+  const payKind = opts.pay ?? (level === 'beginner' ? 'none' : chance(0.5) ? 'cash' : 'credit');
+  if (payKind !== 'none') {
+    // The POS adds 18% automatically for dine-in parties of 5+ (AYCE or a la carte).
+    const gratuityPct = guests >= 5 ? 18 : undefined;
+    const method = payKind === 'cash' ? 'cash' : 'credit';
     const draft: Scenario = { id: '', title, level, summary, time, parties: { p1: guests }, stages, targetSeconds: 0 };
     const items = (draft.stages.filter((s) => s.kind === 'void') as { item: ItemReq }[]).reduce(
       (acc, v) => acc.map((i) => (i.posId === v.item.posId ? { ...i, qty: i.qty - v.item.qty } : i)),
@@ -280,6 +322,11 @@ export function generateScenario(level: Level): Scenario {
         ? { id: id(), kind: 'pay', party: p, method: 'cash', cashGiven: cashFor(total), askChange: true, gratuityPct, say: '' }
         : { id: id(), kind: 'pay', party: p, method: 'credit', gratuityPct, say: '' };
     pay.say = method === 'cash' ? pick([`Check please. Here's $${pay.cashGiven} cash.`, `We'll pay cash. Here's $${pay.cashGiven}.`]) : pick(['Can we get the check? One card, please.', "We're ready for the check. Here's my card."]);
+    if (payKind === 'split') {
+      const ways = Math.max(2, Math.min(guests, 2 + rnd(2)));
+      pay.split = ways;
+      pay.say = pick([`Can we split the check ${NUM[ways]} ways? Everyone's paying by card.`, `We'll split it evenly, ${NUM[ways]} ways, all on cards.`]);
+    }
     stages.push(pay);
   }
 
@@ -292,11 +339,59 @@ export function generateScenario(level: Level): Scenario {
     time,
     parties: { p1: guests },
     stages,
-    targetSeconds: 60 + orderStages * 75 + (level !== 'beginner' ? 90 : 0),
+    targetSeconds: 60 + orderStages * 75 + (payKind !== 'none' ? 90 : 0),
     generated: true,
   };
 }
 
 function meatCount(items: ItemReq[]) {
   return items.reduce((s, i) => s + i.qty, 0);
+}
+
+/** Counter guest at the Quick Serve: macaron ice cream to go, or a gift certificate. */
+export function generateCounter(kind: 'macaron' | 'gift', opts: { rng?: () => number } = {}): Scenario {
+  const prev = rand;
+  rand = opts.rng ?? Math.random;
+  try {
+    const p = 'p1';
+    const flavors: Record<string, string> = {
+      'macaron-strawberry': 'strawberry',
+      'macaron-mango': 'mango',
+      'macaron-green-tea': 'green tea',
+      'macaron-vanilla': 'vanilla',
+      'macaron-coffee': 'coffee',
+    };
+    const method = chance(0.5) ? 'cash' : 'credit';
+    const stages: Stage[] = [{ id: 's0', kind: 'seat', party: p, takeout: true, guests: 1, speaker: 'host', say: 'A guest walks up to the counter on their way out.' }];
+    let total: number;
+    if (kind === 'macaron') {
+      const ids = sample(Object.keys(flavors), 1 + rnd(2));
+      const items = ids.map((posId) => ({ posId, qty: 1 + rnd(2) }));
+      const say = items.map((i) => `${NUM[i.qty]} ${flavors[i.posId]}`).join(' and ');
+      stages.push({ id: 's1', kind: 'order', party: p, expect: items, kitchenPrint: false, say: `Hi! Can I get macaron ice cream to go? ${capFirst(say)}, please.` });
+      total = expectedTotals(items, getState().settings.taxRate).totalDue;
+    } else {
+      const amount = pick([25, 50, 75, 100, 150]);
+      stages.push({ id: 's1', kind: 'order', party: p, expect: [{ posId: 'certificate', qty: 1, price: amount }], say: `I'd like to buy a $${amount} gift card, please.` });
+      total = amount;
+    }
+    stages.push(
+      method === 'cash'
+        ? { id: 's2', kind: 'pay', party: p, method: 'cash', cashGiven: cashFor(total), askChange: true, say: `Here's $${cashFor(total)} in cash.` }
+        : { id: 's2', kind: 'pay', party: p, method: 'credit', say: "I'll pay by card." },
+    );
+    return {
+      id: `gen-${Date.now().toString(36)}-${genSeq++}`,
+      title: kind === 'macaron' ? 'Macaron ice cream to go' : 'Gift card sale',
+      level: 'intermediate',
+      summary: kind === 'macaron' ? 'Counter guest buys macaron ice cream on the way out.' : 'Counter guest buys a gift certificate.',
+      time: { weekday: rnd(7), hour: 18 + rnd(3), minute: rnd(60) },
+      parties: { p1: 1 },
+      stages,
+      targetSeconds: 120,
+      generated: true,
+    };
+  } finally {
+    rand = prev;
+  }
 }

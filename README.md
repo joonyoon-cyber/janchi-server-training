@@ -27,10 +27,10 @@ every button stays in the same place on desktop, tablet and phone:
 * **Order screen:** the 14 menu groups in the original order and colors, and every item button in its original row and column with its original POS label (e.g. `15. BRISKET AYCE`, `35. TOP SIRLON AYCE`). Order Details shows new lines in white and ordered lines shaded. Working buttons: Cancel All, − / +, Void Line, Qty, Void / Edit, Modifier, Order, Close, Cash, Credit Card, Tender.
 * **Tender screen:** Cash (with change), Credit Card (tap on reader, merchant + customer copies), **Even Amount Split** (pay each guest's share by card or cash), automatic 18% tip for parties of 5+, Print (simulated receipt), Order Sum, Close. The summary shows Amount Due, Total Received and Balance.
 
-**Practice Mode.** Free play with no scoring. The side panel searches the customer menu and shows
+**Free Play.** Free play with no scoring. The side panel searches the customer menu and shows
 which POS group and button to use, plus the AYCE house rules. State is saved in the browser.
 
-**Training Mode.** Guests speak in menu language, never in POS codes. 20 hand-written scenarios
+**Scenarios.** Guests speak in menu language, never in POS codes. 20 hand-written scenarios
 across Beginner, Intermediate and Advanced, plus a **random scenario generator** for each level.
 Scenarios cover:
 
@@ -50,6 +50,15 @@ interaction and time. It lists missing items, wrong quantities, AYCE violations 
 mistakes, and gives suggestions. You can retry any scenario. Results are kept per browser.
 
 The MVP scenario from the spec is **Beginner → "Premium AYCE Dinner (full table)"**.
+
+**Test.** A 20-table service test built from a fixed recipe (same mix and difficulty every run;
+dishes, parties and order vary with a random seed). Each table is scored 0–100 for accuracy; the
+Test score is the rounded average, and the clear time is the total time on the tables. See
+`src/training/testRecipe.ts`.
+
+**Leaderboard.** Sign in with Google to save Test results. Ranking: highest score, then fastest
+clear time; each person's best run counts. Backed by Supabase (database schema in
+`supabase/schema.sql`; setup steps in `docs/SUPABASE_SETUP.md`).
 
 ## Data (all transcribed from the reference material in `docs/reference/`)
 

@@ -25,6 +25,12 @@ export function useTraining() {
   );
 }
 
+/** Non-React subscription (Test mode controller). */
+export function subscribeTraining(l: () => void) {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
+
 export function getRun() {
   return { run, result };
 }
@@ -142,7 +148,14 @@ onPosEvent((e) => {
 
   switch (st.kind) {
     case 'seat':
-      if (e.type === 'seat') {
+      if (st.takeout && e.type === 'quick-serve') {
+        run.partyTables[st.party] = e.tableId;
+        run.partyChecks[st.party] = e.checkId;
+        record().seatedTable = e.tableId;
+        advance();
+        return;
+      }
+      if (!st.takeout && e.type === 'seat') {
         run.partyTables[st.party] = e.tableId;
         run.partyChecks[st.party] = e.checkId;
         record().seatedTable = e.tableId;
@@ -160,6 +173,7 @@ onPosEvent((e) => {
         // A change the guest would have made mid-order still counts as heard.
         if (st.interrupt) record().interruptShown = true;
         record().submitted = e.items;
+        record().kitchenPrint = e.kitchenPrint;
         record().submitTable = e.tableId;
         advance();
         return;

@@ -3,7 +3,8 @@ import { categories, GRID_COLUMNS, GRID_ROWS, isMeat, mappings, posItem, posItem
 import { checkTotals, taxCents } from '../lib/money';
 import { actions, evenSplit, getState } from '../lib/store';
 import { getRun, startScenario } from '../training/engine';
-import { generateScenario } from '../training/generator';
+import { generateCounter, generateScenario, seededRng } from '../training/generator';
+import { buildTest, testScore, TEST_TABLES } from '../training/testRecipe';
 import { scenarios } from '../training/scenarios';
 import type { Level, OrderStage } from '../training/types';
 import { meatQty, playPerfect } from './bot';
@@ -281,4 +282,39 @@ describe('scenario generator', () => {
       }
     });
   }
+});
+
+describe('test mode recipe', () => {
+  it('builds 20 tables, the same for the same seed, different order for another seed', () => {
+    const a = buildTest(12345).map((s) => s.title + JSON.stringify(s.stages));
+    const b = buildTest(12345).map((s) => s.title + JSON.stringify(s.stages));
+    expect(a).toHaveLength(TEST_TABLES);
+    expect(a).toEqual(b);
+    expect(buildTest(999).map((s) => s.title)).not.toEqual(buildTest(12345).map((s) => s.title));
+  });
+  for (const seed of [1, 2, 3, 42, 777, 2026, 31337, 99999]) {
+    it(`perfect play scores 100 on every table (seed ${seed})`, () => {
+      for (const sc of buildTest(seed)) {
+        startScenario(sc);
+        playPerfect(sc);
+        const r = getRun().result!;
+        if (r.score !== 100) throw new Error(`${sc.title}\n${JSON.stringify(sc, null, 1)}\n${JSON.stringify(r, null, 1)}`);
+        expect(r.categories.some((c) => c.name === 'Completion time')).toBe(false);
+      }
+    });
+  }
+  it('flags a kitchen ticket for macarons and an ignored split', () => {
+    const mac = generateCounter('macaron', { rng: seededRng(5) });
+    startScenario(mac);
+    playPerfect(mac, { alwaysOrder: true });
+    expect(getRun().result!.incorrect.some((x) => x.includes('kitchen ticket'))).toBe(true);
+    const split = generateScenario('intermediate', { rng: seededRng(8), alaCarte: true, guests: 2, pay: 'split' });
+    startScenario(split);
+    playPerfect(split, { noSplit: true });
+    expect(getRun().result!.paymentMistakes.some((x) => x.includes('Even Amount Split'))).toBe(true);
+  });
+  it('test score is the rounded average', () => {
+    expect(testScore([100, 90, 95])).toBe(95);
+    expect(testScore([100, 99])).toBe(100);
+  });
 });
