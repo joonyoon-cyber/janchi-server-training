@@ -1099,13 +1099,13 @@
   },
   {
    "id": "korean-soju-soju-bottle-375ml-rich-20",
-   "name": "Soju Bottle 375ml - Rich (20%)",
+   "name": "Soju Bottle 375ml - 20% Alcohol",
    "section": "Korean Soju",
    "price": 16
   },
   {
    "id": "korean-soju-soju-martini-rich-20",
-   "name": "Soju Martini - Rich (20%)",
+   "name": "Soju Martini - 20% Alcohol",
    "section": "Korean Soju",
    "price": 8
   },
@@ -1123,13 +1123,13 @@
   },
   {
    "id": "korean-soju-soju-bottle-375ml-saero-0-sugar",
-   "name": "Soju Bottle 375ml - Saero (0 sugar)",
+   "name": "Soju Bottle 375ml - Zero Sugar",
    "section": "Korean Soju",
    "price": 16
   },
   {
    "id": "korean-soju-soju-martini-saero-0-sugar",
-   "name": "Soju Martini - Saero (0 sugar)",
+   "name": "Soju Martini - Zero Sugar",
    "section": "Korean Soju",
    "price": 8
   },
@@ -1315,13 +1315,13 @@
   },
   {
    "id": "wine-chardonnay-san-simon-glass",
-   "name": "Chardonnay - San Simon (glass)",
+   "name": "Chardonnay - Maddalena (glass)",
    "section": "Wine",
    "price": 12
   },
   {
    "id": "wine-chardonnay-san-simon-bottle",
-   "name": "Chardonnay - San Simon (bottle)",
+   "name": "Chardonnay - Maddalena (bottle)",
    "section": "Wine",
    "price": 36
   },
@@ -1390,6 +1390,12 @@
    "name": "Macaron Ice Cream - Coffee",
    "section": "Dessert",
    "price": 5
+  },
+  {
+   "id": "rice-wine-sake-strawberry-soju-slushie",
+   "name": "Soju Slushie - Strawberry",
+   "section": "Rice Wine / Sake",
+   "price": 14
   }
  ]
 }

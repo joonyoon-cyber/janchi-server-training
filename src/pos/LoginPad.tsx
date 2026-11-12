@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { actions, getState } from '../lib/store';
+import { actions } from '../lib/store';
 import { dialogs } from './common';
 
 /**
@@ -70,15 +70,15 @@ export function bluuPad(title: string, prefix: string, onOk: (value: string) => 
 /**
  * BLUU "Log-in" keypad. Every main-screen button asks for the employee ID
  * first; the logged-in employee becomes the server on checks opened next.
+ * For now any ID is accepted and named after it: 123 -> SERVER123.
  */
 export function requireLogin(then: () => void) {
   bluuPad(
     'Log-in',
     'login',
     (id) => {
-      const { settings } = getState();
-      if (id !== settings.loginId) return dialogs.message('Invalid Log-in ID.', 'Log-in');
-      actions.login(settings.serverName);
+      if (!id) return dialogs.message('Please enter your Log-in ID.', 'Log-in');
+      actions.login(`SERVER${id}`);
       then();
     },
     true,

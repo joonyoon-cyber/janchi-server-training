@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categories, GRID_COLUMNS, GRID_ROWS, mappings, posItem, posItems } from '../lib/menu';
+import { categories, GRID_COLUMNS, GRID_ROWS, isMeat, mappings, posItem, posItems } from '../lib/menu';
 import { checkTotals, taxCents } from '../lib/money';
 import { actions, evenSplit, getState } from '../lib/store';
 import { getRun, startScenario } from '../training/engine';
@@ -207,6 +207,18 @@ describe('gift certificate', () => {
     expect([t.subtotal, t.tax, t.totalDue]).toEqual([5, 0, 5]);
     actions.sendOrder(false);
     expect(getState().checks[id].lines[0].status).toBe('sent');
+  });
+});
+
+describe('answers from the restaurant (11/2026)', () => {
+  it('Beef Tongue 6oz and Scallop 8pcs do not count toward the 4-meat limit', () => {
+    expect(isMeat('beef-tongue-6oz')).toBe(false);
+    expect(isMeat('scallop-8pcs')).toBe(false);
+    expect(isMeat('15-brisket-ayce')).toBe(true);
+  });
+  it('soju slushies and +7oz Coronita are on page 2 of KOREAN WINE (14 + 3 = 17)', () => {
+    expect(posItem('mango-soju-slushie')).toMatchObject({ category: 'korean-wine', page: 2, row: 1, col: 1, price: 14 });
+    expect(posItem('7oz-coronita')).toMatchObject({ page: 2, col: 3, price: 3 });
   });
 });
 

@@ -28,6 +28,10 @@ export interface PosItem {
   openPrice?: boolean;
   /** Not taxed (gift certificates). */
   taxExempt?: boolean;
+  /** Paid add-on on the AYCE MEAT page (Beef Tongue 6oz, Scallop 8pcs); not part of the 4-meat limit. */
+  addOn?: boolean;
+  /** The server serves this AYCE item themselves (rice, salad, sauces, soups). */
+  serverServed?: boolean;
   /** Needs no kitchen ticket, so Tender does not ask "Print Kitchen Order?". */
   noKitchen?: boolean;
 }

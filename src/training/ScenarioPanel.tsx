@@ -46,7 +46,6 @@ export function ScenarioPanel({ run }: { run: RunState }) {
   useTraining();
   const t = useNow(1000);
   const tableChecks = usePos((s) => s.tableChecks);
-  const loginId = usePos((s) => s.settings.loginId);
   const st = currentStage(run);
   const sc = run.scenario;
   const scroller = useRef<HTMLDivElement>(null);
@@ -78,7 +77,7 @@ export function ScenarioPanel({ run }: { run: RunState }) {
           {parties.map(([k, g]) => `${parties.length > 1 ? `Party ${k.slice(1)}: ` : ''}${g} guest${g > 1 ? 's' : ''}${run.partyTables[k] && tableChecks[run.partyTables[k]] ? ` at ${tableLabel(run.partyTables[k])}` : ''}`).join(' · ')}
         </div>
         <div className="mt-1 text-xs text-slate-400">
-          Your POS Log-in ID: <span className="font-mono font-semibold text-slate-200">{loginId}</span>
+          Log in on the POS with any number (e.g. 123).
         </div>
       </div>
 

@@ -22,7 +22,7 @@ npm run build      # static site in dist/ (works from any path, e.g. GitHub Page
 **POS screens** (`src/pos/`). These are drawn on a fixed 1024×768 screen and scaled to fit, so
 every button stays in the same place on desktop, tablet and phone:
 
-* **Main:** every button first asks for your **Log-in ID** (set in Settings, default `1234`); you become the server on the checks you open. Dine-in, **Quick Serve** (takeout orders and gift certificates), Recall, **Tender** (list of every open table and takeout order) and **Tip Adjustments** (find a card payment by receipt number and add the tip from the signed slip) work; the other tiles are disabled.
+* **Main:** every button first asks for a **Log-in ID** (any number for now; 123 becomes server SERVER123), and you become the server on the checks you open. Dine-in, **Quick Serve** (takeout orders and gift certificates), Recall, **Tender** (list of every open table and takeout order) and **Tip Adjustments** (find a card payment by receipt number and add the tip from the signed slip) work; the other tiles are disabled.
 * **Dine-in floor plan:** the *A B C BAR* and *M Y W* sections, with tables placed where they are in the photos. Tiles show the time seated, minutes elapsed, server, guest count and balance.
 * **Order screen:** the 14 menu groups in the original order and colors, and every item button in its original row and column with its original POS label (e.g. `15. BRISKET AYCE`, `35. TOP SIRLON AYCE`). Order Details shows new lines in white and ordered lines shaded. Working buttons: Cancel All, − / +, Void Line, Qty, Void / Edit, Modifier, Order, Close, Cash, Credit Card, Tender.
 * **Tender screen:** Cash (with change), Credit Card (tap on reader, merchant + customer copies), **Even Amount Split** (pay each guest's share by card or cash), automatic 18% tip for parties of 5+, Print (simulated receipt), Order Sum, Close. The summary shows Amount Due, Total Received and Balance.
@@ -76,5 +76,4 @@ quantity, the wrong payment method, and the wrong cash amount.
 
 ## Settings
 
-Server name shown on the POS, sales tax rate (default 7.25%), and an optional manager PIN for
-voiding ordered items. Whether the real POS requires a manager PIN for voids is not confirmed.
+Sales tax rate (default 7.25%) and an optional manager PIN for voiding items that were already sent. Whether the real POS asks for a manager PIN on voids is not confirmed.

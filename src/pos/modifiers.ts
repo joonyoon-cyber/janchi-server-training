@@ -1,12 +1,20 @@
-// Modifier choices come from the customer menu text. The BLUU modifier screen
-// itself was not in the reference photos, so its layout is approximated.
-const BIBIMBAP = ['BEEF', 'CHICKEN', 'TOFU', 'VEGETABLES', 'SPICY PORK'];
-const SOON_TOFU = ['ASSORTED', 'SEAFOOD', 'VEGETABLES'];
-const DRAFTS = ['COORS LIGHT', 'ASAHI', 'SAPPORO', 'BLUE MOON', 'SAMUEL ADAMS', 'LAGUNITAS IPA', 'FAT TIRE', 'SIERRA NEVADA'];
+// Modifier groups from the BLUU back-office modifier screens (11/2026).
+// Each group needs one choice; the colors match the real modifier buttons.
+export interface ModifierGroup {
+  name: string;
+  color: string;
+  options: string[];
+}
 
-export function modifierOptions(posId: string): string[] | null {
-  if (posId.startsWith('bibimbap-')) return BIBIMBAP;
-  if (posId.startsWith('soon-tofu-')) return SOON_TOFU;
-  if (posId === 'ultimate-w-beer') return DRAFTS;
+const SPICE: ModifierGroup = { name: 'Spice level', color: '#e8b2b0', options: ['NO SPICY', 'MILD', 'MEDIUM', 'SPICY', 'VERY SPICY'] };
+const SOON_TOFU_PROTEIN: ModifierGroup = { name: 'Protein', color: '#82cba8', options: ['ASSORTED', 'BEEF', 'SEAFOOD', 'VEGI'] };
+const BIBIMBAP_PROTEIN: ModifierGroup = { name: 'Protein', color: '#ffffff', options: ['BEEF', 'CHICKEN', 'TOFU', 'VEGI', 'SPICY PORK'] };
+// Not yet verified on the POS: the draft beer choices are a guess.
+const DRAFTS: ModifierGroup = { name: 'Draft beer (unverified)', color: '#ffffff', options: ['COORS LIGHT', 'ASAHI', 'SAPPORO', 'BLUE MOON', 'SAMUEL ADAMS', 'LAGUNITAS IPA', 'FAT TIRE', 'SIERRA NEVADA'] };
+
+export function modifierGroups(posId: string): ModifierGroup[] | null {
+  if (posId.startsWith('bibimbap-')) return [BIBIMBAP_PROTEIN];
+  if (posId.startsWith('soon-tofu-')) return [SPICE, SOON_TOFU_PROTEIN];
+  if (posId === 'ultimate-w-beer') return [DRAFTS];
   return null;
 }

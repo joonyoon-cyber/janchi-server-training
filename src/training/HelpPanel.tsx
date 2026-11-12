@@ -31,13 +31,14 @@ export function HelpPanel() {
             <div className="rounded-lg bg-slate-800 p-3">
               <div className="mb-1 font-semibold text-amber-300">AYCE house rules (from the AYCE menu)</div>
               <ul className="list-disc space-y-1 pl-5 text-slate-300">
-                <li>Max 4 meat items per order, per table, at a time.</li>
-                <li>Everyone at the table must order the same AYCE choice; otherwise à la carte. (Exception: guests with disabilities, per management.)</li>
-                <li>Premium lunch price: Mon–Fri only, excluding Sat/Sun &amp; holidays.</li>
-                <li>Children: 5–8 and 9–12 prices; under 4 free.</li>
+                <li>Max 4 meat items per order, per table, at a time. Beef Tongue 6oz and Scallop 8pcs are paid add-ons and don't count.</li>
+                <li>Everyone at the table does AYCE, or everyone orders à la carte. AYCE tables can still add à la carte items. The POS doesn't enforce this; you do.</li>
+                <li>Premium lunch price: Mon–Fri only. Weekend lunch rings PREMIUM AYCE (DINNER).</li>
+                <li>Children: 5–8 and 9–12 prices; under 4 free (ring nothing).</li>
                 <li>Single guest: $5.00 additional charge.</li>
-                <li>Galbi on Premium: +$3.95, limit 1 per person.</li>
-                <li>18% gratuity for parties of 5 or more.</li>
+                <li>Galbi on Premium: +$3.95, limit 1 per person (not enforced by the POS).</li>
+                <li>Ultimate's included drink: ring only ULTIMATE W/ SODA or W/ BEER.</li>
+                <li>18% tip is added automatically for dine-in parties of 5 or more.</li>
                 <li>$10/person or plate surcharge for leftover food. 2 hour limit.</li>
               </ul>
             </div>
@@ -53,7 +54,9 @@ export function HelpPanel() {
                   <span className="rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ background: category(it.category).color }}>
                     {category(it.category).label}
                   </span>{' '}
-                  → <b>{it.label}</b> <span className="text-slate-400">(row {it.row}, column {it.col})</span>
+                  → <b>{it.label}</b> <span className="text-slate-400">({it.page > 1 ? `page ${it.page}, ` : ''}row {it.row}, column {it.col})</span>
+                  {it.serverServed && <div className="mt-1 text-xs text-sky-300">You serve this item yourself.</div>}
+                  {it.addOn && <div className="mt-1 text-xs text-sky-300">Paid add-on; not part of the 4-meat limit.</div>}
                 </div>
               ) : (
                 <div className="mt-1 text-rose-300">No POS button found in the reference screenshots.</div>

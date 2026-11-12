@@ -28,8 +28,9 @@ export function category(id: string): PosCategory {
   return c;
 }
 
+/** Items in a category; page 0 returns every page. */
 export function itemsInCategory(categoryId: string, page = 1): PosItem[] {
-  return posItems.filter((i) => i.category === categoryId && i.page === page);
+  return posItems.filter((i) => i.category === categoryId && (page === 0 || i.page === page));
 }
 
 export function allTables() {

@@ -336,7 +336,7 @@
    "col": 3,
    "price": 20.0,
    "color": "#19e3ec",
-   "countsAsMeat": true
+   "addOn": true
   },
   {
    "id": "scallop-8pcs",
@@ -347,7 +347,7 @@
    "col": 4,
    "price": 20.0,
    "color": "#19e3ec",
-   "countsAsMeat": true
+   "addOn": true
   },
   {
    "id": "01-fried-mandu-ayce",
@@ -417,7 +417,8 @@
    "row": 2,
    "col": 3,
    "price": 0.0,
-   "number": 7
+   "number": 7,
+   "serverServed": true
   },
   {
    "id": "08-seaweed-soup-ayce",
@@ -427,7 +428,8 @@
    "row": 2,
    "col": 4,
    "price": 0.0,
-   "number": 8
+   "number": 8,
+   "serverServed": true
   },
   {
    "id": "09-spicy-miso-stew-ayce",
@@ -437,7 +439,8 @@
    "row": 3,
    "col": 1,
    "price": 0.0,
-   "number": 9
+   "number": 9,
+   "serverServed": true
   },
   {
    "id": "10-soon-tofu-ayce",
@@ -457,7 +460,8 @@
    "row": 3,
    "col": 3,
    "price": 0.0,
-   "number": 11
+   "number": 11,
+   "serverServed": true
   },
   {
    "id": "12-assorted-veggie-ayce",
@@ -537,7 +541,8 @@
    "row": 5,
    "col": 4,
    "price": 0.0,
-   "number": 44
+   "number": 44,
+   "serverServed": true
   },
   {
    "id": "45-lettuce-wrap",
@@ -576,7 +581,8 @@
    "page": 1,
    "row": 7,
    "col": 1,
-   "price": 0.0
+   "price": 0.0,
+   "serverServed": true
   },
   {
    "id": "garlic-jalapeno",
@@ -585,7 +591,8 @@
    "page": 1,
    "row": 7,
    "col": 2,
-   "price": 0.0
+   "price": 0.0,
+   "serverServed": true
   },
   {
    "id": "sesame-oil",
@@ -594,7 +601,8 @@
    "page": 1,
    "row": 7,
    "col": 3,
-   "price": 0.0
+   "price": 0.0,
+   "serverServed": true
   },
   {
    "id": "bean-paste-ssamjang",
@@ -603,7 +611,8 @@
    "page": 1,
    "row": 7,
    "col": 4,
-   "price": 0.0
+   "price": 0.0,
+   "serverServed": true
   },
   {
    "id": "premium-ayce-lunch",
@@ -2472,6 +2481,36 @@
    "openPrice": true,
    "taxExempt": true,
    "noKitchen": true
+  },
+  {
+   "id": "mango-soju-slushie",
+   "label": "(MANGO) SOJU SLUSHIE",
+   "category": "korean-wine",
+   "page": 2,
+   "row": 1,
+   "col": 1,
+   "price": 14,
+   "color": "#8fe3c8"
+  },
+  {
+   "id": "strawberry-soju-slushie",
+   "label": "(STRAWBERRY) SOJU SLUSHIE",
+   "category": "korean-wine",
+   "page": 2,
+   "row": 1,
+   "col": 2,
+   "price": 14,
+   "color": "#8fe3c8"
+  },
+  {
+   "id": "7oz-coronita",
+   "label": "+7oz CORONITA",
+   "category": "korean-wine",
+   "page": 2,
+   "row": 1,
+   "col": 3,
+   "price": 3,
+   "color": "#36a77e"
   }
  ]
 }

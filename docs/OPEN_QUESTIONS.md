@@ -1,65 +1,65 @@
-# Open questions & assumptions to verify
+# Open questions & confirmed behavior
 
 The spec asks that anything missing or ambiguous in the reference material be
-flagged instead of invented. This file lists every such point. Items marked
-**assumption** are implemented in a specific way so the simulator works; please
-confirm them on the real POS (or tell us the right behavior) and they will be
-corrected.
+flagged instead of invented. **Still open** lists what the simulator currently
+guesses. **Confirmed** records answers from the restaurant (Nov 2026), so they
+are not asked again.
 
-## Missing reference material
+## Still open
 
-| # | What | Current handling |
-|---|------|------------------|
-| 1 | **PATIO table layout.** No screenshot of the PATIO tab. | Tab exists; shows a "layout not provided" note and no tables. Send a photo of the PATIO tab to add it. |
-| 2 | The two **unlabeled section tabs** (3rd and 5th) on the Dine-in screen. | Rendered blank like the photo; selecting them shows an empty floor. |
-| 3 | **Modifier screen** (buttons with the small modifier icon: BIBIMBAP COLD/HOT, SOON TOFU, ULTIMATE W/ BEER). | **Assumption:** a simple popup lists choices taken from the customer menu (bibimbap: Beef/Chicken/Tofu/Vegetables/Spicy Pork; soon tofu: Assorted/Seafood/Vegetables; Ultimate beer: the 8 drafts). Layout and options unverified. Soon tofu spice level is not asked. |
-| 4 | **Guest-count entry** when seating a table. | **Assumption:** tapping an empty table opens a number keypad, then goes straight to the order screen. |
-| 5 | **Cash / credit-card dialogs** on the tender screen. | **Credit Card (confirmed by the restaurant):** the guest taps the card on the reader, then a merchant copy and a customer copy print. Implemented for the full balance; no card data is ever requested. **Assumption:** the slip layout (signature line on the merchant copy only), and that the reader charges the whole balance. Charging part of the balance (split cards) is not simulated yet. **Cash:** the amount received is typed in cents on the BLUU-style pad (1, 0, 0, 00 → 100.00), confirmed by the restaurant; the change is shown afterwards. The Exact / next-dollar / bill shortcut buttons above the pad are a simulator aid and may not exist on the real POS. The Gratuity keypad on the tender screen also enters cents. |
-| 6 | Whether the check **closes automatically** when fully paid. | **Credit card (confirmed by the restaurant):** after the receipts print, the POS returns to the Dine-in screen; the check is closed and the table is free. **Cash (assumption):** pressing *Close* on the tender screen closes the paid check and frees the table. *Close* with a balance left goes back to the order screen. |
-| 7 | **Void of an already-ordered item** and manager approval. | **Assumption:** *Void Line* and *Void / Edit* work on new and ordered lines; ordered lines ask for confirmation and are logged as voids. Manager PIN is an option in Settings, **off** by default. |
-| 8 | Order screen **Close with unsent items**. | **Assumption:** asks for confirmation, then discards the unsent items. If nothing was ever ordered, the table is released. |
-| 9 | **Cash / Credit Card / Tender with unsent items** (confirmed from video: the POS asks "Print Kitchen Order?" Yes / No, sends the items either way, and opens the tender screen; *No* is used for items that need no kitchen ticket, e.g. macaron ice cream). | Implemented. For takeout the normal flow is still *Order* when the order is taken and *Tender* (main screen) when the guest picks up. The takeout tender screen shows the item list instead of the table banner (from video). |
-| 10 | Floor-plan tile icon seen on **W6** (person/card icon). | Not reproduced; meaning unknown. |
-| 11 | Floor-plan **amount** on a table tile. | **Assumption:** shown as the check balance including tax (the same number as Amount Due on the order screen). Not confirmed whether the real tile includes tax. |
-| 12 | Gratuity base. | The automatic 18% party tip is on the pre-tax subtotal (confirmed by the reference photo: 128.40 → 23.11). The manual *Gratuity* button on the tender screen is usually never used (confirmed); it is disabled in the simulator (shows a note pointing to the automatic tip and Tip Adjustments). |
-| 13 | Check number format (`10-021` … `10-034` on one day in the Tender list photo). | **Assumption:** `10-` + a 3-digit sequence starting at `10-001` in each simulator session. What the `10` means (terminal? day?) and when the sequence resets is unknown. |
-| 14 | **Printing a check from Dine-in** (confirmed by the restaurant: tap the printer icon, badge turns from red to a green check, tap a table, its check prints). | Implemented. **Assumption:** print mode switches off after one check is printed, and tapping the icon again cancels it. The "Select a table to print its check" hint line is a simulator aid. |
-| 15 | **Log-in keypad** (confirmed: every main-screen button asks for the employee's Log-in ID first; the logged-in employee becomes the server on new tables and Quick Serve orders). | Implemented. The simulator has one employee: the trainee, whose name and Log-in ID (default `1234`) are set in Settings. A wrong ID shows "Invalid Log-in ID." The real error message and whether IDs are masked on screen are not known. |
-| 16 | **Tender list** (confirmed: main screen > Tender lists all open tables and takeout orders; selecting one shows its items on the right; Tender opens the same payment screen as Dine-in > Tender > table). | Implemented, sorted newest check first. **Assumptions:** takeout cards read `Take out(SERVER NAME)`; *Table Name* sorts by table; *Edit* opens the order screen; *My Order* shows only your checks. *Change Order Type*, *Server*, *Reprint Kitchen Memo*, *Check No Search* and *POS SEARCH* are disabled; *Eat in*, *Drive-Thru* and *Delivery* show no orders. |
-| 17 | **Quick Serve** (confirmed: opens the order screen as a takeout order; paid later through main screen > Tender). | Implemented with the "Take out" header, the Takeout icon and the customer box in place of Assign Seat. **Assumptions:** *Order* and *Close* return to the main screen; a takeout order with nothing ordered is discarded; a paid takeout check returns to the main screen. |
-| 18 | **Tip Adjustments** (confirmed: Search With Receipt Number → type the number → select the row → Credit Gratuity → type the tip from the signed slip → Ok → Print Receipt? prompt; any button returns to the results). | Implemented. Receipt number = date + check number digits (e.g. `2026110610025` for check 10-025), and searching by the trailing digits (`10025`) finds it. The gratuity keypad enters cents (2, 0, 00 → 20.00), confirmed by the restaurant. **Assumptions:** the list stays empty until a search or a *My Order* / *Tip Applied* / *Business Hours* filter is used; approval no., TroutD and the masked card digits are randomly generated. Cash / Offline C.C. / Flexgift Gratuity, Reprint, Search By Employee, Select Employee and the calendar are disabled. Whether a second Ok on an already-tipped payment replaces the tip is not known (the simulator replaces it). |
-| 19 | **Even Amount Split** (confirmed: on a table's or takeout's tender screen, Even Amount Split asks "Please enter the number of customers", shows the split amounts, *Apply* returns to the tender screen, then each share is paid with Credit Card or Cash; leftover cents go to the first shares, e.g. 100.00 ÷ 3 = 33.34 / 33.33 / 33.33; each guest's tip is entered afterwards in Tip Adjustments, one row per card payment). | Implemented: each Cash / Credit Card payment takes the next unpaid share; each split card payment gets its own row in Tip Adjustments for its tip. **Assumptions:** the layout of the split-amounts window (no photo yet); splitting again replaces the shares; split card payments share the check's receipt number. |
-| 20 | **Gift certificates** (from video: Quick Serve → ▼ under the menu groups → CERTIFICATE group → CERTIFICATE button → *Open Price* pad (cents, 5, 00 → 5.00) → Tender → pay by cash or card). | Implemented: ▲ / ▼ page through the menu groups; CERTIFICATE is the only group on page 2 (confirmed). The certificate is not taxed and goes to Tender without the kitchen prompt. The purple mark on the button is reproduced as on the POS. Activating the physical card is done by hand and is intentionally not simulated (confirmed). |
+| # | Question | What the simulator does now |
+|---|----------|-----------------------------|
+| 1 | **Modifier for ULTIMATE W/ BEER**: what choices appear? | A one-tap list of the 8 drafts (guess). Soon tofu and bibimbap modifiers are confirmed (below). |
+| 2 | **Even Amount Split result window**: exact layout. | A list of "Customer N: amount" with Cancel / Apply. Close enough for now. |
+| 3 | **Voiding an item already sent to the kitchen**: manager PIN? Void Line or Void / Edit? | Both buttons work; sent lines ask for confirmation. Manager PIN is an option in Settings, off by default. |
+| 4 | **Unlabeled 3rd and 5th section tabs** on the Dine-in screen. | Shown blank; selecting one shows an empty floor. |
+| 5 | **Tender list Edit button**: opens the order screen? | Opens the order screen. |
+| 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
+| 7 | **AYCE exception for guests with disabilities**: the original spec makes it an exception to "everyone does AYCE"; the restaurant's rule of thumb (below) does not mention it. | One advanced scenario still treats it as an exception. Remove it if there is no such exception. |
+
+Not worried about (intentionally not simulated): PATIO layout, the icon on table W6, card slip layout, physical gift card activation.
+
+## Confirmed
+
+**Ordering and menu**
+* Everyone at a table does AYCE or everyone orders à la carte; AYCE tables can still add à la carte items. Not enforced by the POS; servers enforce it.
+* Weekend lunch rings **PREMIUM AYCE (DINNER)**; the lunch price is Mon–Fri only.
+* **25. GALBI ONLY 1PC** (+$3.95): 1 per person, not enforced by the POS. Training flags more than one per guest.
+* **BEEF TONGUE 6oz / SCALLOP 8PCS** ($20): paid add-ons; they do **not** count toward the 4-meat limit.
+* Ultimate's included drink: ring only **ULTIMATE W/ SODA** or **ULTIMATE W/ BEER** ($0.00), not the actual drink.
+* Children under 4: ring nothing.
+* Tax rate: 7.25%.
+* Soju: 20% alcohol → RED, Original → GREEN, Zero Sugar → ZERO SUGAR, Citron → LEMON, Grape → GREEN GRAPE.
+* Chardonnay: guests ask by grape when there is one kind; the POS button is CHAR. MADDALENA.
+* Soju slushies are on **page 2 of KOREAN WINE**: (MANGO) SOJU SLUSHIE 14.00, (STRAWBERRY) SOJU SLUSHIE 14.00, +7oz CORONITA 3.00 (slushie + Coronita = 17). The item grid's `< 1 >` navigator pages through items.
+* GARLIC&JALAPENO is the full label. Servers serve these AYCE items themselves: RICE, GREEN SALAD, RICE PAPER, GARLIC&JALAPENO, SESAME OIL, BEAN PASTE SSAMJANG, MISO SOUP, SEAWEED SOUP, SPICY MISO STEW (noted in Practice help).
+* Modifiers: **soon tofu** asks spice (NO SPICY / MILD / MEDIUM / SPICY / VERY SPICY) and protein (ASSORTED / BEEF / SEAFOOD / VEGI); **bibimbap** asks protein (BEEF / CHICKEN / TOFU / VEGI / SPICY PORK). All $0.00.
+* Gift certificates: Quick Serve → ▼ under the menu groups → CERTIFICATE (the only group on page 2) → Open Price pad (cents) → Tender. Not taxed; no kitchen prompt. Physical card activation is done by hand.
+
+**Screens and buttons**
+* **Log-in**: every main-screen button asks for a Log-in ID. For now any ID is accepted and the server is named after it (123 → SERVER123). Authorization will be discussed later.
+* Seating: tap an empty table, enter the guest count.
+* Order screen **Close** with unsent items: they are discarded without asking; nothing is saved or sent.
+* **Tender / Cash / Credit Card before Order**: "Print Kitchen Order?" Yes / No; the items are sent either way. *No* for items that need no ticket (macarons).
+* **Credit card**: tap on the reader; merchant and customer copies print; the POS returns to Dine-in.
+* **Cash**: type the amount in cents (1, 0, 0, 00 → 100.00); no shortcut buttons. The change window has Close and also disappears by itself after a few seconds; a fully paid check then closes and the POS returns to Dine-in (main screen for takeout).
+* Manual **Gratuity** button on the tender screen: usually never used; disabled in the simulator.
+* **18% tip**: added automatically on the pre-tax subtotal for dine-in parties of 5+, AYCE or à la carte, not takeout (128.40 → 23.11). Split payments divide it equally (Pre Gratuity in Tip Adjustments).
+* **Even Amount Split**: number of customers → amounts → Apply → pay each share by card or cash; leftover cents go to the first shares. Each guest's tip is entered later in Tip Adjustments.
+* **Tip Adjustments**: list stays empty until a search; Search With Receipt Number → row → Credit Gratuity → tip (cents) → Print Receipt? → back to results. Entering a tip again replaces it. Split card payments share a receipt number but show different last-4 digits.
+* **Printer icon** on Dine-in: tap (red → green check), tap a table, its check prints, the badge turns red again.
+* Floor-plan table amount: balance including tax.
+* Check numbers `10-NNN` restart daily on the POS; in the simulator they restart each training scenario and each Practice reset.
+* **Tender list**: all open tables and takeout orders; takeout cards read `Take out(SERVER NAME)`.
+* **Quick Serve**: takeout order; pay later from main screen > Tender.
 
 ## Buttons shown but disabled
 
-These buttons look like the real POS. Pressing them shows a message saying they are not part of the simulator yet. They do **not** pretend to work:
+These look like the real POS but show a "not part of the simulator yet" message:
 
 Main screen: Cashier In, Cashier Out, Gift Card, Cash Drawer, Announcement, Operations, and the top-right icons.
 Dine-in: Information, Move/Join, Link Table, Quick Serve, Cash Drawer, Refund.
 Order screen: Split, Combine, Price Change, Discount, Input Customer Information, Kitchen Memo, Last Receipt, Assign Seat and its − / +, Select Cust.
 Tender screen: Offline C.C., Gift Card, Gratuity, Total Amount, ︿ / ﹀, customer search.
-
-Implemented on main / Dine-in / tender: Dine-in, Quick Serve, **Recall** (open checks), **Tender** (Tender list), **Tip Adjustments**; **Tender** and the printer icon on Dine-in; **Even Amount Split** and **Order Sum** on the tender screen.
-
-## Menu mapping questions
-
-Full list in `src/data/menuMapping.json` (`status: "ambiguous"` or `"missing-in-pos"`).
-
-* **Soju flavors:** menu lists Rich / Original / Saero / Citron / Grape; POS has RED / GREEN / ZERO SUGAR / LEMON / GREEN GRAPE. Mapped Rich→RED, Original→GREEN, Saero→ZERO SUGAR, Citron→LEMON, Grape→GREEN GRAPE. **Needs confirmation.** POS also has JINRO IS BACK, GRAPEFRUIT, MELON, which are not on the printed menu.
-* **Chardonnay:** menu says *San Simon* ($12/$36); POS button says *CHAR. MADDALENA* ($12/$36).
-* **Sauvignon Blanc:** menu says *Tierra del Fuego* ($10/$30); assumed to be *SAU.BL. HOUSE* ($10/$30).
-* **Soju Slushie ($14) and Slushie + Coronita ($17)** are on the drinks menu but no POS button appears in the screenshots.
-* **GARLIC&JALAPENO** (AYCE APPS): the label is cut off in the screenshot; spelled out here.
-* **Ultimate included drink** (ULTIMATE W/ SODA / W/ BEER at $0.00): it's unclear whether servers also ring the actual soda or beer. Scenarios don't test this yet.
-* **BEEF TONGUE 6oz / SCALLOP 8PCS** ($20 each, in AYCE MEAT): assumed to be add-ons. They count toward the 4-meat limit. Confirm.
-* **Under-4 children** ("Under 4 years old Free"): no POS button, so not used in scenarios.
-* POS-only buttons with no customer-menu item (extra sides, TOGO kimchi, EMPLOYEE DRINK, COCKAGE FEE, CREATOR / BIRTHDAY PROMO, ssamjang, etc.) are kept on the grid but are not used in scenarios.
-
-## Policy questions
-
-* **AYCE participation:** the printed AYCE menu says *"All party members at each table must order from the SAME AYCE menu choice and no exception."* The training spec says guests with disabilities are the exception. The simulator follows the spec and includes a scenario for it. **Please confirm with management**, since this conflicts with the printed menu.
-* **Weekend lunch:** Premium lunch ($33.95) is "Monday–Friday, excluding Sat/Sun & holidays". The *Saturday Lunch Pricing* scenario expects **PREMIUM AYCE (DINNER)** at lunchtime on a Saturday. Confirm that this is how servers ring it.
-* **18% gratuity, party of 5+ (confirmed):** the POS adds an 18% tip automatically on the pre-tax subtotal for 5 or more guests. It shows as *Tip* on the order screen (Surcharge / Tip line) and is included in Amount Due; on the tender screen it is the *Gratuity* row. Split payments divide it equally (shown as *Pre Gratuity* in Tip Adjustments). It applies to any dine-in party of 5+, AYCE or à la carte (confirmed), and not to takeout.
-* **Galbi limit:** "25. GALBI ONLY 1PC" (+$3.95) is limited to 1 per person. The evaluation flags more than one per guest.
-* **Tax rate:** 7.25% reproduces both reference receipts exactly. It can be changed in Settings.
+Tender list: Change Order Type, Server, Reprint Kitchen Memo, Check No Search, POS SEARCH.
+Tip Adjustments: Cash / Offline C.C. / Flexgift Gratuity, Reprint, Search By Employee, Select Employee, calendar.

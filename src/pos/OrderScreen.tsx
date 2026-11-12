@@ -6,7 +6,7 @@ import type { OrderLine } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './common';
 import { IconCancelAll, IconBag, IconForkSpoon, IconGuests, IconModifierBadge, IconPerson, IconVoidLine } from './icons';
 import { bluuPad } from './LoginPad';
-import { modifierOptions } from './modifiers';
+import { modifierGroups } from './modifiers';
 
 const GRID_X = 185;
 const GRID_Y = 69;
@@ -21,32 +21,62 @@ export function takePendingPayment() {
   return p;
 }
 
-function chooseModifier(lineId: string, posId: string) {
-  const opts = modifierOptions(posId);
-  if (!opts) return;
-  dialogs.custom((close) => (
-    <Modal w={460} title={`Modifier - ${posItem(posId).label}`}>
-      <div style={{ padding: 12, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-        {opts.map((o) => (
-          <button
-            key={o}
-            className="pos-btn"
-            style={{ position: 'relative', height: 54, fontWeight: 'bold', fontSize: 13 }}
-            onClick={() => {
-              actions.setLineModifier(lineId, o);
-              close();
-            }}
-          >
-            {o}
-          </button>
+function ModifierPicker({ lineId, posId, close }: { lineId: string; posId: string; close: () => void }) {
+  const groups = modifierGroups(posId)!;
+  const [picked, setPicked] = useState<(string | null)[]>(groups.map(() => null));
+  const pick = (g: number, o: string) => {
+    const next = picked.map((p, i) => (i === g ? o : p));
+    setPicked(next);
+    // Done once every group has a choice (soon tofu: spice + protein).
+    if (next.every(Boolean)) {
+      actions.setLineModifier(lineId, next.join(', '));
+      close();
+    }
+  };
+  return (
+    <Modal w={690} title={`Modifier - ${posItem(posId).label}`}>
+      <div style={{ padding: 12 }}>
+        {groups.map((g, gi) => (
+          <div key={g.name} style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 12, color: '#555', marginBottom: 4 }}>{g.name}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', border: '1px solid #c3c8d2' }}>
+              {g.options.map((o) => (
+                <button
+                  key={o}
+                  data-testid={`mod-${o}`}
+                  onClick={() => pick(gi, o)}
+                  style={{
+                    height: 66,
+                    border: picked[gi] === o ? '3px solid #1b1b1b' : '1px solid #c3c8d2',
+                    background: g.color,
+                    fontFamily: 'var(--pos-font)',
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    padding: '6px 4px',
+                  }}
+                >
+                  <span>{o}</span>
+                  <span>$ 0.00</span>
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
-      <div style={{ padding: '0 12px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#666' }}>Choices from the Janchi menu. Real modifier screen not yet verified.</span>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 12px 12px' }}>
         <DlgButton onClick={close}>Skip</DlgButton>
       </div>
     </Modal>
-  ));
+  );
+}
+
+function chooseModifier(lineId: string, posId: string) {
+  if (!modifierGroups(posId)) return;
+  dialogs.custom((close) => <ModifierPicker lineId={lineId} posId={posId} close={close} />);
 }
 
 function requireManager(then: () => void) {
@@ -85,12 +115,15 @@ export function OrderScreen() {
   const check = checkId ? checks[checkId] : null;
   const [cat, setCat] = useState(categories[0].id);
   const [catPage, setCatPage] = useState(1);
+  const [itemPage, setItemPage] = useState(1);
+  const itemPages = Math.max(1, ...itemsInCategory(cat, 0).map((i) => i.page));
   const lastCatPage = Math.max(...categories.map((c) => c.page));
   // ▲ / ▼ page through the menu groups; the first group of the page is selected (gift card video).
   const goCatPage = (p: number) => {
     const page = Math.min(lastCatPage, Math.max(1, p));
     setCatPage(page);
     setCat(categories.find((c) => c.page === page)!.id);
+    setItemPage(1);
   };
   const [selected, setSelected] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -134,7 +167,7 @@ export function OrderScreen() {
     const lineId = actions.addItem(posId);
     if (lineId) {
       setSelected(lineId);
-      if (modifierOptions(posId)) chooseModifier(lineId, posId);
+      if (modifierGroups(posId)) chooseModifier(lineId, posId);
     }
   };
 
@@ -244,7 +277,10 @@ export function OrderScreen() {
             data-testid={`cat-${c.id}`}
             className={`pos-cat ${c.id === cat ? 'selected' : ''}`}
             style={{ top: 2 + i * 37, background: `linear-gradient(${c.color}dd, ${c.color})` }}
-            onClick={() => setCat(c.id)}
+            onClick={() => {
+              setCat(c.id);
+              setItemPage(1);
+            }}
           >
             {c.label}
           </div>
@@ -255,7 +291,17 @@ export function OrderScreen() {
 
       {/* Menu item grid */}
       <div className="pos-abs" style={{ left: GRID_X - 2, top: GRID_Y - 2, width: CELL_W * GRID_COLUMNS + 4, height: CELL_H * GRID_ROWS + 4, background: '#d7dbe6' }} />
-      {itemsInCategory(cat).map((it) => (
+      {/* Item page navigator in the bottom-right cell, as on the POS (< 1 >). */}
+      <div className="pos-abs" data-testid="item-pager" style={{ left: GRID_X + 3 * CELL_W, top: GRID_Y + 7 * CELL_H, width: CELL_W, height: CELL_H, background: '#fff', border: '1px solid #c6cad3', display: 'flex', alignItems: 'center', justifyContent: 'space-around', fontSize: 15, zIndex: 1 }}>
+        <button data-testid="item-page-prev" style={{ border: 'none', background: 'transparent', fontSize: 16, cursor: 'pointer', padding: 8 }} onClick={() => setItemPage((p) => Math.max(1, p - 1))}>
+          &lt;
+        </button>
+        <span>{itemPage}</span>
+        <button data-testid="item-page-next" style={{ border: itemPage < itemPages ? '2px solid #222' : 'none', borderRadius: 3, background: 'transparent', fontSize: 16, cursor: 'pointer', padding: 8 }} onClick={() => setItemPage((p) => Math.min(itemPages, p + 1))}>
+          &gt;
+        </button>
+      </div>
+      {itemsInCategory(cat, itemPage).map((it) => (
         <div
           key={it.id}
           role="button"
@@ -401,13 +447,12 @@ export function OrderScreen() {
 
       {/* Bottom action bar */}
       <button data-testid="order-Close" className="pos-btn pos-btn-blue" style={{ left: 22, top: 662, width: 102, height: 100, fontSize: 14 }} onClick={() => {
-        const n = lines.filter((l) => l.status === 'new').length;
-        if (n) dialogs.confirm(`${n} new item(s) have not been ordered and will be cancelled. Close anyway?`, () => actions.leaveOrderScreen(), 'Close');
-        else actions.leaveOrderScreen();
+        // Unsent items are discarded without asking; nothing is saved or sent to the kitchen.
+        actions.leaveOrderScreen();
       }}>
         Close
       </button>
-      {btn('Modifier', 146, 665, 104, 44, needLine((l) => (modifierOptions(l.posId) && l.status === 'new' ? chooseModifier(l.id, l.posId) : dialogs.message('There are no modifiers for this item.'))))}
+      {btn('Modifier', 146, 665, 104, 44, needLine((l) => (modifierGroups(l.posId) && l.status === 'new' ? chooseModifier(l.id, l.posId) : dialogs.message('There are no modifiers for this item.'))))}
       {btn('Void / Edit', 257, 665, 105, 44, needLine((l) =>
         dialogs.keypad({
           title: 'Void / Edit',

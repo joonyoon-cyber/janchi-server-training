@@ -113,23 +113,23 @@
    "customerItemId": "ayce-packages-ultimate-included-drink-1-soft-drink",
    "customerName": "Ultimate included drink: 1 soft drink",
    "aliases": [],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "ultimate-w-soda",
    "posName": "ULTIMATE W/ SODA",
    "posCategory": "AYCE PRICE",
    "posItemNumber": null,
-   "note": "Ultimate includes 1 draft beer or 1 soft drink. Whether servers ring the actual soda as well is not shown in the references."
+   "note": "Ring only this button for the included drink (confirmed); do not ring the actual soda or beer."
   },
   {
    "customerItemId": "ayce-packages-ultimate-included-drink-1-draft-beer",
    "customerName": "Ultimate included drink: 1 draft beer",
    "aliases": [],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "ultimate-w-beer",
    "posName": "ULTIMATE W/ BEER",
    "posCategory": "AYCE PRICE",
    "posItemNumber": null,
-   "note": "Button shows a modifier icon; modifier choices are not shown in the references."
+   "note": "Ring only this button for the included drink (confirmed); do not ring the actual soda or beer."
   },
   {
    "customerItemId": "ayce-bbq-15-prime-beef-brisket",
@@ -2157,29 +2157,31 @@
   },
   {
    "customerItemId": "korean-soju-soju-bottle-375ml-rich-20",
-   "customerName": "Soju Bottle 375ml - Rich (20%)",
+   "customerName": "Soju Bottle 375ml - 20% Alcohol",
    "aliases": [
-    "rich soju"
+    "red soju",
+    "20% soju",
+    "strong soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-red",
    "posName": "SOJU - RED",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Rich = RED; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-martini-rich-20",
-   "customerName": "Soju Martini - Rich (20%)",
+   "customerName": "Soju Martini - 20% Alcohol",
    "aliases": [
-    "rich soju martini"
+    "red soju",
+    "20% soju",
+    "strong soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-martini-red",
    "posName": "SOJU MARTINI - RED",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Rich = RED; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-bottle-375ml-original-16-5",
@@ -2187,12 +2189,11 @@
    "aliases": [
     "original soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-green",
    "posName": "SOJU - GREEN",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Original = GREEN; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-martini-original-16-5",
@@ -2200,38 +2201,35 @@
    "aliases": [
     "original soju martini"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-martini-green",
    "posName": "SOJU MARTINI - GREEN",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Original = GREEN; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-bottle-375ml-saero-0-sugar",
-   "customerName": "Soju Bottle 375ml - Saero (0 sugar)",
+   "customerName": "Soju Bottle 375ml - Zero Sugar",
    "aliases": [
-    "saero soju"
+    "zero sugar soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-zero-sugar",
    "posName": "SOJU - ZERO SUGAR",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Saero = ZERO SUGAR; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-martini-saero-0-sugar",
-   "customerName": "Soju Martini - Saero (0 sugar)",
+   "customerName": "Soju Martini - Zero Sugar",
    "aliases": [
-    "saero soju martini"
+    "zero sugar soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-martini-zero-sugar",
    "posName": "SOJU MARTINI - ZERO SUGAR",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Saero = ZERO SUGAR; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-bottle-375ml-peach",
@@ -2311,12 +2309,11 @@
    "aliases": [
     "citron soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-lemon",
    "posName": "SOJU - LEMON",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Citron = LEMON; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-martini-citron",
@@ -2324,12 +2321,11 @@
    "aliases": [
     "citron soju martini"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-martini-lemon",
    "posName": "SOJU MARTINI- LEMON",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Citron = LEMON; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-bottle-375ml-strawberry",
@@ -2361,12 +2357,11 @@
    "aliases": [
     "grape soju"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-green-grape",
    "posName": "SOJU - GREEN GRAPE",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Grape = GREEN GRAPE; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "korean-soju-soju-martini-grape",
@@ -2374,12 +2369,11 @@
    "aliases": [
     "grape soju martini"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "soju-martini-green-grape",
    "posName": "SOJU MARTINI - GREEN GRAPE",
    "posCategory": "KOREAN WINE",
-   "posItemNumber": null,
-   "note": "Assumed Grape = GREEN GRAPE; not confirmed."
+   "posItemNumber": null
   },
   {
    "customerItemId": "rice-wine-sake-makgolli",
@@ -2460,19 +2454,30 @@
    "customerItemId": "rice-wine-sake-soju-slushie-mango-or-strawberry",
    "customerName": "Soju Slushie (Mango or Strawberry)",
    "aliases": [
-    "soju slushie"
+    "mango soju slushie",
+    "soju slushie",
+    "slushie"
    ],
-   "status": "missing-in-pos",
-   "note": "No SOJU SLUSHIE button appears in the POS screenshots."
+   "status": "mapped",
+   "note": "Strawberry: (STRAWBERRY) SOJU SLUSHIE. Both are on page 2 of KOREAN WINE.",
+   "posId": "mango-soju-slushie",
+   "posName": "(MANGO) SOJU SLUSHIE",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
   },
   {
    "customerItemId": "rice-wine-sake-soju-slushie-7oz-coronita",
    "customerName": "Soju Slushie + 7oz Coronita",
    "aliases": [
-    "slushie with coronita"
+    "slushie with coronita",
+    "coronita"
    ],
-   "status": "missing-in-pos",
-   "note": "No button appears in the POS screenshots."
+   "status": "mapped",
+   "note": "Ring the slushie and +7oz CORONITA (3.00) together: 14 + 3 = 17. Page 2 of KOREAN WINE.",
+   "posId": "7oz-coronita",
+   "posName": "+7oz CORONITA",
+   "posCategory": "KOREAN WINE",
+   "posItemNumber": null
   },
   {
    "customerItemId": "wine-merlot-house-wine-glass",
@@ -2596,29 +2601,29 @@
   },
   {
    "customerItemId": "wine-chardonnay-san-simon-glass",
-   "customerName": "Chardonnay - San Simon (glass)",
+   "customerName": "Chardonnay - Maddalena (glass)",
    "aliases": [
-    "glass of chardonnay"
+    "glass of chardonnay",
+    "maddalena chardonnay"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "glass-char-maddalena",
    "posName": "(GLASS) CHAR. MADDALENA",
    "posCategory": "WINE",
-   "posItemNumber": null,
-   "note": "Menu lists San Simon; POS button says MADDALENA at the same price."
+   "posItemNumber": null
   },
   {
    "customerItemId": "wine-chardonnay-san-simon-bottle",
-   "customerName": "Chardonnay - San Simon (bottle)",
+   "customerName": "Chardonnay - Maddalena (bottle)",
    "aliases": [
-    "bottle of chardonnay"
+    "bottle of chardonnay",
+    "maddalena chardonnay"
    ],
-   "status": "ambiguous",
+   "status": "mapped",
    "posId": "bottle-char-maddalena",
    "posName": "(BOTTLE) CHAR. MADDALENA",
    "posCategory": "WINE",
-   "posItemNumber": null,
-   "note": "Menu lists San Simon; POS button says MADDALENA at the same price."
+   "posItemNumber": null
   },
   {
    "customerItemId": "wine-sauvignon-blanc-tierra-del-fuego-glass",
@@ -2752,6 +2757,19 @@
    "posId": "macaron-coffee",
    "posName": "MACARON - COFFEE",
    "posCategory": "DESSERT",
+   "posItemNumber": null
+  },
+  {
+   "customerItemId": "rice-wine-sake-strawberry-soju-slushie",
+   "customerName": "Soju Slushie - Strawberry",
+   "aliases": [
+    "strawberry soju slushie",
+    "strawberry slushie"
+   ],
+   "status": "mapped",
+   "posId": "strawberry-soju-slushie",
+   "posName": "(STRAWBERRY) SOJU SLUSHIE",
+   "posCategory": "KOREAN WINE",
    "posItemNumber": null
   }
  ],

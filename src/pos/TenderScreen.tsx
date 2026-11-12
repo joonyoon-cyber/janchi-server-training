@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { posItem } from '../lib/menu';
-import { checkTotals, fmt, fromCents, toCents } from '../lib/money';
+import { checkTotals, fmt, toCents } from '../lib/money';
 import { actions, checkPlace, dueNow, evenSplit, getState, isTakeout, now, usePos } from '../lib/store';
 import type { Check, Payment } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatLongTime } from './common';
@@ -71,15 +71,31 @@ function evenSplitFlow() {
   });
 }
 
+/** Change window: Close, or it disappears by itself after a few seconds (as on the POS). */
+function ChangeWindow({ close, tendered, change, remaining }: { close: () => void; tendered: number; change: number; remaining: number }) {
+  useEffect(() => {
+    const id = setTimeout(close, 4000);
+    return () => clearTimeout(id);
+  }, [close]);
+  return (
+    <Modal w={420} title="Cash Payment">
+      <div data-testid="cash-change" style={{ padding: '18px 18px 8px', textAlign: 'center', fontSize: 15 }}>
+        Cash received: {fmt(tendered)}
+        <div style={{ fontSize: 30, fontWeight: 'bold', color: '#1c5bb8', margin: '10px 0' }}>Change: {fmt(Math.max(0, change))}</div>
+        {remaining > 0 && <div style={{ color: '#d0303a' }}>Remaining balance: {fmt(remaining)}</div>}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 14 }}>
+        <DlgButton blue onClick={close}>
+          Close
+        </DlgButton>
+      </div>
+    </Modal>
+  );
+}
+
 export function cashFlow() {
   const bal = dueOf();
   if (bal <= 0) return dialogs.message('This check has no balance.');
-  const next = (step: number) => fromCents(Math.ceil(toCents(bal) / (step * 100)) * step * 100);
-  const quick = [
-    { label: `Exact ${fmt(bal)}`, value: fmt(bal) },
-    { label: `$${next(1).toFixed(0)}`, value: String(next(1)) },
-    ...[20, 50, 100].filter((v) => v > bal).map((v) => ({ label: `$${v}`, value: String(v) })),
-  ];
   dialogs.keypad({
     title: 'Cash',
     subtitle: (
@@ -89,21 +105,24 @@ export function cashFlow() {
       </>
     ),
     money: true,
-    quick,
     onEnter: (v) => {
       const tendered = parseFloat(v);
       if (!tendered || tendered <= 0) return;
       const p = actions.pay('cash', tendered, tendered);
       if (!p) return;
       const remaining = balanceOf();
-      dialogs.message(
-        <div style={{ textAlign: 'center' }}>
-          Cash received: {fmt(tendered)}
-          <div style={{ fontSize: 30, fontWeight: 'bold', color: '#1c5bb8', margin: '10px 0' }}>Change: {fmt(Math.max(0, p.change ?? 0))}</div>
-          {remaining > 0 && <div style={{ color: '#d0303a' }}>Remaining balance: {fmt(remaining)}</div>}
-        </div>,
-        'Cash Payment',
-      );
+      dialogs.custom((close) => (
+        <ChangeWindow
+          tendered={tendered}
+          change={p.change ?? 0}
+          remaining={remaining}
+          close={() => {
+            close();
+            // Paid in full: the check closes and the POS returns to Dine-in (or main for takeout).
+            if (balanceOf() <= 0 && getState().screen === 'tender') actions.leaveTender();
+          }}
+        />
+      ));
     },
   });
 }
