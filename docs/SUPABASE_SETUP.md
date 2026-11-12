@@ -13,7 +13,11 @@ It creates `profiles`, `test_runs`, the `leaderboard` view and their access rule
 **Google Cloud Console** (console.cloud.google.com):
 1. Create a project (e.g. "Janchi POS Trainer").
 2. **APIs & Services → OAuth consent screen**: User type **External**, app name "Janchi POS Trainer",
-   your email as support and developer contact. Save. Under **Audience**/**Publishing status**, click
+   your email as support and developer contact. App domain links:
+   - Privacy policy: `https://joonyoon-cyber.github.io/janchi-server-training/privacy.html`
+   - Terms of service: `https://joonyoon-cyber.github.io/janchi-server-training/terms.html`
+   - Authorized domain: `joonyoon-cyber.github.io`
+   Save. Under **Audience**/**Publishing status**, click
    **Publish app** so any Google account can sign in (otherwise only listed test users can).
 3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
    - Application type: **Web application**

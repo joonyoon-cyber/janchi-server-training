@@ -30,6 +30,17 @@ export function Leaderboard({ auth }: { auth: Auth }) {
         <button className="rounded-md bg-white px-4 py-2 font-semibold text-slate-900" onClick={() => signInWithGoogle()}>
           Sign in with Google
         </button>
+        <p className="text-xs text-slate-400">
+          By signing in you agree to the{' '}
+          <a className="underline" href="terms.html" target="_blank" rel="noreferrer">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a className="underline" href="privacy.html" target="_blank" rel="noreferrer">
+            Privacy Policy
+          </a>
+          .
+        </p>
       </div>
     );
 

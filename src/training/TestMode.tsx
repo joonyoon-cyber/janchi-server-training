@@ -41,6 +41,19 @@ function Intro({ auth }: { auth: Auth }) {
           </button>
         </div>
       )}
+      {!auth.session && (
+        <p className="text-xs text-slate-400">
+            By signing in you agree to the{' '}
+            <a className="underline" href="terms.html" target="_blank" rel="noreferrer">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a className="underline" href="privacy.html" target="_blank" rel="noreferrer">
+              Privacy Policy
+            </a>
+            .
+          </p>
+      )}
       <button data-testid="test-start" className="rounded-md bg-sky-600 px-6 py-3 text-lg font-semibold hover:bg-sky-500" onClick={() => testActions.start()}>
         Start the Test
       </button>
