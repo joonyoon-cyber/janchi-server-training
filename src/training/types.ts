@@ -64,6 +64,8 @@ export interface DecisionStage extends StageBase {
   kind: 'decision';
   question: string;
   options: DecisionOption[];
+  /** A follow-up question about the order just before it (asked right after that order). */
+  followUp?: boolean;
 }
 
 export interface PayStage extends StageBase {

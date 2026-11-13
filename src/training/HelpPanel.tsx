@@ -38,6 +38,10 @@ export function HelpPanel() {
                 <li>Single guest: $5.00 additional charge.</li>
                 <li>Galbi on Premium: +$3.95, limit 1 per person (not enforced by the POS).</li>
                 <li>Ultimate's included drink: ring only ULTIMATE W/ SODA or W/ BEER.</li>
+                <li>
+                  <b>You ring in AND bring out:</b> rice, green salad, rice paper, garlic &amp; jalapeño, sesame oil, ssamjang (bean paste), miso soup, seaweed
+                  soup, spicy miso stew. Everything else comes from the kitchen.
+                </li>
                 <li>18% tip is added automatically for dine-in parties of 5 or more.</li>
                 <li>$10/person or plate surcharge for leftover food. 2 hour limit.</li>
               </ul>
@@ -55,7 +59,7 @@ export function HelpPanel() {
                     {category(it.category).label}
                   </span>{' '}
                   → <b>{it.label}</b> <span className="text-slate-400">({it.page > 1 ? `page ${it.page}, ` : ''}row {it.row}, column {it.col})</span>
-                  {it.serverServed && <div className="mt-1 text-xs text-sky-300">You serve this item yourself.</div>}
+                  {it.serverServed && <div className="mt-1 text-xs text-sky-300">Ring it in, then bring it out yourself.</div>}
                   {it.addOn && <div className="mt-1 text-xs text-sky-300">Paid add-on; not part of the 4-meat limit.</div>}
                 </div>
               ) : (

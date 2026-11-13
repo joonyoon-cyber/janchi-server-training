@@ -16,6 +16,8 @@ export interface BotOptions {
   alwaysOrder?: boolean;
   /** Pay everything by card even when the guest pays part (or a share) in cash. */
   ignoreCashPart?: boolean;
+  /** Pick a wrong answer on every question. */
+  wrongDecisions?: boolean;
   /** Ignore the guests' request to split the check. */
   noSplit?: boolean;
 }
@@ -72,7 +74,7 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         break;
       }
       case 'decision':
-        answerDecision(st.options.findIndex((o) => o.correct));
+        answerDecision(st.options.findIndex((o) => (opts.wrongDecisions ? !o.correct : o.correct)));
         break;
       case 'pay': {
         const checkId = run.partyChecks[st.party];

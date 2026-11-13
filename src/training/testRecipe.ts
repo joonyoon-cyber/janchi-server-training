@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 3;
+export const TEST_VERSION = 4;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -17,12 +17,12 @@ export const TEST_TABLES = 10;
 type Slot = { level: Level; opts: GenOptions; label: string } | { counter: ('macaron' | 'gift' | 'takeout')[]; label: string } | { handWritten: string[]; label: string };
 
 const RECIPE: Slot[] = [
-  { label: 'AYCE, drinks with the order + another round', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, over the 4-meat limit (drop the extra)', level: 'advanced', opts: { alaCarte: false, over: true, extraRounds: 1, pay: 'cash', interrupt: false, voidDrink: false, guests: 3 } },
-  { label: 'AYCE, guest changes the order; part cash, rest card', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'cash-card', over: false, voidDrink: false } },
-  { label: 'AYCE, party of 5+ splits with one cash share', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, drinks first, cancel after sending, split on cards', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, voidDrink: true, pay: 'split', over: false, interrupt: false } },
-  { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
+  { label: 'AYCE, drinks with the order + another round', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false , serverItems: 'serve' } },
+  { label: 'AYCE, over the 4-meat limit (drop the extra)', level: 'advanced', opts: { alaCarte: false, over: true, extraRounds: 1, pay: 'cash', interrupt: false, voidDrink: false, guests: 3 , serverItems: 'none' } },
+  { label: 'AYCE, guest changes the order; part cash, rest card', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'cash-card', over: false, voidDrink: false , serverItems: 'none' } },
+  { label: 'AYCE, party of 5+ splits with one cash share', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false, voidDrink: false , serverItems: 'serve' } },
+  { label: 'AYCE, drinks first, cancel after sending, split on cards', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, voidDrink: true, pay: 'split', over: false, interrupt: false , serverItems: 'none' } },
+  { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false , serverItems: 'kitchen' } },
   { label: 'À la carte, cash', level: 'intermediate', opts: { alaCarte: true, pay: 'cash', voidDrink: false } },
   { label: 'Take-out order at the counter', counter: ['takeout'] },
   { label: 'Macaron to go or a gift card', counter: ['macaron', 'gift'] },
@@ -87,7 +87,8 @@ export function buildTest(seed: number): Scenario {
     for (const st of stages) {
       const last = blocks[blocks.length - 1];
       const prev = last?.[last.length - 1];
-      if (last && (takeout || prev.kind === 'seat' || prev.kind === 'decision')) last.push(st);
+      const followUp = st.kind === 'decision' && st.followUp;
+      if (last && (takeout || followUp || prev.kind === 'seat' || (prev.kind === 'decision' && !prev.followUp))) last.push(st);
       else blocks.push([st]);
     }
     return blocks;

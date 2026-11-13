@@ -347,6 +347,20 @@ describe('test mode: one shift', () => {
     playPerfect(split, { ignoreCashPart: true });
     expect(getRun().result!.paymentMistakes.some((m) => m.includes('1 share in cash'))).toBe(true);
   });
+  it('every shift asks who brings out server items, right after that order', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const st = buildTest(seed).stages;
+      const qs = st.map((s, i) => [s, i] as const).filter(([s]) => s.kind === 'decision' && s.followUp);
+      expect(qs.length).toBeGreaterThanOrEqual(3);
+      for (const [q, i] of qs) expect(st[i - 1]).toMatchObject({ kind: 'order', party: q.party });
+    }
+  });
+  it('answering the server-item question wrong is flagged', () => {
+    const sc = scenarios.find((x) => x.id === 'server-items')!;
+    startScenario(sc);
+    playPerfect(sc, { wrongDecisions: true });
+    expect(getRun().result!.incorrect.some((x) => x.includes('Who brings out'))).toBe(true);
+  });
   it('a shift asks for many different meats and drinks', () => {
     const sc = buildTest(2024);
     const ids = new Set(sc.stages.flatMap((s) => (s.kind === 'order' ? s.expect.map((i) => i.posId) : [])));

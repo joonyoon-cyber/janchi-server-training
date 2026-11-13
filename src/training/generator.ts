@@ -142,7 +142,21 @@ const APPETIZERS: Record<string, [string, string]> = {
   'tofu-steak-4pcs': ['tofu steak', 'tofu steaks'],
 };
 
-const SPOKEN = { ...MEATS, ...AYCE_APPS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
+/** AYCE items the server rings in AND brings out themselves (confirmed by the restaurant). */
+export const SERVER_ITEMS: Record<string, [string, string]> = {
+  '11-rice-ayce': ['bowl of rice', 'bowls of rice'],
+  '44-green-salad-ayce': ['green salad', 'green salads'],
+  'rice-paper': ['plate of rice paper', 'plates of rice paper'],
+  'garlic-jalapeno': ['side of garlic and jalapeños', 'sides of garlic and jalapeños'],
+  'sesame-oil': ['sesame oil dip', 'sesame oil dips'],
+  'bean-paste-ssamjang': ['side of ssamjang', 'sides of ssamjang'],
+  '07-miso-soup-ayce': ['miso soup', 'miso soups'],
+  '08-seaweed-soup-ayce': ['seaweed soup', 'seaweed soups'],
+  '09-spicy-miso-stew-ayce': ['spicy miso stew', 'spicy miso stews'],
+};
+const SERVER_ITEMS_TEXT = 'rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew';
+
+const SPOKEN = { ...MEATS, ...AYCE_APPS, ...SERVER_ITEMS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
 const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 
 /** Random source; Test mode swaps in a seeded one so a run can be rebuilt from its seed. */
@@ -175,6 +189,8 @@ export interface GenOptions {
   interrupt?: boolean;
   voidDrink?: boolean;
   pay?: 'none' | 'cash' | 'credit' | 'split' | 'cash-card' | 'split-cash';
+  /** Add items to the first AYCE order and ask who brings them out: server items, or a kitchen app as a check. */
+  serverItems?: 'serve' | 'kitchen' | 'none';
   lunch?: boolean;
 }
 /** Item use counts during a Test build, so a shift asks for many different items. */
@@ -328,10 +344,43 @@ function build(level: Level, opts: GenOptions): Scenario {
         say: `Oh, okay. Let's drop ${drop.qty > 1 ? `one of the ${MEATS[drop.posId][1]}` : `the ${MEATS[drop.posId][0]}`} then.${apps.length ? ` And ${list(apps)}, please.` : ''}`,
       });
     } else {
+      // Server items (ring in AND bring out yourself), or a kitchen app to check they know the difference.
+      const srvMode = opts.serverItems ?? (level === 'beginner' ? 'none' : chance(0.3) ? 'serve' : chance(0.15) ? 'kitchen' : 'none');
+      let extras: ItemReq[] = [];
+      if (srvMode === 'serve') extras = sample(Object.keys(SERVER_ITEMS), 1 + rnd(2)).map((posId) => ({ posId, qty: 1 + (guests > 2 ? rnd(2) : 0) }));
+      if (srvMode === 'kitchen' && !apps.length) extras = sample(Object.keys(AYCE_APPS), 1).map((posId) => ({ posId, qty: 1 }));
+      const asked = [...apps, ...extras];
       order({
-        expect: [...pkg, ...(seq === 'with' ? drinks : []), ...first, ...apps],
-        say: `${intro} ${seq === 'with' ? drinkSay(drinks) + ' ' : ''}${meatSay(first)}${apps.length ? ` And ${list(apps)}, please.` : ''}`,
+        expect: [...pkg, ...(seq === 'with' ? drinks : []), ...first, ...asked],
+        say: `${intro} ${seq === 'with' ? drinkSay(drinks) + ' ' : ''}${meatSay(first)}${asked.length ? ` And ${list(asked)}, please.` : ''}`,
       });
+      if (srvMode !== 'none' && asked.length) {
+        const about = srvMode === 'serve' ? extras : asked.slice(0, 1);
+        const names = about.map((i) => SPOKEN[i.posId][0].replace(/^(bowl|plate|side|order) of /, '')).join(' and the ');
+        const serve = srvMode === 'serve';
+        stages.push({
+          id: id(),
+          kind: 'decision',
+          party: p,
+          followUp: true,
+          say: `(You just sent the order with the ${names}.)`,
+          question: `Who brings out the ${names}?`,
+          options: [
+            {
+              text: 'I ring it in and bring it out myself',
+              correct: serve,
+              feedback: serve
+                ? `Right. Servers ring in and bring out: ${SERVER_ITEMS_TEXT}.`
+                : `The ${names} comes from the kitchen. Servers only bring out: ${SERVER_ITEMS_TEXT}.`,
+            },
+            {
+              text: 'The kitchen sends it out',
+              correct: !serve,
+              feedback: serve ? `No: you bring it out yourself. Server items: ${SERVER_ITEMS_TEXT}.` : 'Right. That one comes from the kitchen.',
+            },
+          ],
+        });
+      }
     }
 
     // modification before sending a follow-up round (intermediate+)

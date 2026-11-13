@@ -331,6 +331,125 @@
       ]
     },
     {
+      "id": "server-items",
+      "title": "Rice, Soups & Sauces You Bring Out",
+      "level": "beginner",
+      "summary": "Some AYCE items are rung in AND brought out by you: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup, spicy miso stew.",
+      "time": {
+        "weekday": 2,
+        "hour": 18,
+        "minute": 30
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 240,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "say": "Two guests, A B C BAR section."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "Two Premium AYCE. A brisket and a pork belly to start. And can we get two bowls of rice, a miso soup and some ssamjang?",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 2
+            },
+            {
+              "posId": "15-brisket-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "18-pork-belly-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "11-rice-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "07-miso-soup-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "bean-paste-ssamjang",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "q1",
+          "kind": "decision",
+          "party": "p1",
+          "followUp": true,
+          "say": "(You just sent the order with the rice, miso soup and ssamjang.)",
+          "question": "Who brings out the rice, the miso soup and the ssamjang?",
+          "options": [
+            {
+              "text": "I ring them in and bring them out myself",
+              "correct": true,
+              "feedback": "Right. Servers ring in AND bring out: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew."
+            },
+            {
+              "text": "The kitchen sends them out with the meat",
+              "correct": false,
+              "feedback": "No: you bring them out yourself. Servers ring in AND bring out: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew."
+            }
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "order",
+          "party": "p1",
+          "say": "Could we get a steamed egg and a green salad?",
+          "expect": [
+            {
+              "posId": "04-stmd-egg-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "44-green-salad-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "kind": "decision",
+          "party": "p1",
+          "followUp": true,
+          "say": "(You just sent the steamed egg and the green salad.)",
+          "question": "Who brings out what?",
+          "options": [
+            {
+              "text": "I bring out both",
+              "correct": false,
+              "feedback": "The steamed egg comes from the kitchen. Servers ring in AND bring out: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew."
+            },
+            {
+              "text": "I bring out the green salad; the kitchen sends the steamed egg",
+              "correct": true,
+              "feedback": "Right. Servers ring in AND bring out: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew."
+            },
+            {
+              "text": "The kitchen sends both",
+              "correct": false,
+              "feedback": "The green salad is yours to bring out. Servers ring in AND bring out: rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "d-meat-rounds",
       "title": "Additional Meat Rounds + Cash",
       "level": "intermediate",
