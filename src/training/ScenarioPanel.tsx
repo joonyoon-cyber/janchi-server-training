@@ -84,11 +84,13 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
   const st = currentStage(run);
   const sc = run.scenario;
   const scroller = useRef<HTMLDivElement>(null);
+  // A printed check reveals the guests' payment line: scroll to it like any new request.
+  const printedCount = run.records.filter((r) => r.checkPrinted).length;
   const [change, setChange] = useState('');
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
-  }, [run.stageIndex, run.records.length, run.awaitingChange, run.records[run.records.length - 1]?.interruptShown]);
+  }, [run.stageIndex, run.records.length, run.awaitingChange, run.records[run.records.length - 1]?.interruptShown, printedCount]);
 
   // Several tables at once: label each line with its table.
   const who = (s: Stage) => {
