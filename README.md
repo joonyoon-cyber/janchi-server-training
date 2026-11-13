@@ -52,8 +52,8 @@ mistakes, and gives suggestions. You can retry any scenario. Results are kept pe
 The MVP scenario from the spec is **Beginner → "Premium AYCE Dinner (full table)"**.
 
 **Test.** One continuous Friday-dinner shift of 20 parties built from a fixed recipe (same mix and
-difficulty every run; dishes, parties and arrival order vary with a random seed). Up to 3 tables are
-open at once and their requests interleave. **Next ▸** moves on without giving anything up: doing it
+difficulty every run; dishes, parties and arrival order vary with a random seed). The server works one
+section (A B C BAR or M Y W) with up to 10 tables open at once, and requests interleave. **Next ▸** moves on without giving anything up: doing it
 later on the POS still counts. One score (0–100, accuracy only) at the end; clear time is the whole
 shift. See `src/training/testRecipe.ts`.
 

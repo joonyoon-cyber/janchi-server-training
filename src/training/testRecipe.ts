@@ -11,7 +11,7 @@ import type { Level, Scenario, Stage } from './types';
  */
 export const TEST_VERSION = 2;
 /** Most tables a server has open at once during the shift. */
-const MAX_OPEN = 3;
+const MAX_OPEN = 10;
 export const TEST_TABLES = 20;
 
 type Slot = { level: Level; opts: GenOptions; label: string } | { counter: 'macaron' | 'gift'; label: string } | { handWritten: string[]; label: string };
@@ -71,6 +71,9 @@ export function buildTables(seed: number): Scenario[] {
  */
 export function buildTest(seed: number): Scenario {
   const rng = seededRng(seed ^ 0x5eed);
+  // Like a real shift, the server works one section all night.
+  const section = rng() < 0.5 ? 'ABC' : 'MYW';
+  const sectionName = section === 'ABC' ? 'A B C BAR' : 'M Y W';
   const tables = buildTables(seed);
   const parties: Record<string, number> = {};
   const queues: Stage[][][] = tables.map((t, i) => {
@@ -78,6 +81,11 @@ export function buildTest(seed: number): Scenario {
     parties[party] = t.parties.p1;
     const stages = t.stages.map((st): Stage => {
       const s = { ...st, id: `t${i}-${st.id}`, party } as Stage;
+      if (s.kind === 'seat' && !s.takeout) {
+        s.section = section;
+        delete s.tableId;
+        s.say = `Party of ${s.guests} for you. Please seat them in your section (${sectionName}).`;
+      }
       if (s.kind === 'order' && s.remainderOf) s.remainderOf = `t${i}-${s.remainderOf}`;
       return s;
     });
@@ -106,7 +114,7 @@ export function buildTest(seed: number): Scenario {
     id: `test-${seed}`,
     title: 'Service test',
     level: 'advanced',
-    summary: `${TEST_TABLES}-table shift`,
+    summary: `${TEST_TABLES}-party shift in ${sectionName}`,
     time: { weekday: 5, hour: 18, minute: 0 },
     parties,
     stages,

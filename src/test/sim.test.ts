@@ -285,7 +285,7 @@ describe('scenario generator', () => {
 });
 
 describe('test mode: one shift', () => {
-  it('interleaves 20 parties, same for the same seed, never more than 3 tables open', () => {
+  it('interleaves 20 parties, same for the same seed, never more than 10 tables open, one section', () => {
     const a = buildTest(12345);
     expect(JSON.stringify(a.stages)).toEqual(JSON.stringify(buildTest(12345).stages));
     expect(Object.keys(a.parties)).toHaveLength(TEST_TABLES);
@@ -299,7 +299,9 @@ describe('test mode: one shift', () => {
       left.set(s.party, left.get(s.party)! - 1);
       maxOpen = Math.max(maxOpen, [...seen].filter((p) => left.get(p)! > 0).length);
     }
-    expect(maxOpen).toBeLessThanOrEqual(3);
+    expect(maxOpen).toBeLessThanOrEqual(10);
+    const sections = new Set(a.stages.flatMap((s) => (s.kind === 'seat' && !s.takeout ? [s.section] : [])));
+    expect(sections.size).toBe(1);
   });
   for (const seed of [1, 2, 3, 42, 777, 2026, 31337, 99999]) {
     it(`perfect play scores 100 on the whole shift (seed ${seed})`, () => {
