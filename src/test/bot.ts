@@ -43,8 +43,13 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
           break;
         }
         actions.goto('floor');
-        const table =
-          st.tableId ?? allTables().find((t) => (!st.section || t.section === st.section) && !s.tableChecks[t.id])!.id;
+        // Smallest free table in the section that fits the party (a W pair for 5-8).
+        const fitsAt = (t: ReturnType<typeof allTables>[number]) =>
+          (t.capacity ?? 0) >= st.guests || (!!t.joinWith && (t.joinedCapacity ?? 0) >= st.guests && !s.tableChecks[t.joinWith]);
+        const size = (t: ReturnType<typeof allTables>[number]) => ((t.capacity ?? 0) >= st.guests ? t.capacity! : t.joinedCapacity!);
+        const free = allTables().filter((t) => (!st.section || t.section === st.section) && !s.tableChecks[t.id] && fitsAt(t));
+        free.sort((a, b) => size(a) - size(b));
+        const table = st.tableId ?? free[0].id;
         actions.seatTable(table, st.guests);
         break;
       }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categories, GRID_COLUMNS, GRID_ROWS, isMeat, mappings, posItem, posItems } from '../lib/menu';
+import { categories, GRID_COLUMNS, GRID_ROWS, isMeat, mappings, posItem, posItems, tableCapacity } from '../lib/menu';
 import { checkTotals, taxCents } from '../lib/money';
 import { actions, evenSplit, getState } from '../lib/store';
 import { currentStage, getRun, nextStage, startScenario } from '../training/engine';
@@ -220,6 +220,42 @@ describe('answers from the restaurant (11/2026)', () => {
   it('soju slushies and +7oz Coronita are on page 2 of KOREAN WINE (14 + 3 = 17)', () => {
     expect(posItem('mango-soju-slushie')).toMatchObject({ category: 'korean-wine', page: 2, row: 1, col: 1, price: 14 });
     expect(posItem('7oz-coronita')).toMatchObject({ page: 2, col: 3, price: 3 });
+  });
+});
+
+describe('table sizes', () => {
+  it('capacities follow the restaurant rules', () => {
+    expect([tableCapacity('A3'), tableCapacity('B10'), tableCapacity('Y4'), tableCapacity('C2'), tableCapacity('M5'), tableCapacity('Y1'), tableCapacity('W3')]).toEqual([4, 4, 4, 6, 6, 6, 4]);
+    expect(tableCapacity('W3', true)).toBe(8);
+  });
+  it('a party of 5-8 at a W table joins its pair; closing the check frees both', () => {
+    actions.reset({ persist: false });
+    actions.seatTable('W1', 8);
+    const id = getState().tableChecks.W1;
+    expect(getState().tableChecks.W2).toBe(id);
+    expect(getState().checks[id].joinedTables).toEqual(['W1', 'W2']);
+    actions.addItem('coke');
+    actions.submitOrder();
+    actions.openTender(id);
+    actions.pay('credit', 1000);
+    actions.leaveTender();
+    expect(getState().tableChecks.W1).toBeUndefined();
+    expect(getState().tableChecks.W2).toBeUndefined();
+  });
+  it('seating 6 guests at a 4-top is flagged', () => {
+    const sc = scenarios.find((x) => x.id === 'party-of-six')!;
+    startScenario(sc);
+    actions.goto('floor');
+    actions.seatTable('Y4', 6);
+    playPerfect(sc);
+    expect(getRun().result!.incorrect.some((x) => x.includes('Seated 6 guests at Y4, which seats 4'))).toBe(true);
+  });
+  it('M Y W test shifts sometimes have a party of 7 or 8', () => {
+    const sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].flatMap((seed) => {
+      const sc = buildTest(seed);
+      return sc.summary.includes('M Y W') ? Object.values(sc.parties) : [];
+    });
+    expect(Math.max(...sizes)).toBeGreaterThanOrEqual(7);
   });
 });
 

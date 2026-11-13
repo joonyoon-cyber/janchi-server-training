@@ -33,7 +33,12 @@ function TableTile({ t, check, taxRate, nowMs, onClick }: { t: TableDef; check?:
       }}
     >
       <div style={{ textAlign: busy ? 'center' : small ? 'left' : 'center', paddingLeft: small && !busy ? 6 : 0, fontSize: 18, marginTop: 4, color: '#111' }}>{t.label}</div>
-      {check && (
+      {check && check.tableId !== t.id && (
+        <div className="pos-abs" style={{ left: 0, top: 34, width: '100%', textAlign: 'center', fontSize: 13, color: '#333' }}>
+          with {check.tableId}
+        </div>
+      )}
+      {check && check.tableId === t.id && (
         <>
           <div className="pos-abs" style={{ left: 4, top: 30, fontSize: 12, color: '#3e9b3e' }}>
             {formatClock(check.openedAt)}

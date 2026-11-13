@@ -66,6 +66,11 @@ export interface TableDef {
   y: number;
   w: number;
   h: number;
+  /** Most guests this table seats on its own (missing: not specified, e.g. BAR). */
+  capacity?: number;
+  /** W tables: the neighbor it can be pushed together with, and the joined capacity. */
+  joinWith?: string;
+  joinedCapacity?: number;
 }
 
 export interface SectionDef {
@@ -123,6 +128,8 @@ export type OrderType = 'dine-in' | 'takeout';
 
 export interface Check {
   id: string;
+  /** A W table pushed together with its neighbor for a party of 5-8 (e.g. ['W1', 'W2']). */
+  joinedTables?: string[];
   /** Missing on checks saved before takeout existed: treat as dine-in. */
   orderType?: OrderType;
   number: string;

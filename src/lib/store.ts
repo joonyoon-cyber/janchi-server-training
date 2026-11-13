@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { posItem, tableLabel } from './menu';
+import { posItem, tableDef, tableLabel } from './menu';
 import { checkTotals, fromCents, toCents } from './money';
 import type { Check, LoggedEvent, OrderLine, PayMethod, Payment, PosEvent, Screen } from './types';
 
@@ -139,7 +139,12 @@ export function dueNow(c: Check, taxRate: number): number {
 }
 
 /** "Take out" for Quick Serve orders, otherwise the table name. */
-export const checkPlace = (c: Check) => (isTakeout(c) ? 'Take out' : tableLabel(c.tableId));
+export const checkPlace = (c: Check) => (isTakeout(c) ? 'Take out' : c.joinedTables ? c.joinedTables.join('&') : tableLabel(c.tableId));
+
+/** Table map without every table this check was using (both halves of a joined W pair). */
+function releaseTables(c: Check) {
+  return Object.fromEntries(Object.entries(state.tableChecks).filter(([, id]) => id !== c.id));
+}
 
 /** Where the order screen goes after Order / Close / a closed check. */
 const homeFor = (c: Check): Screen => (isTakeout(c) ? 'main' : 'floor');
@@ -201,10 +206,14 @@ export const actions = {
 
   seatTable(tableId: string, guests: number) {
     const check = newCheck(tableId, guests, 'dine-in');
+    // A party of 5-8 at a W table uses it together with its neighbor (W1&2, W3&4, W5&6).
+    const t = tableDef(tableId);
+    const joined = t?.joinWith && guests > (t.capacity ?? 99) && !state.tableChecks[t.joinWith] ? t.joinWith : undefined;
+    if (joined) check.joinedTables = [tableId, joined];
     set({
       ...state,
       checks: { ...state.checks, [check.id]: check },
-      tableChecks: { ...state.tableChecks, [tableId]: check.id },
+      tableChecks: { ...state.tableChecks, [tableId]: check.id, ...(joined ? { [joined]: check.id } : {}) },
       nextCheckSeq: state.nextCheckSeq + 1,
       activeCheckId: check.id,
       screen: 'order',
@@ -341,7 +350,7 @@ export const actions = {
     const kept = c.lines.filter((l) => l.status === 'sent');
     if (kept.length === 0 && c.payments.length === 0) {
       // Nothing was ever ordered: release the table.
-      const { [c.tableId]: _released, ...tableChecks } = state.tableChecks;
+      const tableChecks = releaseTables(c);
       const { [c.id]: _dropped, ...checks } = state.checks;
       set({ ...state, checks, tableChecks, screen: homeFor(c), activeCheckId: null });
       return;
@@ -448,7 +457,7 @@ export const actions = {
     }
     const { balance } = checkTotals(c, state.settings.taxRate);
     if (toCents(balance) <= 0 && c.lines.some((l) => l.status === 'sent')) {
-      const { [c.tableId]: _released, ...tableChecks } = state.tableChecks;
+      const tableChecks = releaseTables(c);
       set({
         ...updateCheck(c.id, (ch) => ({ ...ch, status: 'closed', closedAt: now() })),
         tableChecks,

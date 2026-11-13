@@ -16,6 +16,8 @@ are not asked again.
 | 5 | **Tender list Edit button**: opens the order screen? | Opens the order screen. |
 | 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
 | 7 | **AYCE exception for guests with disabilities**: the original spec makes it an exception to "everyone does AYCE"; the restaurant's rule of thumb (below) does not mention it. | One advanced scenario still treats it as an exception. Remove it if there is no such exception. |
+| 8 | **BAR seats**: how many guests per BAR seat? | Not scored: any party may sit at the bar. |
+| 9 | **Joining W tables on the real POS**: Move/Join or Link Table? | Seating 5–8 guests at a W table automatically joins it with its pair (W1&2, W3&4, W5&6) if the pair is free; the tiles show "W4 with W3". |
 
 Not worried about (intentionally not simulated): PATIO layout, the icon on table W6, card slip layout, physical gift card activation.
 
@@ -35,6 +37,8 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 * GARLIC&JALAPENO is the full label. Servers serve these AYCE items themselves: RICE, GREEN SALAD, RICE PAPER, GARLIC&JALAPENO, SESAME OIL, BEAN PASTE SSAMJANG, MISO SOUP, SEAWEED SOUP, SPICY MISO STEW (noted in Practice help).
 * Modifiers: **soon tofu** asks spice (NO SPICY / MILD / MEDIUM / SPICY / VERY SPICY) and protein (ASSORTED / BEEF / SEAFOOD / VEGI); **bibimbap** asks protein (BEEF / CHICKEN / TOFU / VEGI / SPICY PORK). All $0.00.
 * Gift certificates: Quick Serve → ▼ under the menu groups → CERTIFICATE (the only group on page 2) → Open Price pad (cents) → Tender. Not taxed; no kitchen prompt. Physical card activation is done by hand.
+
+* **Table sizes**: A, B, Y3–Y5 seat up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&2, W3&4 or W5&6 are used together. Seating a party at a table that is too small is scored as a mistake.
 
 **Screens and buttons**
 * **Log-in**: every main-screen button asks for a Log-in ID. For now any ID is accepted and the server is named after it (123 → SERVER123). Authorization will be discussed later.

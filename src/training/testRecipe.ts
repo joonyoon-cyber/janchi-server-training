@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 4;
+export const TEST_VERSION = 5;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -34,7 +34,7 @@ export function newSeed(): number {
 }
 
 /** The 20 tables of a Test, each a separate scenario (Friday dinner, no lunch pricing). */
-export function buildTables(seed: number): Scenario[] {
+export function buildTables(seed: number, section: 'ABC' | 'MYW' = 'ABC'): Scenario[] {
   const rng = seededRng(seed);
   // Ask for as many different menu items as possible across the shift.
   trackVariety(true);
@@ -44,7 +44,11 @@ export function buildTables(seed: number): Scenario[] {
     else if ('handWritten' in slot) {
       const id = slot.handWritten[Math.floor(rng() * slot.handWritten.length)];
       sc = structuredClone(scenarios.find((s) => s.id === id)!);
-    } else sc = generateScenario(slot.level, { ...slot.opts, lunch: false, rng });
+    } else {
+      // The big party: up to 6 in A B C BAR (C tables), up to 8 in M Y W (a joined W pair).
+      const guests = slot.opts.guests === 5 ? (section === 'MYW' ? 5 + Math.floor(rng() * 4) : 5 + Math.floor(rng() * 2)) : slot.opts.guests;
+      sc = generateScenario(slot.level, { ...slot.opts, guests, lunch: false, rng });
+    }
     return { ...sc, id: `test-${seed}-${i}` };
   });
   trackVariety(false);
@@ -67,7 +71,7 @@ export function buildTest(seed: number): Scenario {
   // Like a real shift, the server works one section all night.
   const section = rng() < 0.5 ? 'ABC' : 'MYW';
   const sectionName = section === 'ABC' ? 'A B C BAR' : 'M Y W';
-  const tables = buildTables(seed);
+  const tables = buildTables(seed, section);
   const parties: Record<string, number> = {};
   const queues: Stage[][][] = tables.map((t, i) => {
     const party = `p${i + 1}`;

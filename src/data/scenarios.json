@@ -1158,6 +1158,91 @@
       ]
     },
     {
+      "id": "party-of-eight",
+      "title": "Party of Eight (W tables)",
+      "level": "advanced",
+      "summary": "Eight guests in M Y W: only a joined W pair (W1&2, W3&4, W5&6) seats eight. The 18% tip is added automatically.",
+      "time": {
+        "weekday": 6,
+        "hour": 18,
+        "minute": 45
+      },
+      "parties": {
+        "p1": 8
+      },
+      "targetSeconds": 300,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 8,
+          "section": "MYW",
+          "say": "Party of eight. M Y W section, please."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "All eight of us want Premium AYCE. Two pitchers of Coors Light and two Sprites. First round: two briskets, a top sirloin and a pork jowl.",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 8
+            },
+            {
+              "posId": "pitchers-coors-light",
+              "qty": 2
+            },
+            {
+              "posId": "sprite",
+              "qty": 2
+            },
+            {
+              "posId": "15-brisket-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "35-top-sirlon-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "26-pork-jowl-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "order",
+          "party": "p1",
+          "say": "Next round: two spicy pork bulgogis, a shrimp and a chicken breast.",
+          "expect": [
+            {
+              "posId": "34-spicy-pork-blg-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "31-shrimp-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "30-ckn-breast-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "say": "We'll put it all on one card."
+        }
+      ]
+    },
+    {
       "id": "two-tables",
       "title": "Two Tables at Once",
       "level": "advanced",

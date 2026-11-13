@@ -41,6 +41,16 @@ export function sectionOfTable(tableId: string): string | undefined {
   return sections.find((s) => s.tables.some((t) => t.id === tableId))?.id;
 }
 
+export function tableDef(tableId: string) {
+  return allTables().find((t) => t.id === tableId);
+}
+
+/** Seats at this table (or the pair, when joined). Undefined: no rule (BAR). */
+export function tableCapacity(tableId: string, joined = false): number | undefined {
+  const t = tableDef(tableId);
+  return joined && t?.joinedCapacity ? t.joinedCapacity : t?.capacity;
+}
+
 export function tableLabel(tableId: string): string {
   return allTables().find((t) => t.id === tableId)?.label ?? tableId;
 }

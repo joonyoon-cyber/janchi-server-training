@@ -1,4 +1,4 @@
-import { isAycePackage, isMeat, posItem, sectionOfTable, sections, tableLabel } from '../lib/menu';
+import { isAycePackage, isMeat, posItem, sectionOfTable, sections, tableCapacity, tableDef, tableLabel } from '../lib/menu';
 import { AUTO_TIP_MIN_GUESTS, AUTO_TIP_PERCENT, checkTotals, fmt, fromCents, taxCents, toCents } from '../lib/money';
 import type { PosState } from '../lib/store';
 import type { Check } from '../lib/types';
@@ -204,12 +204,24 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
           ev.correct.push('Started a Quick Serve (takeout) order');
           break;
         }
-        const okTable = st.tableId ? t === st.tableId : st.section ? sectionOfTable(t) === st.section : true;
-        score('table', okTable ? 1 : 0);
-        if (okTable) ev.correct.push(`Seated the party at ${tableLabel(t)}`);
-        else {
+        const okSection = st.tableId ? t === st.tableId : st.section ? sectionOfTable(t) === st.section : true;
+        // Table size: A, B, Y3-5 seat 4; C, M, Y1-2 seat 6; W tables 4, or 8 when joined with their pair.
+        const joined = (checkOf(st.party)?.joinedTables?.length ?? 0) > 1;
+        const cap = tableCapacity(t, joined);
+        const fits = cap === undefined || st.guests <= cap;
+        const place = joined ? checkOf(st.party)!.joinedTables!.join('&') : tableLabel(t);
+        score('table', okSection && fits ? 1 : 0);
+        if (okSection && fits) ev.correct.push(`Seated the party of ${st.guests} at ${place}`);
+        if (!okSection) {
           const want = st.tableId ? tableLabel(st.tableId) : sections.find((s) => s.id === st.section)?.label;
           ev.incorrect.push(`Seated at ${tableLabel(t)}, but the host asked for ${want}`);
+        }
+        if (!fits) {
+          const w = tableDef(t)?.joinWith;
+          ev.incorrect.push(
+            `Seated ${st.guests} guests at ${place}, which seats ${cap}` +
+              (w && st.guests <= 8 ? ` (a W table seats 8 only when joined with ${w}, and ${w} was taken)` : ''),
+          );
         }
         score('guests', rec.seatedGuests === st.guests ? 1 : 0);
         if (rec.seatedGuests === st.guests) ev.correct.push(`Entered guest count ${st.guests}`);
@@ -494,7 +506,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   if (ev.missing.length) s.push('Repeat the order back to the guests and check Order Details against it before pressing Order.');
   if (ev.wrongQty.length) s.push('Watch quantities: tap the line in Order Details and use − / + or Qty to fix them before sending.');
   if (acc.package.p && acc.package.e < acc.package.p) s.push('Check the AYCE PRICE button: the package (Premium lunch vs dinner, Ultimate, children) and the quantity should match the number of guests.');
-  if (ev.incorrect.some((x) => x.startsWith('Seated'))) s.push("Seat guests in the section the host assigns; switch sections with the tabs at the top of the Dine-in screen.");
+  if (ev.incorrect.some((x) => x.startsWith('Seated'))) s.push('Seat guests in the section the host assigns, at a table big enough: A, B and Y3-Y5 seat 4; C, M, Y1 and Y2 seat 6; W1&2, W3&4 or W5&6 together seat 8.');
   if (ev.paymentMistakes.length) s.push('On the tender screen, confirm the table name in the header, choose the guest’s payment method, and type the exact cash amount handed to you so the change is right.');
   if (ev.incorrect.some((x) => x.includes('unsent items'))) s.push('Close on the order screen cancels anything not yet ordered. Always press Order to send.');
   if (ratio > 1) s.push('Speed comes from knowing where buttons are. Use Practice Mode to memorize the AYCE MEAT and BEVERAGE grids.');
