@@ -497,7 +497,11 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     possible += WEIGHTS[k];
   });
   // Mistakes outside the scored categories (unsent items discarded, stray voids) cost 2 points each.
-  const stray = run.events.filter((e) => e.type === 'discard-unsent' || (e.type === 'void-sent' && !voidStages.has(e.posId))).length;
+  // Refused actions (seating at a table too small, the check before they asked) cost points too.
+  run.events.forEach((e) => {
+    if (e.type === 'blocked') ev.incorrect.push(`${e.who} pushed back: ${e.reason}`);
+  });
+  const stray = run.events.filter((e) => e.type === 'discard-unsent' || e.type === 'blocked' || (e.type === 'void-sent' && !voidStages.has(e.posId))).length;
   ev.score = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2) : 0;
 
   // ---- Suggestions ----

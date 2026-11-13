@@ -32,6 +32,7 @@ function Intro({ auth }: { auth: Auth }) {
             Stuck, or want to come back to something? Press <b>Next ▸</b>. Nothing is given up: if you do it later on the POS, it still counts.
           </li>
           <li>You are scored once, at the end of the shift. There is no score between tables and no help.</li>
+          <li>Mistakes the guests or host wouldn't accept, like a table too small for the party or bringing the check before they ask, are refused with their reaction and cost points.</li>
           <li>
             <b>Score</b> (0–100): accuracy across the whole shift: seating and guest counts, packages, every item and quantity, the 4-meat limit, sending orders,
             changes and voids, payment method and amount, change, and closing checks.

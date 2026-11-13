@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
-import { now } from '../lib/store';
+import { now, setPushbackHandler } from '../lib/store';
 
 export function BluuLogo({ height = 34 }: { height?: number }) {
   const w = height * 3.3;
@@ -220,6 +220,9 @@ function KeypadDialog({ d }: { d: Extract<Dialog, { kind: 'keypad' }> }) {
     </Modal>
   );
 }
+
+// Guest / host pushback from training shows as a dialog on the POS.
+setPushbackHandler((p) => dialogs.message(<span data-testid="pushback">{p.text}</span>, p.who));
 
 export function DialogHost() {
   const d = useSyncExternalStore(

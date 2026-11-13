@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { actions, getState, now, onPosEvent } from '../lib/store';
+import { sectionOfTable, sections, tableDef, tableLabel } from '../lib/menu';
+import { actions, getState, now, onPosEvent, setPosGuard } from '../lib/store';
 import { evaluate, type Evaluation } from './evaluate';
 import { saveResult } from './progress';
 import type { RunState, Scenario, Stage } from './types';
@@ -23,6 +24,54 @@ export function useTraining() {
     () => snapshot,
   );
 }
+
+/** The party waiting for a table: the current seating request, or one passed with Next. */
+function waitingSeat() {
+  if (!run) return undefined;
+  const cur = run.scenario.stages[run.stageIndex];
+  if (cur?.kind === 'seat' && !cur.takeout && !run.partyTables[cur.party]) return cur;
+  return run.scenario.stages.find((s, i) => i < run!.stageIndex && s.kind === 'seat' && !s.takeout && !run!.partyTables[s.party]);
+}
+
+const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const num = (n: number) => NUM_WORDS[n] ?? String(n);
+
+// Mistakes the guests or host would push back on are refused (Scenarios and Test only).
+setPosGuard((a) => {
+  if (!run || run.finishedAt) return null;
+  const s = getState();
+  if (a.type === 'seat') {
+    const st = waitingSeat();
+    if (!st || st.kind !== 'seat') return { who: 'Host', text: 'Nobody is waiting for a table right now.' };
+    if (st.section && sectionOfTable(a.tableId) !== st.section) {
+      const name = sections.find((x) => x.id === st.section)?.label ?? st.section;
+      return { who: 'Host', text: `${tableLabel(a.tableId)} isn't in your section. Please seat them in ${name}.` };
+    }
+    const t = tableDef(a.tableId);
+    const cap = t?.capacity;
+    const canJoin = !!t?.joinWith && !s.tableChecks[t.joinWith] && st.guests <= (t.joinedCapacity ?? 0);
+    if (cap !== undefined && st.guests > cap && !canJoin) {
+      return {
+        who: 'Guest',
+        text: `"There are ${num(st.guests)} of us. We won't fit at a table for ${num(cap)}."` + (t?.joinWith ? ` (${t.joinWith} is taken, so ${tableLabel(a.tableId)} can't be joined with it.)` : ''),
+      };
+    }
+    return null;
+  }
+  // Tender: only once these guests have asked for the check.
+  const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === a.checkId);
+  if (!party) return null;
+  const payIdx = run.scenario.stages.findIndex((x) => x.kind === 'pay' && x.party === party);
+  if (payIdx === -1 || payIdx > run.stageIndex) {
+    const c = s.checks[a.checkId];
+    const takeout = c?.orderType === 'takeout';
+    return {
+      who: 'Guest',
+      text: takeout ? '"Hold on, I\'m not done ordering yet!"' : '"We\'re still eating! We\'ll let you know when we\'re ready for the check."',
+    };
+  }
+  return null;
+});
 
 /** Non-React subscription (Test mode controller). */
 export function subscribeTraining(l: () => void) {

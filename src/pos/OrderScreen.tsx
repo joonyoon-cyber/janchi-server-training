@@ -182,6 +182,8 @@ export function OrderScreen() {
     const go = () => {
       pendingPayment = kind;
       actions.openTender(check.id);
+      // Refused (the guests haven't asked for the check): don't start the payment later.
+      if (getState().screen !== 'tender') pendingPayment = null;
     };
     if (!hasNew) return go();
     // Items that never go to the kitchen (gift certificates) are sent without asking.

@@ -168,6 +168,28 @@ function newCheck(tableId: string, guests: number, orderType: Check['orderType']
   };
 }
 
+// ---- Pushback (Scenarios and Test) ------------------------------------------
+// Training installs a guard: a mistake the guests or host would never allow
+// (a table too small, the check before they ask for it) is refused with their
+// reaction instead of going through.
+export type GuardAction = { type: 'seat'; tableId: string; guests: number } | { type: 'tender'; checkId: string };
+export type Pushback = { who: 'Guest' | 'Host'; text: string };
+let guard: ((a: GuardAction) => Pushback | null) | null = null;
+let showPushback: (p: Pushback) => void = () => undefined;
+export function setPosGuard(g: typeof guard) {
+  guard = g;
+}
+export function setPushbackHandler(h: (p: Pushback) => void) {
+  showPushback = h;
+}
+function blocked(a: GuardAction): boolean {
+  const p = guard?.(a);
+  if (!p) return false;
+  emit({ type: 'blocked', action: a.type, who: p.who, reason: p.text });
+  showPushback(p);
+  return true;
+}
+
 // ---- Session-level actions -----------------------------------------------
 
 export const actions = {
@@ -205,6 +227,7 @@ export const actions = {
   },
 
   seatTable(tableId: string, guests: number) {
+    if (blocked({ type: 'seat', tableId, guests })) return;
     const check = newCheck(tableId, guests, 'dine-in');
     // A party of 5-8 at a W table uses it together with its neighbor (W1&2, W3&4, W5&6).
     const t = tableDef(tableId);
@@ -380,6 +403,7 @@ export const actions = {
   openTender(checkId: string) {
     const c = state.checks[checkId];
     if (!c) return;
+    if (blocked({ type: 'tender', checkId })) return;
     set({ ...state, activeCheckId: checkId, screen: 'tender' });
     emit({ type: 'open-tender', checkId, tableId: c.tableId });
   },

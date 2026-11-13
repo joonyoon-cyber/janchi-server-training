@@ -242,13 +242,31 @@ describe('table sizes', () => {
     expect(getState().tableChecks.W1).toBeUndefined();
     expect(getState().tableChecks.W2).toBeUndefined();
   });
-  it('seating 6 guests at a 4-top is flagged', () => {
+  it('seating 6 guests at a 4-top is refused with guest pushback and costs points', () => {
     const sc = scenarios.find((x) => x.id === 'party-of-six')!;
     startScenario(sc);
     actions.goto('floor');
     actions.seatTable('Y4', 6);
+    expect(getState().tableChecks.Y4).toBeUndefined(); // not seated
+    actions.seatTable('B2', 6); // wrong section too
+    expect(getState().tableChecks.B2).toBeUndefined();
     playPerfect(sc);
-    expect(getRun().result!.incorrect.some((x) => x.includes('Seated 6 guests at Y4, which seats 4'))).toBe(true);
+    const r = getRun().result!;
+    expect(r.incorrect.some((x) => x.includes("Guest pushed back") && x.includes('table for four'))).toBe(true);
+    expect(r.incorrect.some((x) => x.includes("Host pushed back") && x.includes('section'))).toBe(true);
+    expect(r.score).toBe(96);
+  });
+  it('the check cannot be opened before the guests ask for it', () => {
+    const sc = scenarios.find((x) => x.id === 'mvp-premium-dinner')!;
+    startScenario(sc);
+    actions.goto('floor');
+    actions.seatTable('B7', 4);
+    const id = getState().tableChecks.B7;
+    actions.openTender(id);
+    expect(getState().screen).not.toBe('tender');
+    playPerfect(sc);
+    const r = getRun().result!;
+    expect(r.incorrect.some((x) => x.includes('still eating'))).toBe(true);
   });
   it('M Y W test shifts sometimes have a party of 7 or 8', () => {
     const sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].flatMap((seed) => {

@@ -38,7 +38,7 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 * Modifiers: **soon tofu** asks spice (NO SPICY / MILD / MEDIUM / SPICY / VERY SPICY) and protein (ASSORTED / BEEF / SEAFOOD / VEGI); **bibimbap** asks protein (BEEF / CHICKEN / TOFU / VEGI / SPICY PORK). All $0.00.
 * Gift certificates: Quick Serve → ▼ under the menu groups → CERTIFICATE (the only group on page 2) → Open Price pad (cents) → Tender. Not taxed; no kitchen prompt. Physical card activation is done by hand.
 
-* **Table sizes**: A, B, Y3–Y5 seat up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&2, W3&4 or W5&6 are used together. Seating a party at a table that is too small is scored as a mistake.
+* **Table sizes**: A, B, Y3–Y5 seat up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&2, W3&4 or W5&6 are used together. In Scenarios and the Test, seating a party at a table that is too small (or outside the section) is refused with the guest's or host's pushback and costs 2 points; so is opening a table's check before the guests ask for it. Free Play has no restrictions.
 
 **Screens and buttons**
 * **Log-in**: every main-screen button asks for a Log-in ID. For now any ID is accepted and the server is named after it (123 → SERVER123). Authorization will be discussed later.
