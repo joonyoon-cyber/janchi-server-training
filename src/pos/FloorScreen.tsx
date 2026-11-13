@@ -78,7 +78,7 @@ export function FloorScreen() {
     if (printMode) {
       setPrintMode(false);
       if (!checkId) return dialogs.message(`Table ${t.label} has no open check to print.`, 'Print');
-      actions.print(checkId);
+      if (!actions.print(checkId)) return;
       const check = checks[checkId];
       return dialogs.custom((close) => (
         <Modal w={400} title={`Print Check - ${t.label} (simulated)`}>

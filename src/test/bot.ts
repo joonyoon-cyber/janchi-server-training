@@ -12,6 +12,8 @@ export interface BotOptions {
   mutateOrder?: (stageId: string, items: ItemReq[]) => ItemReq[];
   cashOverride?: number;
   payMethodOverride?: 'cash' | 'credit';
+  /** Go straight to Tender without printing the check first. */
+  skipPrint?: boolean;
   /** Always press Order (prints a kitchen ticket) even for macarons. */
   alwaysOrder?: boolean;
   /** Pay everything by card even when the guest pays part (or a share) in cash. */
@@ -84,6 +86,7 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         break;
       case 'pay': {
         const checkId = run.partyChecks[st.party];
+        if (!opts.skipPrint) actions.print(checkId);
         actions.openTender(checkId);
         // The 18% party-of-5+ tip is added by the POS itself; nothing to enter.
         const method = opts.payMethodOverride ?? st.method;

@@ -70,6 +70,8 @@ export interface DecisionStage extends StageBase {
 
 export interface PayStage extends StageBase {
   kind: 'pay';
+  /** Dine-in: the guests ask for the check with this line first. `say` (how they pay) comes once the check is printed. */
+  ask?: string;
   method: PayMethod;
   /** Cash the guest hands over. */
   cashGiven?: number;
@@ -127,6 +129,8 @@ export interface StageRecord {
   choice?: number;
   /** pay */
   changeAnswer?: number;
+  /** pay (dine-in): the check was printed and handed to the guests. */
+  checkPrinted?: boolean;
 }
 
 export type StagedEvent = LoggedEvent & { stage: number };

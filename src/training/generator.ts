@@ -462,11 +462,12 @@ function build(level: Level, opts: GenOptions): Scenario {
       method === 'cash'
         ? { id: id(), kind: 'pay', party: p, method: 'cash', cashGiven: cashFor(total), askChange: true, gratuityPct, say: '' }
         : { id: id(), kind: 'pay', party: p, method: 'credit', gratuityPct, say: '' };
-    pay.say = method === 'cash' ? pick([`Check please. Here's $${pay.cashGiven} cash.`, `We'll pay cash. Here's $${pay.cashGiven}.`]) : pick(['Can we get the check? One card, please.', "We're ready for the check. Here's my card."]);
+    pay.ask = pick(['Excuse me, could we get the check, please?', "We're all done. Can we get the check?", 'Check, please!', 'That was great. Could we have the check?']);
+    pay.say = method === 'cash' ? pick([`We'll pay cash. Here's $${pay.cashGiven}.`, `Here's $${pay.cashGiven} in cash.`]) : pick(['One card for everything, please.', "Here's my card."]);
     if (payKind === 'split' || payKind === 'split-cash') {
       const ways = Math.max(2, Math.min(guests, 2 + rnd(2)));
       pay.split = ways;
-      pay.say = pick([`Can we split the check ${NUM[ways]} ways? Everyone's paying by card.`, `We'll split it evenly, ${NUM[ways]} ways, all on cards.`]);
+      pay.say = pick([`Can you split this ${NUM[ways]} ways? Everyone's paying by card.`, `We'll split it evenly, ${NUM[ways]} ways, all on cards.`]);
       if (payKind === 'split-cash') {
         const share = evenSplit(total, ways)[0];
         pay.cashShares = 1;

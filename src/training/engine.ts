@@ -63,17 +63,22 @@ setPosGuard((a) => {
     }
     return null;
   }
-  // Tender: only once these guests have asked for the check.
+  // Print / Tender: only once these guests have asked for the check.
   const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === a.checkId);
   if (!party) return null;
+  const c = s.checks[a.checkId];
+  const takeout = c?.orderType === 'takeout';
+  if (takeout && a.type === 'print') return null;
   const payIdx = run.scenario.stages.findIndex((x) => x.kind === 'pay' && x.party === party);
   if (payIdx === -1 || payIdx > run.stageIndex) {
-    const c = s.checks[a.checkId];
-    const takeout = c?.orderType === 'takeout';
     return {
       who: 'Guest',
       text: takeout ? '"Hold on, I\'m not done ordering yet!"' : '"We\'re still eating! We\'ll let you know when we\'re ready for the check."',
     };
+  }
+  // Dine-in guests look over the printed check before they pay.
+  if (a.type === 'tender' && !takeout && !run.records.find((r) => r.stageId === run!.scenario.stages[payIdx].id)?.checkPrinted) {
+    return { who: 'Guest', text: '"Could we see the check first, please?"' };
   }
   return null;
 });
@@ -86,6 +91,17 @@ export function subscribeTraining(l: () => void) {
 
 export function getRun() {
   return { run, result };
+}
+
+/** Default line for guests asking for the check. */
+export const DEFAULT_ASK = 'Excuse me, could we get the check, please?';
+
+/** A dine-in pay request whose check has not been printed yet: the guests are still waiting for it. */
+export function waitingForCheck(r: RunState, st: Stage | null | undefined): boolean {
+  if (!st || st.kind !== 'pay') return false;
+  const t = r.partyTables[st.party];
+  if (!t || t.startsWith('TO-')) return false;
+  return !r.records.find((x) => x.stageId === st.id)?.checkPrinted;
 }
 
 export function currentStage(r: RunState | null = run): Stage | null {
@@ -251,6 +267,14 @@ onPosEvent((e) => {
         });
       }
     }
+  }
+
+  // The check printed for a party that asked for it: they look it over, then pay.
+  if (e.type === 'print') {
+    const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === e.checkId);
+    const i = run.scenario.stages.findIndex((x, j) => j <= run!.stageIndex && x.kind === 'pay' && x.party === party);
+    const rec = i >= 0 ? run.records.find((r) => r.stageId === run!.scenario.stages[i].id) : undefined;
+    if (rec) rec.checkPrinted = true;
   }
 
   // An Order answers the table's oldest request that was passed with Next and never sent.

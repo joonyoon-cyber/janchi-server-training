@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { tableLabel } from '../lib/menu';
 import { usePos } from '../lib/store';
 import { formatClock, useNow } from '../pos/common';
-import { answerChange, answerDecision, currentStage, endScenario, nextStage, useTraining } from './engine';
+import { answerChange, answerDecision, currentStage, DEFAULT_ASK, endScenario, nextStage, useTraining, waitingForCheck } from './engine';
 import type { RunState, Stage } from './types';
 
 const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -14,7 +14,8 @@ function speaker(st: Stage) {
 }
 
 /** Generic task line. Never names POS buttons, categories, or item numbers. */
-function task(st: Stage) {
+function task(st: Stage, run: RunState) {
+  if (waitingForCheck(run, st)) return 'Print the check and bring it to the table.';
   switch (st.kind) {
     case 'seat':
       return 'Seat the party.';
@@ -33,7 +34,7 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'note';
+type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'note';
 
 /** Each kind of request has its own color and icon, so it is clear what the guest wants. */
 const KIND: Record<Kind, { label: string; card: string; current: string; badge: string; icon: string }> = {
@@ -44,12 +45,13 @@ const KIND: Record<Kind, { label: string; card: string; current: string; badge: 
   question: { label: 'Question', card: 'bg-violet-950/50 ring-1 ring-violet-800/60', current: 'bg-violet-900/70 ring-2 ring-violet-400', badge: 'bg-violet-500', icon: 'M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7v.5M12 17h.01' },
   serve: { label: 'Who brings it?', card: 'bg-teal-950/50 ring-1 ring-teal-800/60', current: 'bg-teal-900/70 ring-2 ring-teal-400', badge: 'bg-teal-500', icon: 'M4 15h16M6 15a6 6 0 0 1 12 0M12 7V5M3 18h18' },
   check: { label: 'Check, please', card: 'bg-emerald-950/50 ring-1 ring-emerald-800/60', current: 'bg-emerald-900/70 ring-2 ring-emerald-400', badge: 'bg-emerald-500', icon: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6' },
+  pay: { label: 'Paying', card: 'bg-amber-950/40 ring-1 ring-amber-800/60', current: 'bg-amber-900/60 ring-2 ring-amber-400', badge: 'bg-amber-500', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
   note: { label: '', card: '', current: '', badge: '', icon: '' },
 };
 
 function kindOf(st: Stage): Kind {
   if (st.kind === 'seat') return st.takeout ? 'counter' : 'seat';
-  if (st.kind === 'pay') return 'check';
+  if (st.kind === 'pay') return 'pay';
   if (st.kind === 'decision') return st.followUp ? 'serve' : 'question';
   return 'order';
 }
@@ -95,6 +97,11 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
     const place = t ? (t.startsWith('TO-') ? 'Take out' : tableLabel(t)) : s.kind === 'seat' ? (s.takeout ? 'Counter' : 'New party') : 'Waiting for a table';
     return `${speaker(s)} · ${place}`;
   };
+  // Counter guests pay up front; there is no check to print. (Not seated yet: assume dine-in unless it is a counter guest.)
+  const isTakeout = (party: string) => {
+    const t = run.partyTables[party];
+    return t ? t.startsWith('TO-') : sc.stages.some((x) => x.kind === 'seat' && x.party === party && x.takeout);
+  };
   const elapsed = Math.max(0, Math.round((t - run.startedAt) / 1000));
   const parties = Object.entries(sc.parties);
   const story = new Date(t);
@@ -130,7 +137,11 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
           return (
             <div key={s.id} className="space-y-2">
               {s.note && <Line text={s.note} kind="note" />}
-              <Line who={who(s)} kind={kindOf(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
+              {s.kind === 'pay' && !isTakeout(s.party) && <Line who={who(s)} kind="check" text={s.ask ?? DEFAULT_ASK} current={isCur && !rec?.checkPrinted} />}
+              {s.kind === 'pay' && !isTakeout(s.party) && rec?.checkPrinted && <div className="px-1 text-xs text-slate-400">🧾 Check printed and brought to the table.</div>}
+              {(s.kind !== 'pay' || isTakeout(s.party) || rec?.checkPrinted) && (
+                <Line who={who(s)} kind={kindOf(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
+              )}
               {s.kind === 'order' && s.interrupt && rec?.interruptShown && <Line who={who(s)} kind="change" text={s.interrupt.say} current={isCur} />}
               {rec?.skipped && <div className="text-xs text-rose-300">Step skipped</div>}
               {rec?.passed && !isCur && <div className="text-xs text-slate-400">↷ Moved on. It still counts if you do it now.</div>}
@@ -172,7 +183,7 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
             </form>
           ) : (
             <div className="text-sm">
-              <span className="font-semibold text-amber-300">Your task:</span> {task(st)}
+              <span className="font-semibold text-amber-300">Your task:</span> {task(st, run)}
             </div>
           )}
           <div className="mt-3 flex gap-2 text-xs">

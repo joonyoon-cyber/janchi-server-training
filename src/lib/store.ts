@@ -172,7 +172,7 @@ function newCheck(tableId: string, guests: number, orderType: Check['orderType']
 // Training installs a guard: a mistake the guests or host would never allow
 // (a table too small, the check before they ask for it) is refused with their
 // reaction instead of going through.
-export type GuardAction = { type: 'seat'; tableId: string; guests: number } | { type: 'tender'; checkId: string };
+export type GuardAction = { type: 'seat'; tableId: string; guests: number } | { type: 'tender'; checkId: string } | { type: 'print'; checkId: string };
 export type Pushback = { who: 'Guest' | 'Host'; text: string };
 let guard: ((a: GuardAction) => Pushback | null) | null = null;
 let showPushback: (p: Pushback) => void = () => undefined;
@@ -471,9 +471,12 @@ export const actions = {
   },
 
   /** Print a check: the active one (tender screen) or a given one (Dine-in printer mode). */
-  print(checkId?: string) {
+  print(checkId?: string): boolean {
     const c = checkId ? state.checks[checkId] : activeCheck();
-    if (c) emit({ type: 'print', checkId: c.id });
+    if (!c) return false;
+    if (blocked({ type: 'print', checkId: c.id })) return false;
+    emit({ type: 'print', checkId: c.id });
+    return true;
   },
 
   /** "Close" on the tender screen. Closes the check only when fully paid. */

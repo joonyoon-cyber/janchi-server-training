@@ -84,7 +84,8 @@
           "party": "p1",
           "method": "credit",
           "note": "The table is finished.",
-          "say": "Can we get the check, please? We'll put it all on one card."
+          "say": "We'll put it all on one card.",
+          "ask": "Can we get the check, please?"
         }
       ]
     },
@@ -540,7 +541,8 @@
           "method": "cash",
           "cashGiven": 140,
           "askChange": true,
-          "say": "Check please. Here's $140 in cash."
+          "say": "Here's $140 in cash.",
+          "ask": "Check, please!"
         }
       ]
     },
@@ -609,7 +611,8 @@
           "kind": "pay",
           "party": "p1",
           "method": "credit",
-          "say": "We're all set. Card, please."
+          "say": "Card, please.",
+          "ask": "We're all set. Could we get the check?"
         }
       ]
     },
@@ -668,7 +671,8 @@
           "method": "cash",
           "cashGiven": 100,
           "askChange": true,
-          "say": "Here's a hundred. Can I get change?"
+          "say": "Here's a hundred. Can I get change?",
+          "ask": "Could we get the check?"
         }
       ]
     },
@@ -850,7 +854,8 @@
           "kind": "pay",
           "party": "p1",
           "method": "credit",
-          "say": "I'm done, thank you! Card is fine."
+          "say": "Card is fine.",
+          "ask": "I'm done, thank you! Can I get the check?"
         }
       ]
     },
@@ -915,7 +920,8 @@
           "kind": "pay",
           "party": "p1",
           "method": "credit",
-          "say": "That was amazing. Here's my card."
+          "say": "Here's my card.",
+          "ask": "That was amazing. Check, please!"
         }
       ]
     },
@@ -1084,7 +1090,8 @@
           "party": "p1",
           "method": "credit",
           "gratuityPct": 18,
-          "say": "We'll put it all on one card."
+          "say": "We'll put it all on one card.",
+          "ask": "Could we get the check, please?"
         }
       ]
     },
@@ -1169,7 +1176,8 @@
           "kind": "pay",
           "party": "p1",
           "method": "credit",
-          "say": "We'll put it all on one card."
+          "say": "We'll put it all on one card.",
+          "ask": "Can we get the check?"
         }
       ]
     },
@@ -1294,14 +1302,16 @@
           "method": "cash",
           "cashGiven": 100,
           "askChange": true,
-          "say": "(Party of two) We're done. Here's $100 cash."
+          "say": "Here's $100 cash.",
+          "ask": "(Party of two) We're done. Check, please!"
         },
         {
           "id": "p2pay",
           "kind": "pay",
           "party": "p2",
           "method": "credit",
-          "say": "(Party of four) Check please, one card."
+          "say": "One card, please.",
+          "ask": "(Party of four) Could we get the check?"
         }
       ]
     },
@@ -1548,7 +1558,8 @@
           "kind": "pay",
           "party": "p1",
           "method": "credit",
-          "say": "Card, please."
+          "say": "Card, please.",
+          "ask": "Check, please."
         }
       ]
     },
@@ -1611,7 +1622,8 @@
           "method": "credit",
           "cashPart": 40,
           "cashGiven": 40,
-          "say": "Here's $40 in cash. Put the rest on this card, please."
+          "say": "Here's $40 in cash. Put the rest on this card, please.",
+          "ask": "Could we get the check?"
         }
       ]
     },
@@ -1675,7 +1687,8 @@
           "split": 3,
           "cashShares": 1,
           "cashGiven": 50,
-          "say": "Can we split it evenly, three ways? I'll pay my share in cash. Here's $50. The rest go on cards."
+          "say": "Can you split it evenly, three ways? I'll pay my share in cash. Here's $50. The rest go on cards.",
+          "ask": "Can we get the check, please?"
         }
       ]
     },

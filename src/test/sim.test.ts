@@ -313,6 +313,18 @@ describe('table sizes', () => {
     const r = getRun().result!;
     expect(r.incorrect.some((x) => x.includes('still eating'))).toBe(true);
   });
+  it('the check is printed only once asked for, and payment waits for the printed check', () => {
+    const sc = scenarios.find((x) => x.id === 'mvp-premium-dinner')!;
+    startScenario(sc);
+    actions.goto('floor');
+    actions.seatTable('B7', 4);
+    expect(actions.print(getState().tableChecks.B7)).toBe(false);
+    startScenario(sc);
+    expect(() => playPerfect(sc, { skipPrint: true })).toThrow('did not finish');
+    const r = getRun();
+    expect(r.result).toBeNull();
+    expect(r.run!.events.some((e) => e.type === 'blocked' && e.reason.includes('see the check first'))).toBe(true);
+  });
   it('M Y W test shifts sometimes have a party of 7 or 8', () => {
     const sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].flatMap((seed) => {
       const sc = buildTest(seed);

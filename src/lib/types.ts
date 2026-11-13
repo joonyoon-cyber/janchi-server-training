@@ -168,7 +168,7 @@ export type PosEvent =
   | { type: 'close-check'; checkId: string; tableId: string }
   | { type: 'leave-tender-unpaid'; checkId: string; tableId: string; balance: number }
   | { type: 'print'; checkId: string }
-  | { type: 'blocked'; action: 'seat' | 'tender'; who: 'Guest' | 'Host'; reason: string }
+  | { type: 'blocked'; action: 'seat' | 'tender' | 'print'; who: 'Guest' | 'Host'; reason: string }
   | { type: 'split'; checkId: string; ways: number; amounts: number[] }
   | { type: 'tip-adjust'; checkId: string; tableId: string; paymentId: string; tip: number };
 
