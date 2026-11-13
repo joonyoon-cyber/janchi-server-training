@@ -1,6 +1,6 @@
 import { generateCounter, generateScenario, seededRng, type GenOptions } from './generator';
 import { scenarios } from './scenarios';
-import type { Level, Scenario } from './types';
+import type { Level, Scenario, Stage } from './types';
 
 /**
  * Test mode: 20 tables built from a fixed recipe, so every run has the same
@@ -9,7 +9,9 @@ import type { Level, Scenario } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 1;
+export const TEST_VERSION = 2;
+/** Most tables a server has open at once during the shift. */
+const MAX_OPEN = 3;
 export const TEST_TABLES = 20;
 
 type Slot = { level: Level; opts: GenOptions; label: string } | { counter: 'macaron' | 'gift'; label: string } | { handWritten: string[]; label: string };
@@ -26,7 +28,7 @@ const RECIPE: Slot[] = [
   { label: 'AYCE, party of 6 splits the check', level: 'advanced', opts: { alaCarte: false, guests: 6, extraRounds: 0, pay: 'split', over: false, interrupt: false, voidDrink: false } },
   { label: 'AYCE, split check', level: 'intermediate', opts: { alaCarte: false, guests: 3, extraRounds: 1, pay: 'split', over: false, interrupt: false, voidDrink: false } },
   { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE at lunch', level: 'intermediate', opts: { alaCarte: false, lunch: true, extraRounds: 0, pay: 'cash', over: false, interrupt: false, voidDrink: false } },
+  { label: 'AYCE, drinks first, two rounds', level: 'intermediate', opts: { alaCarte: false, drinks: 'before', extraRounds: 1, pay: 'cash', over: false, interrupt: false, voidDrink: false } },
   { label: 'AYCE, single guest', level: 'intermediate', opts: { alaCarte: false, guests: 1, extraRounds: 1, pay: 'cash', over: false, interrupt: false, voidDrink: false } },
   { label: 'À la carte, card', level: 'intermediate', opts: { alaCarte: true, pay: 'credit', voidDrink: false } },
   { label: 'À la carte, cash', level: 'intermediate', opts: { alaCarte: true, pay: 'cash', voidDrink: false } },
@@ -34,14 +36,15 @@ const RECIPE: Slot[] = [
   { label: 'Macaron ice cream to go', counter: 'macaron' },
   { label: 'Gift card sale', counter: 'gift' },
   { label: 'House policy question', handWritten: ['e-meat-limit', 'ayce-same-choice'] },
-  { label: 'Family with kids or weekend lunch', handWritten: ['family-kids', 'weekend-lunch-price'] },
+  { label: 'Family with kids or a combo', handWritten: ['family-kids', 'combo-dinner'] },
 ];
 
 export function newSeed(): number {
   return Math.floor(Math.random() * 2 ** 31);
 }
 
-export function buildTest(seed: number): Scenario[] {
+/** The 20 tables of a Test, each a separate scenario (Friday dinner, no lunch pricing). */
+export function buildTables(seed: number): Scenario[] {
   const rng = seededRng(seed);
   const tables = RECIPE.map((slot, i): Scenario => {
     let sc: Scenario;
@@ -49,10 +52,10 @@ export function buildTest(seed: number): Scenario[] {
     else if ('handWritten' in slot) {
       const id = slot.handWritten[Math.floor(rng() * slot.handWritten.length)];
       sc = structuredClone(scenarios.find((s) => s.id === id)!);
-    } else sc = generateScenario(slot.level, { ...slot.opts, rng });
-    return { ...sc, id: `test-${seed}-${i}`, noTimeScore: true };
+    } else sc = generateScenario(slot.level, { ...slot.opts, lunch: false, rng });
+    return { ...sc, id: `test-${seed}-${i}` };
   });
-  // Seeded shuffle (Fisher-Yates) so the order differs between runs.
+  // Seeded shuffle (Fisher-Yates) so the arrival order differs between runs.
   for (let i = tables.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [tables[i], tables[j]] = [tables[j], tables[i]];
@@ -60,8 +63,55 @@ export function buildTest(seed: number): Scenario[] {
   return tables;
 }
 
-/** Test score: average of the 20 table scores, rounded to a whole number (0-100). */
-export function testScore(tableScores: number[]): number {
-  if (!tableScores.length) return 0;
-  return Math.round(tableScores.reduce((a, b) => a + b, 0) / tableScores.length);
+/**
+ * One continuous shift: the 20 tables arrive one after another and their
+ * requests interleave (up to MAX_OPEN tables at once), like a real night.
+ * A seat is always followed by that table's first request, a policy question
+ * by the order it leads to, and counter guests are handled in one go.
+ */
+export function buildTest(seed: number): Scenario {
+  const rng = seededRng(seed ^ 0x5eed);
+  const tables = buildTables(seed);
+  const parties: Record<string, number> = {};
+  const queues: Stage[][][] = tables.map((t, i) => {
+    const party = `p${i + 1}`;
+    parties[party] = t.parties.p1;
+    const stages = t.stages.map((st): Stage => {
+      const s = { ...st, id: `t${i}-${st.id}`, party } as Stage;
+      if (s.kind === 'order' && s.remainderOf) s.remainderOf = `t${i}-${s.remainderOf}`;
+      return s;
+    });
+    const blocks: Stage[][] = [];
+    const takeout = stages[0].kind === 'seat' && stages[0].takeout;
+    for (const st of stages) {
+      const last = blocks[blocks.length - 1];
+      const prev = last?.[last.length - 1];
+      if (last && (takeout || prev.kind === 'seat' || prev.kind === 'decision')) last.push(st);
+      else blocks.push([st]);
+    }
+    return blocks;
+  });
+
+  const stages: Stage[] = [];
+  const open: number[] = [];
+  let next = 0;
+  while (next < queues.length || open.length) {
+    const arrive = next < queues.length && (open.length === 0 || (open.length < MAX_OPEN && rng() < 0.55));
+    const t = arrive ? next++ : open[Math.floor(rng() * open.length)];
+    stages.push(...queues[t].shift()!);
+    if (arrive && queues[t].length) open.push(t);
+    if (!queues[t].length && open.includes(t)) open.splice(open.indexOf(t), 1);
+  }
+  return {
+    id: `test-${seed}`,
+    title: 'Service test',
+    level: 'advanced',
+    summary: `${TEST_TABLES}-table shift`,
+    time: { weekday: 5, hour: 18, minute: 0 },
+    parties,
+    stages,
+    targetSeconds: tables.reduce((a, t) => a + t.targetSeconds, 0),
+    generated: true,
+    noTimeScore: true,
+  };
 }

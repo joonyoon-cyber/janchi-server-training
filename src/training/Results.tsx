@@ -26,16 +26,30 @@ function Section({ title, items, tone }: { title: string; items: string[]; tone:
   );
 }
 
-export function Results({ scenario, ev, onRetry, onExit }: { scenario: Scenario; ev: Evaluation; onRetry: () => void; onExit: () => void }) {
+export function Results({
+  scenario,
+  ev,
+  onRetry,
+  onExit,
+  retryLabel = 'Retry this scenario',
+  exitLabel = 'Back to scenarios',
+}: {
+  scenario: Scenario;
+  ev: Evaluation;
+  onRetry: () => void;
+  onExit: () => void;
+  retryLabel?: string;
+  exitLabel?: string;
+}) {
   const grade = ev.score >= 90 ? 'text-emerald-300' : ev.score >= 70 ? 'text-amber-300' : 'text-rose-300';
   return (
     <div className="mx-auto max-w-3xl space-y-5 p-4 text-slate-100 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-sky-300">Evaluation · {scenario.level}</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-sky-300">{scenario.noTimeScore ? 'Test result' : `Evaluation · ${scenario.level}`}</div>
           <h2 className="text-xl font-semibold">{scenario.title}</h2>
           <div className="text-sm text-slate-400">
-            Time {fmtSec(ev.durationSec)} (target {fmtSec(ev.targetSeconds)})
+            {scenario.noTimeScore ? `Clear time ${fmtSec(ev.durationSec)}` : `Time ${fmtSec(ev.durationSec)} (target ${fmtSec(ev.targetSeconds)})`}
           </div>
         </div>
         <div className={`text-6xl font-bold tabular-nums ${grade}`} data-testid="final-score">
@@ -73,10 +87,10 @@ export function Results({ scenario, ev, onRetry, onExit }: { scenario: Scenario;
 
       <div className="flex gap-3">
         <button className="rounded-md bg-sky-600 px-4 py-2 font-semibold hover:bg-sky-500" onClick={onRetry}>
-          Retry this scenario
+          {retryLabel}
         </button>
         <button className="rounded-md border border-slate-500 px-4 py-2 hover:bg-slate-800" onClick={onExit}>
-          Back to scenarios
+          {exitLabel}
         </button>
       </div>
     </div>

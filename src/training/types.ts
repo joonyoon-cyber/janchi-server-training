@@ -104,6 +104,10 @@ export interface StageRecord {
   startedAt: number;
   endedAt?: number;
   skipped?: boolean;
+  /** Next was pressed before the POS action was seen; later actions still count. */
+  passed?: boolean;
+  /** Round number of the Order that answered this request. */
+  submitRound?: number;
   /** Items sent with Order while this stage was active (order stages). */
   submitted?: ItemReq[];
   submitTable?: string;

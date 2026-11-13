@@ -151,6 +151,21 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   const recOf = (st: Stage) => run.records.find((r) => r.stageId === st.id);
   const tableName = (party: string) => (run.partyTables[party] ? tableLabel(run.partyTables[party]) : '(not seated)');
   const checkOf = (party: string): Check | undefined => pos.checks[run.partyChecks[party]];
+  const stageIdx = (st: Stage) => sc.stages.indexOf(st);
+  // Orders sent after Next was pressed still count: each request takes the first
+  // later Order on its table that no other request has claimed.
+  const claimed = new Set(run.records.filter((x) => x.submitRound !== undefined && x.submitTable).map((x) => `${x.submitTable}#${x.submitRound}`));
+  function lateSubmit(st: Stage) {
+    const table = run.partyTables[st.party];
+    const check = run.partyChecks[st.party];
+    if (!table || !check) return undefined;
+    const e = run.events.find((x) => x.type === 'submit' && x.checkId === check && x.stage >= stageIdx(st) && !claimed.has(`${table}#${x.round}`));
+    if (!e || e.type !== 'submit') return undefined;
+    claimed.add(`${table}#${e.round}`);
+    return e;
+  }
+  // Events on this party's table from when the request was made until the end.
+  const fromStage = (st: Stage) => run.events.filter((e) => e.stage >= stageIdx(st));
 
   for (const st of sc.stages) {
     const rec = recOf(st);
@@ -177,7 +192,13 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
 
     switch (st.kind) {
       case 'seat': {
-        const t = rec.seatedTable!;
+        const t = rec.seatedTable;
+        if (!t) {
+          score('table', 0);
+          if (!st.takeout) score('guests', 0);
+          ev.incorrect.push(st.takeout ? 'Never started the Quick Serve order' : `Never seated the party of ${st.guests}`);
+          break;
+        }
         if (st.takeout) {
           score('table', 1);
           ev.correct.push('Started a Quick Serve (takeout) order');
@@ -196,6 +217,21 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         break;
       }
       case 'order': {
+        const late = rec.submitted ? undefined : lateSubmit(st);
+        if (!rec.submitted && !late) {
+          score('submit', 0);
+          const exp = expectedForStage(sc, st, run.records);
+          ev.incorrect.push(`Not sent: "${st.say}"`);
+          exp.forEach((i) => ev.missing.push(`${fmtReq(i)}${where}`));
+          if (exp.some((i) => isAycePackage(i.posId))) score('package', 0);
+          score('items', 0, exp.filter((i) => !isAycePackage(i.posId)).length || 1);
+          break;
+        }
+        if (late) {
+          rec.submitted = late.items;
+          rec.submitTable = late.tableId;
+          rec.kitchenPrint = late.kitchenPrint;
+        }
         score('submit', 1);
         ev.correct.push(`Sent the order with Order${where}`);
         const submitted = rec.submitted ?? [];
@@ -262,9 +298,9 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         break;
       }
       case 'void': {
-        const evs = inStage(run.events, sc.stages.indexOf(st)).filter((e) => e.type === 'void-sent');
-        const table = run.partyTables[st.party];
-        const qty = evs.reduce((s, e) => s + (e.type === 'void-sent' && e.posId === st.item.posId && pos.checks[e.checkId]?.tableId === table ? e.qty : 0), 0);
+        const evs = fromStage(st).filter((e) => e.type === 'void-sent');
+        const check = run.partyChecks[st.party];
+        const qty = evs.reduce((s, e) => s + (e.type === 'void-sent' && e.posId === st.item.posId && e.checkId === check ? e.qty : 0), 0);
         const ok = qty === st.item.qty;
         score('mods', ok ? 1 : 0);
         if (ok) ev.correct.push(`Voided ${fmtReq(st.item)} after it was sent`);
@@ -290,14 +326,16 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     const check = checkOf(st.party);
     const table = run.partyTables[st.party];
     const window = inStage(run.events, sc.stages.indexOf(st));
-    const pays = window.filter((e) => e.type === 'payment');
-    const mine = pays.filter((e) => e.type === 'payment' && e.tableId === table);
-    const elsewhere = pays.filter((e) => e.type === 'payment' && e.tableId !== table);
+    const partyCheck = run.partyChecks[st.party];
+    const later = fromStage(st).filter((e) => 'checkId' in e && e.checkId === partyCheck);
+    const mine = later.filter((e) => e.type === 'payment');
+    // Paying the wrong table only counts while this guest is asking for the check.
+    const elsewhere = window.filter((e) => e.type === 'payment' && !Object.values(run.partyChecks).includes(e.checkId));
     let ok = 1;
     let possible = 1;
     if (st.split) {
       possible += 1;
-      const split = window.find((e) => e.type === 'split' && e.ways === st.split);
+      const split = later.find((e) => e.type === 'split' && e.ways === st.split);
       if (split && mine.length === st.split) {
         ok += 1;
         ev.correct.push(`Split the check ${st.split} ways and took ${st.split} payments`);
@@ -358,7 +396,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     }
     score('payment', ok, possible);
 
-    const closed = window.some((e) => e.type === 'close-check' && e.tableId === table);
+    const closed = later.some((e) => e.type === 'close-check');
     score('closure', closed ? 1 : 0);
     if (closed) ev.correct.push(`Closed the check on ${tableLabel(table)}`);
     else ev.incorrect.push(`The check on ${tableLabel(table)} was not closed`);
@@ -375,7 +413,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     let rounds = 0;
     let violations = 0;
     for (const e of run.events) {
-      if (e.type !== 'submit' || e.tableId !== table) continue;
+      if (e.type !== 'submit' || e.checkId !== run.partyChecks[party]) continue;
       const n = meatCount(e.items);
       if (n > 0) rounds += 1;
       if (n > 4) {

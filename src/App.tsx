@@ -100,7 +100,7 @@ export default function App() {
   const setMode = (m: Mode) => {
     if (m === mode) return;
     if (mode === 'scenarios' && run && !result && !confirm('Leave the scenario in progress? It will not be scored.')) return;
-    if (mode === 'test' && (test.phase === 'table' || test.phase === 'between') && !confirm('Quit the Test? This run will not be saved.')) return;
+    if (mode === 'test' && test.phase === 'shift' && !confirm('Quit the Test? This run will not be saved.')) return;
     if (mode === 'test') testActions.quit();
     if (m !== 'practice' && mode === 'practice') quitScenario();
     if (m === 'practice' || m === 'leaderboard') {
@@ -115,9 +115,9 @@ export default function App() {
     writePref('janchi-pos-sim:zoom', z);
   };
 
-  const inTestTable = mode === 'test' && test.phase === 'table' && !!run && !result;
+  const inTestTable = mode === 'test' && test.phase === 'shift' && !!run && !result;
   const inScenario = (mode === 'scenarios' && !!run && !result) || inTestTable;
-  const testLabel = inTestTable ? `Table ${test.index + 1} of ${test.tables.length}` : undefined;
+  const testLabel = inTestTable ? 'Service test' : undefined;
   const sideContent = mode === 'practice' ? <HelpPanel /> : inScenario && run ? <ScenarioPanel run={run} testLabel={testLabel} /> : null;
   const showPos = mode === 'practice' || inScenario;
 

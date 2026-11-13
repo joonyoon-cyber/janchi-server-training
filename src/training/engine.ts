@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
 import { actions, getState, now, onPosEvent } from '../lib/store';
-import type { LoggedEvent } from '../lib/types';
 import { evaluate, type Evaluation } from './evaluate';
 import { saveResult } from './progress';
 import type { RunState, Scenario, Stage } from './types';
@@ -100,6 +99,14 @@ export function skipStage() {
   advance();
 }
 
+/** Move on to the next request. Nothing is given up: doing it later on the POS still counts. */
+export function nextStage() {
+  if (!run || run.finishedAt) return;
+  if (run.awaitingChange) return;
+  record().passed = true;
+  advance();
+}
+
 export function answerDecision(index: number) {
   const st = currentStage();
   if (!st || st.kind !== 'decision') return;
@@ -126,9 +133,15 @@ export function endScenario() {
   notify();
 }
 
-function tableOf(e: LoggedEvent): string | undefined {
-  if ('tableId' in e) return e.tableId;
-  if ('checkId' in e) return getState().checks[e.checkId]?.tableId;
+/** Record of an earlier order request (passed with Next) on this check that has no Order yet. */
+function earlierUnanswered(checkId: string) {
+  if (!run) return undefined;
+  for (let i = 0; i < run.stageIndex; i++) {
+    const st = run.scenario.stages[i];
+    if (st.kind !== 'order' || run.partyChecks[st.party] !== checkId) continue;
+    const rec = run.records.find((r) => r.stageId === st.id);
+    if (rec && !rec.submitted && !rec.skipped) return rec;
+  }
   return undefined;
 }
 
@@ -137,13 +150,41 @@ onPosEvent((e) => {
   run.events.push({ ...e, stage: run.stageIndex });
   const st = currentStage();
   if (!st) return;
-  const partyTable = run.partyTables[st.party];
-  const table = tableOf(e);
+  const partyCheck = run.partyChecks[st.party];
+  const onParty = 'checkId' in e && !!partyCheck && e.checkId === partyCheck;
 
   // A party re-seated at the same table (e.g. after an empty check was released).
-  if (e.type === 'seat' && st.kind !== 'seat') {
-    const party = Object.keys(run.partyTables).find((p) => run!.partyTables[p] === e.tableId);
-    if (party) run.partyChecks[party] = e.checkId;
+  // (Only when that party's check was dropped; a closed check means a new party took the table.)
+  const reseated =
+    (e.type === 'seat' || e.type === 'quick-serve') &&
+    Object.keys(run.partyTables).find((p) => run!.partyTables[p] === e.tableId && !getState().checks[run!.partyChecks[p]]);
+  if (reseated && (e.type === 'seat' || e.type === 'quick-serve')) run.partyChecks[reseated] = e.checkId;
+  // Seated after pressing Next: the seat goes to the earliest party still waiting for a table.
+  const isCurrentSeat = st.kind === 'seat' && ((st.takeout && e.type === 'quick-serve') || (!st.takeout && e.type === 'seat'));
+  if (!reseated && !isCurrentSeat && (e.type === 'seat' || e.type === 'quick-serve')) {
+    const waiting = run.scenario.stages.find(
+      (s, i) => i < run!.stageIndex && s.kind === 'seat' && !!s.takeout === (e.type === 'quick-serve') && !run!.partyTables[s.party],
+    );
+    if (waiting) {
+      run.partyTables[waiting.party] = e.tableId;
+      run.partyChecks[waiting.party] = e.checkId;
+      const r = run.records.find((x) => x.stageId === waiting.id);
+      if (r) {
+        r.seatedTable = e.tableId;
+        if (e.type === 'seat') r.seatedGuests = e.guests;
+      }
+    }
+  }
+
+  // An Order answers the table's oldest request that was passed with Next and never sent.
+  const earlier = e.type === 'submit' ? earlierUnanswered(e.checkId) : undefined;
+  if (e.type === 'submit' && earlier) {
+    earlier.submitted = e.items;
+    earlier.kitchenPrint = e.kitchenPrint;
+    earlier.submitRound = e.round;
+    earlier.submitTable = e.tableId;
+    notify();
+    return;
   }
 
   switch (st.kind) {
@@ -165,24 +206,25 @@ onPosEvent((e) => {
       }
       break;
     case 'order':
-      if (e.type === 'add-item' && table === partyTable) {
+      if (e.type === 'add-item' && onParty) {
         run.addsThisStage += e.qty;
         if (st.interrupt && !record().interruptShown && run.addsThisStage >= st.interrupt.afterAdds) record().interruptShown = true;
       }
-      if (e.type === 'submit' && e.tableId === partyTable) {
+      if (e.type === 'submit' && onParty && !earlierUnanswered(e.checkId)) {
         // A change the guest would have made mid-order still counts as heard.
         if (st.interrupt) record().interruptShown = true;
         record().submitted = e.items;
         record().kitchenPrint = e.kitchenPrint;
+        record().submitRound = e.round;
         record().submitTable = e.tableId;
         advance();
         return;
       }
       break;
     case 'void':
-      if (e.type === 'void-sent' && table === partyTable && e.posId === st.item.posId) {
+      if (e.type === 'void-sent' && onParty && e.posId === st.item.posId) {
         const voided = run.events
-          .filter((x) => x.type === 'void-sent' && x.stage === run!.stageIndex && tableOf(x) === partyTable && x.posId === st.item.posId)
+          .filter((x) => x.type === 'void-sent' && x.stage === run!.stageIndex && x.checkId === partyCheck && x.posId === st.item.posId)
           .reduce((s, x) => s + (x.type === 'void-sent' ? x.qty : 0), 0);
         if (voided >= st.item.qty) {
           advance();
@@ -191,7 +233,7 @@ onPosEvent((e) => {
       }
       break;
     case 'pay':
-      if (e.type === 'close-check' && e.tableId === partyTable) {
+      if (e.type === 'close-check' && onParty) {
         const paidCash = getState().checks[e.checkId]?.payments.some((p) => p.method === 'cash');
         if (st.askChange && paidCash) {
           run.awaitingChange = true;

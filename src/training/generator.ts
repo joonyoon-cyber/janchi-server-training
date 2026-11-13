@@ -222,7 +222,7 @@ function build(level: Level, opts: GenOptions): Scenario {
     const over = opts.over ?? (advanced && chance(0.4));
     const first = meatRound(over ? 5 : 2 + rnd(3));
     const apps = level !== 'beginner' && chance(0.35) ? [{ posId: pick(Object.keys(AYCE_APPS)), qty: 1 }] : [];
-    const intro = pick([`We'll all do ${pkgSay}.`, `${capFirst(pkgSay)} for all ${NUM[guests] ?? guests} of us, please.`, `We're doing ${pkgSay}.`]);
+    const intro = guests === 1 ? `Just me tonight. ${capFirst(pkgSay)}, please. I know there's an extra charge for one person.` : pick([`We'll all do ${pkgSay}.`, guests === 1 ? `Just me tonight. ${capFirst(pkgSay)}, please. I know there's an extra charge for one person.` : `${capFirst(pkgSay)} for all ${NUM[guests] ?? guests} of us, please.`, `We're doing ${pkgSay}.`]);
     const meatSay = (items: ItemReq[]) => pick([`Let's start with ${list(items)}.`, `To start: ${list(items)}.`, `First round: ${list(items)}.`]);
     const drinkSay = (items: ItemReq[]) => pick([`Can we get ${list(items)}?`, `And to drink, ${list(items)}.`, `${capFirst(list(items))} to drink, please.`]);
 

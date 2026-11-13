@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { categories, GRID_COLUMNS, GRID_ROWS, isMeat, mappings, posItem, posItems } from '../lib/menu';
 import { checkTotals, taxCents } from '../lib/money';
 import { actions, evenSplit, getState } from '../lib/store';
-import { getRun, startScenario } from '../training/engine';
+import { currentStage, getRun, nextStage, startScenario } from '../training/engine';
 import { generateCounter, generateScenario, seededRng } from '../training/generator';
-import { buildTest, testScore, TEST_TABLES } from '../training/testRecipe';
+import { buildTest, TEST_TABLES } from '../training/testRecipe';
 import { scenarios } from '../training/scenarios';
 import type { Level, OrderStage } from '../training/types';
 import { meatQty, playPerfect } from './bot';
@@ -284,25 +284,57 @@ describe('scenario generator', () => {
   }
 });
 
-describe('test mode recipe', () => {
-  it('builds 20 tables, the same for the same seed, different order for another seed', () => {
-    const a = buildTest(12345).map((s) => s.title + JSON.stringify(s.stages));
-    const b = buildTest(12345).map((s) => s.title + JSON.stringify(s.stages));
-    expect(a).toHaveLength(TEST_TABLES);
-    expect(a).toEqual(b);
-    expect(buildTest(999).map((s) => s.title)).not.toEqual(buildTest(12345).map((s) => s.title));
+describe('test mode: one shift', () => {
+  it('interleaves 20 parties, same for the same seed, never more than 3 tables open', () => {
+    const a = buildTest(12345);
+    expect(JSON.stringify(a.stages)).toEqual(JSON.stringify(buildTest(12345).stages));
+    expect(Object.keys(a.parties)).toHaveLength(TEST_TABLES);
+    expect(JSON.stringify(buildTest(999).stages)).not.toEqual(JSON.stringify(a.stages));
+    const seen = new Set<string>();
+    const left = new Map<string, number>();
+    a.stages.forEach((s) => left.set(s.party, (left.get(s.party) ?? 0) + 1));
+    let maxOpen = 0;
+    for (const s of a.stages) {
+      seen.add(s.party);
+      left.set(s.party, left.get(s.party)! - 1);
+      maxOpen = Math.max(maxOpen, [...seen].filter((p) => left.get(p)! > 0).length);
+    }
+    expect(maxOpen).toBeLessThanOrEqual(3);
   });
   for (const seed of [1, 2, 3, 42, 777, 2026, 31337, 99999]) {
-    it(`perfect play scores 100 on every table (seed ${seed})`, () => {
-      for (const sc of buildTest(seed)) {
-        startScenario(sc);
-        playPerfect(sc);
-        const r = getRun().result!;
-        if (r.score !== 100) throw new Error(`${sc.title}\n${JSON.stringify(sc, null, 1)}\n${JSON.stringify(r, null, 1)}`);
-        expect(r.categories.some((c) => c.name === 'Completion time')).toBe(false);
-      }
+    it(`perfect play scores 100 on the whole shift (seed ${seed})`, () => {
+      const sc = buildTest(seed);
+      startScenario(sc);
+      playPerfect(sc);
+      const r = getRun().result!;
+      if (r.score !== 100) throw new Error(JSON.stringify({ incorrect: r.incorrect, missing: r.missing, wrongQty: r.wrongQty, pay: r.paymentMistakes, ayce: r.ayceViolations }, null, 1));
+      expect(r.categories.some((c) => c.name === 'Completion time')).toBe(false);
     });
   }
+  it('Next does not give up: an order sent later still counts for that request', () => {
+    const sc = scenarios.find((s) => s.id === 'mvp-premium-dinner')!;
+    startScenario(sc);
+    actions.goto('floor');
+    actions.seatTable('B7', 4);
+    nextStage(); // pass round 1 without sending it; round 2 is now showing
+    const r1 = (sc.stages[1] as OrderStage).expect;
+    actions.openTable('B7');
+    r1.forEach((i) => actions.addItem(i.posId, i.qty));
+    actions.submitOrder(); // answers round 1, not round 2
+    expect(currentStage()?.id).toBe('r2');
+    playPerfect(sc);
+    const res = getRun().result!;
+    expect({ score: res.score, missing: res.missing, wrong: res.wrongQty }).toEqual({ score: 100, missing: [], wrong: [] });
+  });
+  it('a party seated after pressing Next is still credited', () => {
+    const sc = scenarios.find((s) => s.id === 'b-ayce-then-drinks')!;
+    startScenario(sc);
+    nextStage(); // pass the seating request
+    actions.goto('floor');
+    actions.seatTable('A3', 2);
+    playPerfect(sc);
+    expect(getRun().result!.score).toBe(100);
+  });
   it('flags a kitchen ticket for macarons and an ignored split', () => {
     const mac = generateCounter('macaron', { rng: seededRng(5) });
     startScenario(mac);
@@ -312,9 +344,5 @@ describe('test mode recipe', () => {
     startScenario(split);
     playPerfect(split, { noSplit: true });
     expect(getRun().result!.paymentMistakes.some((x) => x.includes('Even Amount Split'))).toBe(true);
-  });
-  it('test score is the rounded average', () => {
-    expect(testScore([100, 90, 95])).toBe(95);
-    expect(testScore([100, 99])).toBe(100);
   });
 });

@@ -51,10 +51,11 @@ mistakes, and gives suggestions. You can retry any scenario. Results are kept pe
 
 The MVP scenario from the spec is **Beginner → "Premium AYCE Dinner (full table)"**.
 
-**Test.** A 20-table service test built from a fixed recipe (same mix and difficulty every run;
-dishes, parties and order vary with a random seed). Each table is scored 0–100 for accuracy; the
-Test score is the rounded average, and the clear time is the total time on the tables. See
-`src/training/testRecipe.ts`.
+**Test.** One continuous Friday-dinner shift of 20 parties built from a fixed recipe (same mix and
+difficulty every run; dishes, parties and arrival order vary with a random seed). Up to 3 tables are
+open at once and their requests interleave. **Next ▸** moves on without giving anything up: doing it
+later on the POS still counts. One score (0–100, accuracy only) at the end; clear time is the whole
+shift. See `src/training/testRecipe.ts`.
 
 **Leaderboard.** Sign in with Google to save Test results. Ranking: highest score, then fastest
 clear time; each person's best run counts. Backed by Supabase (database schema in

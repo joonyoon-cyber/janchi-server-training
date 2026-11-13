@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { tableLabel } from '../lib/menu';
 import { usePos } from '../lib/store';
 import { formatClock, useNow } from '../pos/common';
-import { answerChange, answerDecision, currentStage, endScenario, skipStage, useTraining } from './engine';
+import { answerChange, answerDecision, currentStage, endScenario, nextStage, useTraining } from './engine';
 import type { RunState, Stage } from './types';
 
 const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -42,7 +42,7 @@ function Line({ who, text, current, italic }: { who?: string; text: string; curr
   );
 }
 
-/** `testLabel` (e.g. "Table 3 of 20") replaces the scenario title in Test mode so it gives nothing away. */
+/** `testLabel` replaces the scenario title in Test mode so it gives nothing away. */
 export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: string }) {
   useTraining();
   const t = useNow(1000);
@@ -56,6 +56,13 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
   }, [run.stageIndex, run.records.length, run.awaitingChange, run.records[run.records.length - 1]?.interruptShown]);
 
+  // Several tables at once: label each line with its table.
+  const who = (s: Stage) => {
+    if (Object.keys(sc.parties).length < 2) return speaker(s);
+    const t = run.partyTables[s.party];
+    const place = t ? (t.startsWith('TO-') ? 'Take out' : tableLabel(t)) : s.kind === 'seat' ? (s.takeout ? 'Counter' : 'New party') : 'Waiting for a table';
+    return `${speaker(s)} · ${place}`;
+  };
   const elapsed = Math.max(0, Math.round((t - run.startedAt) / 1000));
   const parties = Object.entries(sc.parties);
   const story = new Date(t);
@@ -75,7 +82,9 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
         </div>
         <div className="mt-1 text-xs text-slate-400">
           {DAY[story.getDay()]} {formatClock(t)} ·{' '}
-          {parties.map(([k, g]) => `${parties.length > 1 ? `Party ${k.slice(1)}: ` : ''}${g} guest${g > 1 ? 's' : ''}${run.partyTables[k] && tableChecks[run.partyTables[k]] ? ` at ${tableLabel(run.partyTables[k])}` : ''}`).join(' · ')}
+          {testLabel
+            ? `Request ${run.stageIndex + 1} of ${sc.stages.length} · ${Object.values(run.partyTables).filter((t) => tableChecks[t] || t.startsWith('TO-')).length} open`
+            : parties.map(([k, g]) => `${parties.length > 1 ? `Party ${k.slice(1)}: ` : ''}${g} guest${g > 1 ? 's' : ''}${run.partyTables[k] && tableChecks[run.partyTables[k]] ? ` at ${tableLabel(run.partyTables[k])}` : ''}`).join(' · ')}
         </div>
         <div className="mt-1 text-xs text-slate-400">
           Log in on the POS with any number (e.g. 123).
@@ -89,9 +98,10 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
           return (
             <div key={s.id} className="space-y-2">
               {s.note && <Line text={s.note} italic />}
-              <Line who={speaker(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
+              <Line who={who(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
               {s.kind === 'order' && s.interrupt && rec?.interruptShown && <Line who="Guest" text={s.interrupt.say} current={isCur} />}
               {rec?.skipped && <div className="text-xs text-rose-300">Step skipped</div>}
+              {rec?.passed && !isCur && <div className="text-xs text-slate-400">↷ Moved on. It still counts if you do it now.</div>}
               {s.kind === 'decision' && rec?.choice !== undefined && <div className="text-xs text-slate-400">You: {s.options[rec.choice].text}</div>}
             </div>
           );
@@ -134,11 +144,16 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
             </div>
           )}
           <div className="mt-3 flex gap-2 text-xs">
-            <button className="rounded border border-slate-500 px-2 py-1 text-slate-300 hover:bg-slate-700" onClick={() => skipStage()}>
-              Skip step
-            </button>
-            <button className="rounded border border-slate-500 px-2 py-1 text-slate-300 hover:bg-slate-700" onClick={() => endScenario()}>
-              {testLabel ? 'End this table' : <>End &amp; score now</>}
+            {!run.awaitingChange && (
+              <button data-testid="next-request" className="rounded bg-sky-700 px-3 py-1 font-semibold text-white hover:bg-sky-600" onClick={() => nextStage()} title="Move on. Nothing is given up: doing it later on the POS still counts.">
+                Next ▸
+              </button>
+            )}
+            <button
+              className="rounded border border-slate-500 px-2 py-1 text-slate-300 hover:bg-slate-700"
+              onClick={() => (!testLabel || confirm('Finish the shift now? Requests you have not seen yet count as missed.')) && endScenario()}
+            >
+              {testLabel ? 'Finish shift' : <>End &amp; score now</>}
             </button>
           </div>
         </div>
