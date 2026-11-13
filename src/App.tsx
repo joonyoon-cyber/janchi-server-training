@@ -230,10 +230,10 @@ export default function App() {
       )}
       <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-slate-800 bg-slate-950 px-3 py-1 text-[11px] tracking-wide text-slate-500">
         <span>© 2026 Janchi Korean BBQ &amp; Bar · 165 N. Moorpark Rd., Thousand Oaks</span>
-        <a className="text-slate-300 underline decoration-sky-600 underline-offset-2 hover:text-white" href="privacy.html" target="_blank" rel="noreferrer">
+        <a className="hover:text-slate-300 hover:underline" href="privacy.html" target="_blank" rel="noreferrer">
           Privacy Policy
         </a>
-        <a className="text-slate-300 underline decoration-sky-600 underline-offset-2 hover:text-white" href="terms.html" target="_blank" rel="noreferrer">
+        <a className="hover:text-slate-300 hover:underline" href="terms.html" target="_blank" rel="noreferrer">
           Terms of Service
         </a>
       </footer>
