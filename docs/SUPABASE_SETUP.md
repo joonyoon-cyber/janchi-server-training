@@ -9,7 +9,7 @@ Supabase dashboard → **SQL Editor** → **New query** → paste all of `supaba
 It creates `profiles`, `test_runs`, the `leaderboard` view and their access rules. Re-running is safe.
 
 The leaderboard is public (visible without signing in). If your project was set up before that change,
-run `supabase/public_leaderboard.sql` once the same way. Visitors can read only the leaderboard's columns
+run `supabase/team.sql` once the same way (it also sets up the owner's Team page). Visitors can read only the leaderboard's columns
 (name, score, clear time, date, number of Tests), never the `test_runs` or `profiles` tables.
 
 ## 2. Google sign-in
@@ -73,3 +73,14 @@ Forgotten passwords: no emails are sent, so there is no self-service reset. In S
 **Authentication → Users**, find the person's email and delete the user (their saved runs go with
 it); they can then create the account again. (Email resets can be added later with a custom SMTP
 sender.)
+
+## Team page (owner only)
+
+`supabase/team.sql` (also part of `schema.sql`) adds what the owner's **Team** tab needs:
+
+- `test_starts`: every Test started, so abandoned attempts can be counted.
+- `practice_results`: Scenario practice finished while signed in.
+- `team_members()`: owner-only list of accounts with their sign-in email and last sign-in.
+- Test runs and practice results: each person reads only their own; the owner reads everyone's.
+- **Clear leaderboard** no longer deletes anything. It records a reset time; the leaderboard counts
+  only Tests after the latest reset, and the owner's Team page keeps the full history.

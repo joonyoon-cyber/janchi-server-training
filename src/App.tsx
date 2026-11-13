@@ -7,18 +7,20 @@ import { Results } from './training/Results';
 import { ScenarioPanel } from './training/ScenarioPanel';
 import { ScenarioPicker } from './training/ScenarioPicker';
 import { Leaderboard } from './training/Leaderboard';
+import { Team } from './training/Team';
 import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
 import { openSignIn, signOut, useAuth } from './lib/supabase';
 import { SignInDialog } from './auth/SignInDialog';
 
-type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard';
+type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'practice', label: 'Free Play' },
   { id: 'scenarios', label: 'Scenarios' },
   { id: 'test', label: 'Test' },
   { id: 'leaderboard', label: 'Leaderboard' },
+  { id: 'team', label: 'Team' },
 ];
 
 function readPref<T extends string>(key: string, fallback: T): T {
@@ -108,7 +110,7 @@ export default function App() {
     if (mode === 'test' && test.phase === 'shift' && !confirm('Quit the Test? This run will not be saved.')) return;
     if (mode === 'test') testActions.quit();
     if (m !== 'practice' && mode === 'practice') quitScenario();
-    if (m === 'practice' || m === 'leaderboard') {
+    if (m === 'practice' || m === 'leaderboard' || m === 'team') {
       quitScenario();
       actions.loadPractice();
     }
@@ -137,7 +139,7 @@ export default function App() {
           </div>
         </div>
         <nav className="flex rounded-full bg-slate-900 p-1 text-xs font-semibold ring-1 ring-slate-800">
-          {MODES.map((m) => (
+          {MODES.filter((m) => m.id !== 'team' || auth.profile?.is_owner).map((m) => (
             <button
               key={m.id}
               data-testid={`mode-${m.id}`}
@@ -172,6 +174,8 @@ export default function App() {
         <main className="min-h-0 flex-1 overflow-y-auto">
           {mode === 'leaderboard' ? (
             <Leaderboard auth={auth} />
+          ) : mode === 'team' ? (
+            <Team auth={auth} />
           ) : mode === 'test' ? (
             <TestScreens auth={auth} onLeaderboard={() => setMode('leaderboard')} />
           ) : result && run ? (

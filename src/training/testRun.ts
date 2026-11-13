@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { actions } from '../lib/store';
+import { logTestStart } from '../lib/supabase';
 import type { Evaluation } from './evaluate';
 import { getRun, quitScenario, startScenario, subscribeTraining } from './engine';
 import { buildTest, newSeed, TEST_VERSION } from './testRecipe';
@@ -41,6 +42,7 @@ export const testActions = {
     const shift = buildTest(seed);
     set({ phase: 'shift', seed, shift, result: null, events: [] });
     startScenario(shift);
+    void logTestStart(TEST_VERSION, seed);
   },
   quit() {
     quitScenario();
