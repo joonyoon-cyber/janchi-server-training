@@ -149,7 +149,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     acc[k].p += possible;
   };
   const recOf = (st: Stage) => run.records.find((r) => r.stageId === st.id);
-  const tableName = (party: string) => (run.partyTables[party] ? tableLabel(run.partyTables[party]) : '(not seated)');
+  const tableName = (party: string) => (run.partyTables[party] ? tableLabel(run.partyTables[party]) : 'not seated');
   const checkOf = (party: string): Check | undefined => pos.checks[run.partyChecks[party]];
   const stageIdx = (st: Stage) => sc.stages.indexOf(st);
   // Orders sent after Next was pressed still count: each request takes the first

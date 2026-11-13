@@ -27,7 +27,7 @@ export function Leaderboard({ auth }: { auth: Auth }) {
       <div className="mx-auto max-w-xl space-y-4 p-6 text-center text-slate-100">
         <h2 className="text-2xl font-semibold">Leaderboard</h2>
         <p className="text-slate-300">Sign in (Google, or your email and a password) to see the rankings and save your Test results.</p>
-        <button className="rounded-md bg-white px-4 py-2 font-semibold text-slate-900" onClick={() => openSignIn()}>
+        <button className="rounded-full bg-sky-600 px-5 py-2 font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
           Sign in
         </button>
         <p className="text-xs text-slate-400">

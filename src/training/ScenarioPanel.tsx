@@ -33,11 +33,43 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function Line({ who, text, current, italic }: { who?: string; text: string; current?: boolean; italic?: boolean }) {
+type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'note';
+
+/** Each kind of request has its own color and icon, so it is clear what the guest wants. */
+const KIND: Record<Kind, { label: string; card: string; current: string; badge: string; icon: string }> = {
+  seat: { label: 'Seating', card: 'bg-indigo-950/50 ring-1 ring-indigo-800/60', current: 'bg-indigo-900/70 ring-2 ring-indigo-400', badge: 'bg-indigo-500', icon: 'M4 12h16M6 12V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5M6 12v7M18 12v7' },
+  counter: { label: 'At the counter', card: 'bg-orange-950/40 ring-1 ring-orange-800/60', current: 'bg-orange-900/60 ring-2 ring-orange-400', badge: 'bg-orange-500', icon: 'M6 8h12l-1 12H7zM9 8V6a3 3 0 0 1 6 0v2' },
+  order: { label: 'Order', card: 'bg-slate-800 ring-1 ring-slate-700', current: 'bg-slate-700 ring-2 ring-slate-300', badge: 'bg-slate-500', icon: 'M7 3v8a2 2 0 0 0 4 0V3M9 3v18M16 3c-1.5 0-2.5 2-2.5 5s1 4 2.5 4v9' },
+  change: { label: 'Change!', card: 'bg-rose-950/50 ring-1 ring-rose-800/70', current: 'bg-rose-900/70 ring-2 ring-rose-400 animate-[pulse_1.6s_ease-in-out_3]', badge: 'bg-rose-500', icon: 'M12 6v8M12 18h.01' },
+  question: { label: 'Question', card: 'bg-violet-950/50 ring-1 ring-violet-800/60', current: 'bg-violet-900/70 ring-2 ring-violet-400', badge: 'bg-violet-500', icon: 'M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7v.5M12 17h.01' },
+  serve: { label: 'Who brings it?', card: 'bg-teal-950/50 ring-1 ring-teal-800/60', current: 'bg-teal-900/70 ring-2 ring-teal-400', badge: 'bg-teal-500', icon: 'M4 15h16M6 15a6 6 0 0 1 12 0M12 7V5M3 18h18' },
+  check: { label: 'Check, please', card: 'bg-emerald-950/50 ring-1 ring-emerald-800/60', current: 'bg-emerald-900/70 ring-2 ring-emerald-400', badge: 'bg-emerald-500', icon: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6' },
+  note: { label: '', card: '', current: '', badge: '', icon: '' },
+};
+
+function kindOf(st: Stage): Kind {
+  if (st.kind === 'seat') return st.takeout ? 'counter' : 'seat';
+  if (st.kind === 'pay') return 'check';
+  if (st.kind === 'decision') return st.followUp ? 'serve' : 'question';
+  return 'order';
+}
+
+function Line({ who, text, current, kind = 'order' }: { who?: string; text: string; current?: boolean; kind?: Kind }) {
+  if (kind === 'note') return <div className="px-1 text-xs italic text-slate-400">{text}</div>;
+  const k = KIND[kind];
   return (
-    <div className={`rounded-lg px-3 py-2 text-sm leading-snug ${current ? 'bg-amber-100 text-slate-900 ring-2 ring-amber-400' : 'bg-slate-700/60 text-slate-200'} ${italic ? 'italic' : ''}`}>
-      {who && <div className={`mb-0.5 text-[11px] font-semibold uppercase tracking-wide ${current ? 'text-amber-700' : 'text-slate-400'}`}>{who}</div>}
-      {text}
+    <div data-kind={kind} className={`rounded-xl px-3 py-2.5 text-sm leading-snug text-slate-100 transition-colors ${current ? k.current : k.card}`}>
+      <div className="mb-1 flex items-center gap-2">
+        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${k.badge}`}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d={k.icon} />
+          </svg>
+        </span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-200">{k.label}</span>
+        {who && <span className="truncate text-[11px] text-slate-400">· {who}</span>}
+        {current && <span className="ml-auto rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Now</span>}
+      </div>
+      <div className={current ? 'text-white' : 'text-slate-300'}>{text}</div>
     </div>
   );
 }
@@ -97,9 +129,9 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
           const isCur = i === run.stageIndex && !!st;
           return (
             <div key={s.id} className="space-y-2">
-              {s.note && <Line text={s.note} italic />}
-              <Line who={who(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
-              {s.kind === 'order' && s.interrupt && rec?.interruptShown && <Line who="Guest" text={s.interrupt.say} current={isCur} />}
+              {s.note && <Line text={s.note} kind="note" />}
+              <Line who={who(s)} kind={kindOf(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
+              {s.kind === 'order' && s.interrupt && rec?.interruptShown && <Line who={who(s)} kind="change" text={s.interrupt.say} current={isCur} />}
               {rec?.skipped && <div className="text-xs text-rose-300">Step skipped</div>}
               {rec?.passed && !isCur && <div className="text-xs text-slate-400">↷ Moved on. It still counts if you do it now.</div>}
               {s.kind === 'decision' && rec?.choice !== undefined && <div className="text-xs text-slate-400">You: {s.options[rec.choice].text}</div>}

@@ -48,12 +48,12 @@ function Intro({ auth }: { auth: Auth }) {
       ) : (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-600/50 bg-amber-950/30 p-3 text-sm text-amber-200">
           Sign in to save your result to the leaderboard. You can still take the Test without signing in.
-          <button className="rounded-md bg-white px-3 py-1.5 font-semibold text-slate-900" onClick={() => openSignIn()}>
+          <button className="rounded-full bg-sky-600 px-4 py-1.5 font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
             Sign in
           </button>
         </div>
       )}
-      <button data-testid="test-start" className="rounded-md bg-sky-600 px-6 py-3 text-lg font-semibold hover:bg-sky-500" onClick={() => testActions.start()}>
+      <button data-testid="test-start" className="rounded-full bg-sky-600 px-7 py-3 text-lg font-semibold text-white shadow-lg shadow-sky-900/40 hover:bg-sky-500" onClick={() => testActions.start()}>
         Start the shift
       </button>
     </div>

@@ -703,7 +703,7 @@
           "say": "Premium AYCE for both of us. Two briskets and two pork bellies, please.",
           "interrupt": {
             "afterAdds": 4,
-            "say": "Oh wait, sorry. Just one pork belly, and add a ribeye instead.",
+            "say": "Oh wait, sorry: can we get one pork belly instead of two, and add a ribeye?",
             "cancelled": [
               {
                 "posId": "18-pork-belly-ayce",

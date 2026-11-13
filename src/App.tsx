@@ -128,30 +128,41 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-slate-950">
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-800 bg-slate-900 px-3 py-1.5 text-slate-100">
-        <div className="mr-auto leading-tight">
-          <div className="text-sm font-semibold">Janchi POS Trainer</div>
-          <div className="text-[10px] text-amber-300">Training simulator · not connected to the live POS</div>
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-slate-800 bg-slate-950 px-3 py-1.5 text-slate-100 shadow-[0_1px_0_rgba(190,30,45,0.35)]">
+        <div className="mr-auto flex items-center gap-3">
+          <img src="brand/janchi-mark-white.png" alt="Janchi Korean BBQ & Bar" className="h-10 w-auto" />
+          <div className="border-l border-slate-700 pl-3 leading-tight">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100">Server Training</div>
+            <div className="text-[10px] tracking-wide text-slate-400">POS simulator · not connected to the live POS</div>
+          </div>
         </div>
-        <div className="flex rounded-md bg-slate-800 p-0.5 text-xs font-semibold">
+        <nav className="flex rounded-full bg-slate-900 p-1 text-xs font-semibold ring-1 ring-slate-800">
           {MODES.map((m) => (
-            <button key={m.id} data-testid={`mode-${m.id}`} className={`rounded px-3 py-1 ${mode === m.id ? 'bg-sky-600' : 'text-slate-300'}`} onClick={() => setMode(m.id)}>
+            <button
+              key={m.id}
+              data-testid={`mode-${m.id}`}
+              className={`rounded-full px-3.5 py-1.5 transition-colors ${mode === m.id ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
+              onClick={() => setMode(m.id)}
+            >
               {m.label}
             </button>
           ))}
-        </div>
-        <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => setSettingsOpen(true)}>
+        </nav>
+        <button className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800" onClick={() => setSettingsOpen(true)}>
           Settings
         </button>
         {auth.session ? (
           <span className="flex items-center gap-2 text-xs text-slate-300">
             {auth.profile?.display_name ?? auth.session.user.email}
-            <button className="rounded border border-slate-600 px-2 py-1" onClick={() => signOut()}>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-[11px] font-bold uppercase text-white">
+              {(auth.profile?.display_name ?? auth.session.user.email ?? '?').slice(0, 1)}
+            </span>
+            <button className="rounded-full border border-slate-700 px-3 py-1 hover:bg-slate-800" onClick={() => signOut()}>
               Sign out
             </button>
           </span>
         ) : (
-          <button data-testid="sign-in" className="rounded bg-white px-2 py-1 text-xs font-semibold text-slate-900" onClick={() => openSignIn()}>
+          <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
             Sign in
           </button>
         )}
@@ -217,12 +228,12 @@ export default function App() {
           )}
         </main>
       )}
-      <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-slate-800 bg-slate-900 px-3 py-1 text-xs text-slate-400">
-        <span>© 2026 Janchi Korean BBQ &amp; Bar · Server training simulator</span>
-        <a className="text-sky-300 underline" href="privacy.html" target="_blank" rel="noreferrer">
+      <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-slate-800 bg-slate-950 px-3 py-1 text-[11px] tracking-wide text-slate-500">
+        <span>© 2026 Janchi Korean BBQ &amp; Bar · 165 N. Moorpark Rd., Thousand Oaks</span>
+        <a className="text-slate-300 underline decoration-sky-600 underline-offset-2 hover:text-white" href="privacy.html" target="_blank" rel="noreferrer">
           Privacy Policy
         </a>
-        <a className="text-sky-300 underline" href="terms.html" target="_blank" rel="noreferrer">
+        <a className="text-slate-300 underline decoration-sky-600 underline-offset-2 hover:text-white" href="terms.html" target="_blank" rel="noreferrer">
           Terms of Service
         </a>
       </footer>
