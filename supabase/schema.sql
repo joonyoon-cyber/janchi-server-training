@@ -98,7 +98,7 @@ select u.id, left(coalesce(u.raw_user_meta_data ->> 'full_name', u.raw_user_meta
 from auth.users u
 on conflict (id) do nothing;
 
--- Owner-only: clear the leaderboard (see owner_and_ids.sql for making an account the owner).
+-- Owner-only: clear the leaderboard (see owner.sql for making an account the owner).
 create or replace function public.clear_leaderboard()
 returns void
 language plpgsql

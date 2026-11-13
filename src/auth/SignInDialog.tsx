@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ID_RULE, openSignIn, signInWithGoogle, signInWithId, signUpWithId, useSignInOpen } from '../lib/supabase';
+import { EMAIL_RULE, openSignIn, signInWithEmail, signInWithGoogle, signUpWithEmail, useSignInOpen } from '../lib/supabase';
 
-/** Sign in with Google, or with an ID and password (sign in / create an account). */
+/** Sign in with Google, or with an email and password (sign in / create an account). */
 export function SignInDialog() {
   const open = useSignInOpen();
   const [tab, setTab] = useState<'signin' | 'create'>('signin');
-  const [id, setId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [name, setName] = useState('');
@@ -22,13 +22,12 @@ export function SignInDialog() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanId = id.trim().toLowerCase();
-    if (!ID_RULE.test(cleanId)) return setError('ID: 3–20 characters, letters, numbers, . _ or -, starting with a letter or number.');
+    if (!EMAIL_RULE.test(email.trim())) return setError('Please enter a valid email address.');
     if (password.length < 8) return setError('Password: at least 8 characters.');
     if (tab === 'create' && password !== password2) return setError('The two passwords do not match.');
     setBusy(true);
     setError(null);
-    const err = tab === 'create' ? await signUpWithId(cleanId, password, name) : await signInWithId(cleanId, password);
+    const err = tab === 'create' ? await signUpWithEmail(email, password, name) : await signInWithEmail(email, password);
     setBusy(false);
     if (err) return setError(err);
     close();
@@ -51,7 +50,7 @@ export function SignInDialog() {
 
         <div className="flex items-center gap-3 text-xs text-slate-400">
           <div className="h-px flex-1 bg-slate-600" />
-          or use an ID and password
+          or use your email and a password
           <div className="h-px flex-1 bg-slate-600" />
         </div>
 
@@ -73,8 +72,8 @@ export function SignInDialog() {
 
         <form className="space-y-3" onSubmit={submit}>
           <label className="block text-sm">
-            ID
-            <input data-testid="id-input" autoFocus autoComplete="username" value={id} onChange={(e) => setId(e.target.value)} className={input} />
+            Email
+            <input data-testid="id-input" type="email" autoFocus autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={input} />
           </label>
           <label className="block text-sm">
             Password
@@ -98,8 +97,8 @@ export function SignInDialog() {
                 <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} className={input} />
               </label>
               <p className="text-xs text-slate-400">
-                ID: 3–20 characters (letters, numbers, . _ -). Password: at least 8 characters. There is no password reset by email, so keep it somewhere safe;
-                the manager can help if you forget it.
+                Password: at least 8 characters. No emails are sent (no confirmation, no password reset), so double-check your email and keep your password
+                somewhere safe; the manager can help if you forget it.
               </p>
             </>
           )}

@@ -23,6 +23,6 @@ revoke all on function public.clear_leaderboard() from public, anon;
 grant execute on function public.clear_leaderboard() to authenticated;
 
 -- 3. AFTER you have created the owner account on the site (Sign in > Create account),
---    make it the owner. Replace "owner" with the ID you chose, then run this line:
+--    make it the owner. Put the owner account's email in the quotes, then run this line:
 -- update public.profiles set is_owner = true
---   where id = (select id from auth.users where email = 'owner@janchi-trainer.invalid');
+--   where id = (select id from auth.users where email = 'OWNER-EMAIL-HERE');

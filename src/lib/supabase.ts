@@ -37,32 +37,30 @@ export function signInWithGoogle() {
   return supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
 }
 
-// ---- ID + password accounts -------------------------------------------------
-// Supabase password logins need an email, so each ID gets a stand-in address on
-// a reserved domain that can never receive mail (".invalid", RFC 2606). No email
-// is ever sent: "Confirm email" must be turned off in Supabase.
-const ID_DOMAIN = 'janchi-trainer.invalid';
-export const ID_RULE = /^[a-z0-9][a-z0-9._-]{2,19}$/;
-const idToEmail = (id: string) => `${id.trim().toLowerCase()}@${ID_DOMAIN}`;
+// ---- Email + password accounts ---------------------------------------------
+// "Confirm email" is off in Supabase, so an account works as soon as it is created
+// and no email is ever sent.
+export const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export async function signUpWithId(id: string, password: string, name: string): Promise<string | null> {
+export async function signUpWithEmail(email: string, password: string, name: string): Promise<string | null> {
+  const clean = email.trim().toLowerCase();
   const { data, error } = await supabase.auth.signUp({
-    email: idToEmail(id),
+    email: clean,
     password,
-    options: { data: { full_name: name.trim() || id.trim().toLowerCase(), username: id.trim().toLowerCase() } },
+    options: { data: { full_name: name.trim() || clean.split('@')[0] } },
   });
-  if (error) return /registered|exists/i.test(error.message) ? 'That ID is already taken.' : error.message;
+  if (error) return /registered|exists/i.test(error.message) ? 'An account with this email already exists. Use Sign in.' : error.message;
   if (!data.session) return 'Account created, but sign-in needs "Confirm email" turned off in Supabase (see docs/SUPABASE_SETUP.md).';
   return null;
 }
 
-export async function signInWithId(id: string, password: string): Promise<string | null> {
-  const { error } = await supabase.auth.signInWithPassword({ email: idToEmail(id), password });
+export async function signInWithEmail(email: string, password: string): Promise<string | null> {
+  const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (!error) return null;
-  return /invalid login/i.test(error.message) ? 'Wrong ID or password.' : error.message;
+  return /invalid login/i.test(error.message) ? 'Wrong email or password.' : error.message;
 }
 
-/** The sign-in window (Google or ID + password), opened from anywhere. */
+/** The sign-in window (Google or email + password), opened from anywhere. */
 let signInOpen = false;
 const signInListeners = new Set<() => void>();
 export function openSignIn(open = true) {
