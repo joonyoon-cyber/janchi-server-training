@@ -136,26 +136,6 @@ export default function App() {
             </button>
           ))}
         </div>
-        {(mode === 'practice' || inScenario) && (
-          <>
-            <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => setZoom(zoom === 'fit' ? 'actual' : 'fit')} title="Fit the POS to the window, or show it at full size with scrolling">
-              {zoom === 'fit' ? 'Zoom 100%' : 'Fit screen'}
-            </button>
-            <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => setShowSide((v) => !v)}>
-              {showSide ? 'Hide' : 'Show'} {mode === 'practice' ? 'help' : 'guests'}
-            </button>
-          </>
-        )}
-        {mode === 'practice' && (
-          <button
-            className="rounded border border-slate-600 px-2 py-1 text-xs"
-            onClick={() => {
-              if (confirm('Clear all tables and checks in Practice Mode?')) actions.reset({ persist: true });
-            }}
-          >
-            Reset
-          </button>
-        )}
         <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => setSettingsOpen(true)}>
           Settings
         </button>
@@ -187,8 +167,31 @@ export default function App() {
         </main>
       ) : (
         <main className="flex min-h-0 flex-1 flex-col landscape:flex-row">
-          <div className="min-h-0 min-w-0 flex-1 portrait:aspect-[4/3] portrait:flex-none">
-            <PosFrame zoom={zoom} />
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col portrait:flex-none">
+            {/* POS toolbar: controls for the POS screen only, so the header stays the same on every tab. */}
+            <div data-testid="pos-toolbar" className="flex shrink-0 items-center justify-end gap-2 bg-slate-950 px-2 pt-1 text-xs text-slate-200">
+              <button className="rounded border border-slate-700 px-2 py-0.5 hover:bg-slate-800" onClick={() => setZoom(zoom === 'fit' ? 'actual' : 'fit')} title="Fit the POS to the window, or show it at full size with scrolling">
+                {zoom === 'fit' ? 'Zoom 100%' : 'Fit screen'}
+              </button>
+              {sideContent && (
+                <button className="rounded border border-slate-700 px-2 py-0.5 hover:bg-slate-800" onClick={() => setShowSide((v) => !v)}>
+                  {showSide ? 'Hide' : 'Show'} {mode === 'practice' ? 'help' : 'guests'}
+                </button>
+              )}
+              {mode === 'practice' && (
+                <button
+                  className="rounded border border-slate-700 px-2 py-0.5 hover:bg-slate-800"
+                  onClick={() => {
+                    if (confirm('Clear all tables and checks in Free Play?')) actions.reset({ persist: true });
+                  }}
+                >
+                  Reset tables
+                </button>
+              )}
+            </div>
+            <div className="min-h-0 flex-1 portrait:aspect-[4/3] portrait:flex-none">
+              <PosFrame zoom={zoom} />
+            </div>
           </div>
           <div className="hidden px-3 py-1 text-center text-xs text-slate-400 portrait:max-md:block">Tip: turn your phone sideways for a larger POS screen, or use Zoom 100% and scroll.</div>
           {showSide && sideContent && (
