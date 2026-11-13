@@ -6,7 +6,17 @@ import { useEffect, useState } from 'react';
 const SUPABASE_URL = 'https://kukdmtnflwzfwxypngzj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_K3JzzqP7qctubvywOLDqeA_oHWRan66';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Stay signed in across reloads and browser restarts: the session is kept in localStorage
+// and the access token is refreshed automatically. Google sign-in uses the PKCE flow
+// (a one-time code in the return URL instead of tokens).
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+  },
+});
 
 export interface Profile {
   id: string;
@@ -95,11 +105,11 @@ export function useAuth() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+    // INITIAL_SESSION fires once the saved session (if any) has been restored.
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
       setReady(true);
     });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
 
