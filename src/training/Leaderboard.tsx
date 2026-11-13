@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadLeaderboard, loadMyRuns, signInWithGoogle, type LeaderRow, type RunRow, type useAuth } from '../lib/supabase';
+import { clearLeaderboard, loadLeaderboard, loadMyRuns, openSignIn, type LeaderRow, type RunRow, type useAuth } from '../lib/supabase';
 import { fmtTime } from './TestMode';
 
 type Auth = ReturnType<typeof useAuth>;
@@ -26,9 +26,9 @@ export function Leaderboard({ auth }: { auth: Auth }) {
     return (
       <div className="mx-auto max-w-xl space-y-4 p-6 text-center text-slate-100">
         <h2 className="text-2xl font-semibold">Leaderboard</h2>
-        <p className="text-slate-300">Sign in with your Google account to see the rankings and save your Test results.</p>
-        <button className="rounded-md bg-white px-4 py-2 font-semibold text-slate-900" onClick={() => signInWithGoogle()}>
-          Sign in with Google
+        <p className="text-slate-300">Sign in (Google, or your own ID and password) to see the rankings and save your Test results.</p>
+        <button className="rounded-md bg-white px-4 py-2 font-semibold text-slate-900" onClick={() => openSignIn()}>
+          Sign in
         </button>
         <p className="text-xs text-slate-400">
           By signing in you agree to the{' '}
@@ -123,6 +123,8 @@ export function Leaderboard({ auth }: { auth: Auth }) {
         </table>
       )}
 
+      {auth.profile?.is_owner && <OwnerTools onCleared={() => setRows([])} />}
+
       <div className="rounded-lg bg-slate-800/60 p-4">
         <div className="mb-2 font-semibold">Your recent Tests {myRank > 0 && <span className="font-normal text-slate-400">· rank #{myRank}</span>}</div>
         {mine.length === 0 ? (
@@ -141,6 +143,43 @@ export function Leaderboard({ auth }: { auth: Auth }) {
           </table>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Owner only: clear every saved Test run. The database checks the owner flag too. */
+function OwnerTools({ onCleared }: { onCleared: () => void }) {
+  const [confirmText, setConfirmText] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div data-testid="owner-tools" className="space-y-2 rounded-lg border border-rose-800/60 bg-rose-950/30 p-4">
+      <div className="font-semibold text-rose-200">Owner tools</div>
+      <p className="text-sm text-slate-300">Clear the leaderboard: deletes every saved Test run for everyone. Names and accounts are kept. This cannot be undone.</p>
+      <form
+        className="flex flex-wrap items-center gap-2"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (confirmText !== 'CLEAR') return;
+          setBusy(true);
+          const err = await clearLeaderboard();
+          setBusy(false);
+          setConfirmText('');
+          setMsg(err ? `Could not clear: ${err}` : 'Leaderboard cleared.');
+          if (!err) onCleared();
+        }}
+      >
+        <input
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="Type CLEAR"
+          className="w-36 rounded bg-white px-2 py-1 text-sm text-slate-900"
+        />
+        <button disabled={confirmText !== 'CLEAR' || busy} className="rounded bg-rose-700 px-3 py-1 text-sm font-semibold hover:bg-rose-600 disabled:opacity-50">
+          {busy ? 'Clearing…' : 'Clear leaderboard'}
+        </button>
+      </form>
+      {msg && <div className="text-sm text-slate-200">{msg}</div>}
     </div>
   );
 }

@@ -9,7 +9,8 @@ import { ScenarioPicker } from './training/ScenarioPicker';
 import { Leaderboard } from './training/Leaderboard';
 import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
-import { signInWithGoogle, signOut, useAuth } from './lib/supabase';
+import { openSignIn, signOut, useAuth } from './lib/supabase';
+import { SignInDialog } from './auth/SignInDialog';
 
 type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard';
 
@@ -166,8 +167,8 @@ export default function App() {
             </button>
           </span>
         ) : (
-          <button data-testid="sign-in" className="rounded bg-white px-2 py-1 text-xs font-semibold text-slate-900" onClick={() => signInWithGoogle()}>
-            Sign in with Google
+          <button data-testid="sign-in" className="rounded bg-white px-2 py-1 text-xs font-semibold text-slate-900" onClick={() => openSignIn()}>
+            Sign in
           </button>
         )}
       </header>
@@ -207,6 +208,7 @@ export default function App() {
         </a>
       </footer>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      <SignInDialog />
     </div>
   );
 }

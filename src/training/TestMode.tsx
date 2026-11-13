@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { saveRun, signInWithGoogle, type useAuth } from '../lib/supabase';
+import { openSignIn, saveRun, type useAuth } from '../lib/supabase';
 import { Results } from './Results';
 import { testActions, TEST_VERSION, useTest } from './testRun';
 import { TEST_TABLES } from './testRecipe';
@@ -47,8 +47,8 @@ function Intro({ auth }: { auth: Auth }) {
       ) : (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-600/50 bg-amber-950/30 p-3 text-sm text-amber-200">
           Sign in to save your result to the leaderboard. You can still take the Test without signing in.
-          <button className="rounded-md bg-white px-3 py-1.5 font-semibold text-slate-900" onClick={() => signInWithGoogle()}>
-            Sign in with Google
+          <button className="rounded-md bg-white px-3 py-1.5 font-semibold text-slate-900" onClick={() => openSignIn()}>
+            Sign in
           </button>
         </div>
       )}
@@ -97,8 +97,8 @@ function Done({ auth, onLeaderboard }: { auth: Auth; onLeaderboard: () => void }
         {!auth.session && (
           <span className="text-amber-200">
             Not signed in: this result isn't on the leaderboard.{' '}
-            <button className="underline" onClick={() => signInWithGoogle()}>
-              Sign in with Google
+            <button className="underline" onClick={() => openSignIn()}>
+              Sign in
             </button>{' '}
             and take the Test again to get ranked.
           </span>

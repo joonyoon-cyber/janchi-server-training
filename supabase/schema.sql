@@ -6,8 +6,11 @@
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text not null check (char_length(display_name) between 1 and 40),
+  is_owner boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.profiles add column if not exists is_owner boolean not null default false;
 
 alter table public.profiles enable row level security;
 
@@ -94,3 +97,20 @@ insert into public.profiles (id, display_name)
 select u.id, left(coalesce(u.raw_user_meta_data ->> 'full_name', u.raw_user_meta_data ->> 'name', split_part(u.email, '@', 1)), 40)
 from auth.users u
 on conflict (id) do nothing;
+
+-- Owner-only: clear the leaderboard (see owner_and_ids.sql for making an account the owner).
+create or replace function public.clear_leaderboard()
+returns void
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and is_owner) then
+    raise exception 'Only the owner can clear the leaderboard';
+  end if;
+  delete from public.test_runs where true;
+end;
+$$;
+
+revoke all on function public.clear_leaderboard() from public, anon;
+grant execute on function public.clear_leaderboard() to authenticated;

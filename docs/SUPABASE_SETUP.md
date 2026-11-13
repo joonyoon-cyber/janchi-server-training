@@ -45,3 +45,25 @@ name in the header. Take a Test; the result appears under **Leaderboard**.
   re-check (Supabase Edge Function) can be added later to stop tampered scores.
 - Free projects pause after about a week with no activity; un-pause from the dashboard, or use the
   Pro plan to avoid it.
+
+## 4. ID + password accounts and the owner
+
+1. **Authentication → Sign In / Providers → Email**: make sure Email is **enabled**, and turn **off**
+   **Confirm email**. (IDs use stand-in addresses like `kim@janchi-trainer.invalid` that cannot receive
+   mail, so confirmation emails could never arrive.) Save.
+2. **SQL Editor**: run `supabase/owner_and_ids.sql` (adds the owner flag and the owner-only
+   "Clear leaderboard" function).
+3. On the site: **Sign in → Create account**, ID e.g. `owner`, with a strong password.
+4. **SQL Editor**: make that account the owner (use the ID you chose):
+
+   ```sql
+   update public.profiles set is_owner = true
+     where id = (select id from auth.users where email = 'owner@janchi-trainer.invalid');
+   ```
+
+5. Sign in as the owner and open **Leaderboard**: an **Owner tools** box lets you clear the
+   leaderboard (type CLEAR to confirm).
+
+Forgotten passwords: there is no email reset for ID accounts (their addresses can't receive mail).
+Simplest fix: in Supabase, **Authentication → Users**, find `<id>@janchi-trainer.invalid`, delete that
+user (their saved runs go with it), and let them create the account again.

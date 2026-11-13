@@ -11,6 +11,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 export interface Profile {
   id: string;
   display_name: string;
+  /** The restaurant owner: can clear the leaderboard. Set only by SQL in Supabase. */
+  is_owner?: boolean;
 }
 
 export interface LeaderRow {
@@ -35,6 +37,56 @@ export function signInWithGoogle() {
   return supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
 }
 
+// ---- ID + password accounts -------------------------------------------------
+// Supabase password logins need an email, so each ID gets a stand-in address on
+// a reserved domain that can never receive mail (".invalid", RFC 2606). No email
+// is ever sent: "Confirm email" must be turned off in Supabase.
+const ID_DOMAIN = 'janchi-trainer.invalid';
+export const ID_RULE = /^[a-z0-9][a-z0-9._-]{2,19}$/;
+const idToEmail = (id: string) => `${id.trim().toLowerCase()}@${ID_DOMAIN}`;
+
+export async function signUpWithId(id: string, password: string, name: string): Promise<string | null> {
+  const { data, error } = await supabase.auth.signUp({
+    email: idToEmail(id),
+    password,
+    options: { data: { full_name: name.trim() || id.trim().toLowerCase(), username: id.trim().toLowerCase() } },
+  });
+  if (error) return /registered|exists/i.test(error.message) ? 'That ID is already taken.' : error.message;
+  if (!data.session) return 'Account created, but sign-in needs "Confirm email" turned off in Supabase (see docs/SUPABASE_SETUP.md).';
+  return null;
+}
+
+export async function signInWithId(id: string, password: string): Promise<string | null> {
+  const { error } = await supabase.auth.signInWithPassword({ email: idToEmail(id), password });
+  if (!error) return null;
+  return /invalid login/i.test(error.message) ? 'Wrong ID or password.' : error.message;
+}
+
+/** The sign-in window (Google or ID + password), opened from anywhere. */
+let signInOpen = false;
+const signInListeners = new Set<() => void>();
+export function openSignIn(open = true) {
+  signInOpen = open;
+  signInListeners.forEach((l) => l());
+}
+export function useSignInOpen() {
+  const [open, setOpen] = useState(signInOpen);
+  useEffect(() => {
+    const l = () => setOpen(signInOpen);
+    signInListeners.add(l);
+    return () => {
+      signInListeners.delete(l);
+    };
+  }, []);
+  return open;
+}
+
+/** Owner only (checked in the database): delete every saved Test run. */
+export async function clearLeaderboard(): Promise<string | null> {
+  const { error } = await supabase.rpc('clear_leaderboard');
+  return error?.message ?? null;
+}
+
 export function signOut() {
   return supabase.auth.signOut();
 }
@@ -57,7 +109,7 @@ export function useAuth() {
     if (!session) return setProfile(null);
     supabase
       .from('profiles')
-      .select('id, display_name')
+      .select('id, display_name, is_owner')
       .eq('id', session.user.id)
       .maybeSingle()
       .then(({ data }) => setProfile(data as Profile | null));
@@ -66,7 +118,7 @@ export function useAuth() {
   const rename = async (name: string) => {
     if (!session) return 'Not signed in';
     const { error } = await supabase.from('profiles').update({ display_name: name }).eq('id', session.user.id);
-    if (!error) setProfile({ id: session.user.id, display_name: name });
+    if (!error) setProfile((p) => ({ ...(p ?? { id: session.user.id }), display_name: name }));
     return error?.message ?? null;
   };
 
