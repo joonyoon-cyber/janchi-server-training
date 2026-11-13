@@ -11,7 +11,10 @@ export interface CategoryScore {
 }
 
 export interface Evaluation {
+  /** Final score: the raw score rounded up to a multiple of 5. */
   score: number;
+  /** Score before rounding up. */
+  rawScore: number;
   categories: CategoryScore[];
   correct: string[];
   incorrect: string[];
@@ -129,6 +132,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   const sc = run.scenario;
   const ev: Evaluation = {
     score: 0,
+    rawScore: 0,
     categories: [],
     correct: [],
     incorrect: [],
@@ -479,7 +483,9 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (e.type === 'blocked') ev.incorrect.push(`${e.who} pushed back: ${e.reason}`);
   });
   const stray = run.events.filter((e) => e.type === 'discard-unsent' || e.type === 'blocked').length;
-  ev.score = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2) : 0;
+  ev.rawScore = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2) : 0;
+  // Round up to the next 5 (96 -> 100, 94 -> 95): small slips and grey areas are not punished.
+  ev.score = Math.min(100, Math.ceil(ev.rawScore / 5) * 5);
 
   // ---- Suggestions ----
   const s = ev.suggestions;

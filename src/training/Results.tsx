@@ -55,6 +55,7 @@ export function Results({
         <div className={`text-6xl font-bold tabular-nums ${grade}`} data-testid="final-score">
           {ev.score}
           <span className="text-2xl text-slate-400">/100</span>
+          {ev.rawScore !== ev.score && <div className="text-right text-xs font-normal text-slate-400">rounded up from {ev.rawScore}</div>}
         </div>
       </div>
 

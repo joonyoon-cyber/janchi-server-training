@@ -299,7 +299,8 @@ describe('table sizes', () => {
     const r = getRun().result!;
     expect(r.incorrect.some((x) => x.includes("Guest pushed back") && x.includes('table for four'))).toBe(true);
     expect(r.incorrect.some((x) => x.includes("Host pushed back") && x.includes('section'))).toBe(true);
-    expect(r.score).toBe(96);
+    expect(r.rawScore).toBe(96);
+    expect(r.score).toBe(100); // rounded up to the next 5
   });
   it('the check cannot be opened before the guests ask for it', () => {
     const sc = scenarios.find((x) => x.id === 'mvp-premium-dinner')!;

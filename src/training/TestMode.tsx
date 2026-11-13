@@ -36,7 +36,7 @@ function Intro({ auth }: { auth: Auth }) {
           <li>Mistakes the guests or host wouldn't accept, like a table too small for the party or bringing the check before they ask, are refused with their reaction and cost points.</li>
           <li>
             <b>Score</b> (0–100): accuracy across the whole shift: seating and guest counts, packages, every item and quantity, the 4-meat limit, sending orders,
-            changes and voids, payment method and amount, change, and closing checks.
+            changes and voids, payment method and amount, change, and closing checks. It is rounded up to the next 5 (96 counts as 100, 94 as 95), so small slips and grey areas don't cost you.
           </li>
           <li>
             <b>Clear time</b>: from the start of the shift until the last request. Leaderboard: highest score first; ties go to the faster clear time. Your best
