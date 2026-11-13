@@ -299,7 +299,7 @@ export function Leaderboard({ auth }: { auth: Auth }) {
       )}
       {rows === null ? (
         <div className="text-slate-400">Loading…</div>
-      ) : rows.length === 0 ? (
+      ) : rows.length === 0 && error ? null : rows.length === 0 ? (
         <div className="rounded-2xl bg-slate-900/80 p-6 text-center text-slate-300 ring-1 ring-slate-800">
           <div className="text-3xl">🥇</div>
           No Test results yet. Take the first Test and claim the top spot!
