@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { sectionOfTable, sections, tableDef, tableLabel } from '../lib/menu';
-import { actions, getState, now, onPosEvent, setPosGuard } from '../lib/store';
+import { mappingsForPos, posItem, sectionOfTable, sections, tableDef, tableLabel } from '../lib/menu';
+import { actions, getState, now, onPosEvent, pushback, setPosGuard } from '../lib/store';
 import { evaluate, type Evaluation } from './evaluate';
 import { saveResult } from './progress';
 import type { RunState, Scenario, Stage } from './types';
@@ -35,6 +35,11 @@ function waitingSeat() {
 
 const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const num = (n: number) => NUM_WORDS[n] ?? String(n);
+/** What a guest would call a POS item: its menu name, without the item number. */
+function guestName(posId: string) {
+  const m = mappingsForPos(posId)[0];
+  return (m ? m.customerName : posItem(posId).label).replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)$/, '').toLowerCase();
+}
 
 // Mistakes the guests or host would push back on are refused (Scenarios and Test only).
 setPosGuard((a) => {
@@ -221,6 +226,29 @@ onPosEvent((e) => {
       if (r) {
         r.seatedTable = e.tableId;
         if (e.type === 'seat') r.seatedGuests = e.guests;
+      }
+    }
+  }
+
+  // Something they didn't order went to the kitchen: the guests say so (fix it with Void).
+  if (e.type === 'submit') {
+    const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === e.checkId);
+    const check = getState().checks[e.checkId];
+    if (party && check) {
+      const asked = new Map<string, number>();
+      run.scenario.stages.forEach((s, i) => {
+        if (i <= run!.stageIndex && s.party === party && s.kind === 'order') s.expect.forEach((x) => asked.set(x.posId, (asked.get(x.posId) ?? 0) + x.qty));
+      });
+      const onCheck = new Map<string, number>();
+      check.lines.filter((l) => l.status === 'sent').forEach((l) => onCheck.set(l.posId, (onCheck.get(l.posId) ?? 0) + l.qty));
+      const wrong = e.items.map((x) => x.posId).find((id) => (onCheck.get(id) ?? 0) > (asked.get(id) ?? 0));
+      if (wrong) {
+        const name = guestName(wrong);
+        const want = asked.get(wrong) ?? 0;
+        pushback({
+          who: 'Guest',
+          text: want ? `"Excuse me, we only asked for ${num(want)} ${name}, not ${num(onCheck.get(wrong)!)}."` : `"Excuse me, we didn't order the ${name}."`,
+        });
       }
     }
   }

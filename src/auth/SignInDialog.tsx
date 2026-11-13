@@ -35,8 +35,9 @@ export function SignInDialog() {
 
   const input = 'mt-1 w-full rounded bg-white px-3 py-2 text-slate-900';
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={close}>
-      <div data-testid="sign-in-dialog" className="w-full max-w-sm space-y-4 rounded-xl bg-slate-800 p-5 text-slate-100 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    // Stays open until the ✕ is pressed (clicking outside does nothing).
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div data-testid="sign-in-dialog" className="w-full max-w-sm space-y-4 rounded-xl bg-slate-800 p-5 text-slate-100 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Sign in</h2>
           <button className="text-slate-400 hover:text-slate-200" onClick={close} aria-label="Close">

@@ -229,14 +229,12 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         break;
       }
       case 'order': {
+        // Items are judged per party at the end (what is on the check after any Voids),
+        // so fixing a wrong entry with Void and ringing the right item earns the points back.
         const late = rec.submitted ? undefined : lateSubmit(st);
         if (!rec.submitted && !late) {
           score('submit', 0);
-          const exp = expectedForStage(sc, st, run.records);
-          ev.incorrect.push(`Not sent: "${st.say}"`);
-          exp.forEach((i) => ev.missing.push(`${fmtReq(i)}${where}`));
-          if (exp.some((i) => isAycePackage(i.posId))) score('package', 0);
-          score('items', 0, exp.filter((i) => !isAycePackage(i.posId)).length || 1);
+          ev.incorrect.push(`Not sent: "${st.say}"${where}`);
           break;
         }
         if (late) {
@@ -246,60 +244,6 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         }
         score('submit', 1);
         ev.correct.push(`Sent the order with Order${where}`);
-        const submitted = rec.submitted ?? [];
-        let expected = expectedForStage(sc, st, run.records);
-        let submittedForCompare = submitted;
-        if (st.overLimit) {
-          // Meat may be any subset of what was requested (max 4); compare non-meat exactly.
-          const req = toMap(st.overLimit.requested);
-          const sentMeat = submitted.filter((i) => isMeat(i.posId));
-          const allowed = sentMeat.filter((i) => (req.get(i.posId) ?? 0) >= i.qty);
-          const notRequested = sentMeat.filter((i) => (req.get(i.posId) ?? 0) < i.qty);
-          submittedForCompare = submitted.filter((i) => !isMeat(i.posId)).concat(notRequested);
-          const n = meatCount(allowed);
-          if (n > 0 && meatCount(sentMeat) <= 4) {
-            ev.correct.push(`Sent ${n} of the ${meatCount(st.overLimit.requested)} requested meats and held the rest for the next round`);
-            score('items', 1);
-          } else if (n === 0) {
-            ev.missing.push(`No meat was sent for: ${st.overLimit.requested.map(fmtReq).join(', ')}`);
-            score('items', 0);
-          }
-        }
-        const cmp = compareItems(expected, submittedForCompare);
-        const pk = (i: { posId: string }) => isAycePackage(i.posId);
-        const pkgExpected = expected.filter(pk);
-        if (pkgExpected.length) {
-          const pkgOk = cmp.correct.filter(pk).length === pkgExpected.length && !cmp.extra.some(pk);
-          score('package', pkgOk ? 1 : 0);
-        } else if (cmp.extra.some(pk)) {
-          score('package', 0);
-        }
-        cmp.correct.forEach((i) => {
-          ev.correct.push(`${fmtReq(i)}${where}`);
-          if (!pk(i)) score('items', 1);
-        });
-        cmp.missing.forEach((i) => {
-          ev.missing.push(`${fmtReq(i)}${where}`);
-          if (!pk(i)) score('items', 0);
-        });
-        cmp.wrongQty.forEach((w) => {
-          ev.wrongQty.push(`${itemName(w.posId)}: entered ${w.got}, guest asked for ${w.expected}${where}`);
-          if (!pk(w)) score('items', 0);
-        });
-        cmp.extra.forEach((i) => {
-          ev.incorrect.push(`Not requested: ${fmtReq(i)}${where}`);
-          if (!pk(i)) score('items', 0);
-        });
-        expected = expected.filter((i) => i.qty > 0);
-        if (st.interrupt) {
-          const cancelled = st.interrupt.cancelled ?? [];
-          const sent = toMap(submitted);
-          const exp = toMap(expected);
-          const ok = cancelled.every((c) => (sent.get(c.posId) ?? 0) === (exp.get(c.posId) ?? 0));
-          score('mods', ok ? 1 : 0);
-          if (ok) ev.correct.push(`Applied the guest's change: "${st.interrupt.say}"`);
-          else ev.incorrect.push(`Did not apply the guest's change before sending: "${st.interrupt.say}"`);
-        }
         if (rec.submitTable && run.partyTables[st.party] !== rec.submitTable) ev.incorrect.push('Order sent on the wrong table');
         if (st.kitchenPrint !== undefined && rec.kitchenPrint !== undefined) {
           const ok = rec.kitchenPrint === st.kitchenPrint;
@@ -432,6 +376,43 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (unpaidCloses) ev.paymentMistakes.push(`Pressed Close on the tender screen ${unpaidCloses} time(s) while a balance was still due`);
   }
 
+  // ---- Items: what each party asked for vs what is on its check at the end ----
+  for (const party of Object.keys(sc.parties)) {
+    const expected = expectedPartyItems(sc, party);
+    if (!expected.length) continue;
+    const check = checkOf(party);
+    const where = Object.keys(sc.parties).length > 1 ? ` (${tableName(party)})` : '';
+    const onCheck = (check?.lines ?? []).filter((l) => l.status === 'sent').map((l) => ({ posId: l.posId, qty: l.qty }));
+    const cmp = compareItems(expected, onCheck);
+    const pk = (i: { posId: string }) => isAycePackage(i.posId);
+    if (expected.some(pk)) score('package', cmp.correct.filter(pk).length === expected.filter(pk).length && !cmp.extra.some(pk) && !cmp.wrongQty.some(pk) ? 1 : 0);
+    else if (cmp.extra.some(pk)) score('package', 0);
+    cmp.correct.forEach((i) => {
+      ev.correct.push(`${fmtReq(i)}${where}`);
+      if (!pk(i)) score('items', 1);
+    });
+    cmp.missing.forEach((i) => {
+      ev.missing.push(`${fmtReq(i)}${where}`);
+      if (!pk(i)) score('items', 0);
+    });
+    cmp.wrongQty.forEach((w) => {
+      ev.wrongQty.push(`${itemName(w.posId)}: ${w.got} on the check, guests asked for ${w.expected}${where}`);
+      if (!pk(w)) score('items', 0);
+    });
+    cmp.extra.forEach((i) => {
+      ev.incorrect.push(`Not ordered by the guests: ${fmtReq(i)}${where} (fix wrong entries with Void)`);
+      if (!pk(i)) score('items', 0);
+    });
+    // Voids that took a wrong entry off the check.
+    const final = new Map(onCheck.map((x) => [x.posId, x.qty]));
+    const want = new Map(expected.map((x) => [x.posId, x.qty]));
+    run.events.forEach((e) => {
+      if (e.type === 'void-sent' && e.checkId === run.partyChecks[party] && (final.get(e.posId) ?? 0) <= (want.get(e.posId) ?? 0)) {
+        ev.correct.push(`Fixed a wrong entry with Void: ${itemName(e.posId)} ×${e.qty}${where}`);
+      }
+    });
+  }
+
   // ---- AYCE rules across the whole run ----
   for (const party of Object.keys(sc.parties)) {
     if (!partyIsAyce(sc, party)) continue;
@@ -462,10 +443,6 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   // ---- Other actions worth flagging ----
   run.events.forEach((e) => {
     if (e.type === 'discard-unsent') ev.incorrect.push(`Pressed Close with unsent items (${e.items.map(fmtReq).join(', ')}); they were cancelled, not sent`);
-  });
-  const voidStages = new Set(sc.stages.filter((s) => s.kind === 'void').map((s) => (s.kind === 'void' ? s.item.posId : '')));
-  run.events.forEach((e) => {
-    if (e.type === 'void-sent' && !voidStages.has(e.posId)) ev.incorrect.push(`Voided an ordered item the guest did not cancel: ${itemName(e.posId)} ×${e.qty}`);
   });
 
   // ---- Time ----
@@ -501,7 +478,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   run.events.forEach((e) => {
     if (e.type === 'blocked') ev.incorrect.push(`${e.who} pushed back: ${e.reason}`);
   });
-  const stray = run.events.filter((e) => e.type === 'discard-unsent' || e.type === 'blocked' || (e.type === 'void-sent' && !voidStages.has(e.posId))).length;
+  const stray = run.events.filter((e) => e.type === 'discard-unsent' || e.type === 'blocked').length;
   ev.score = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2) : 0;
 
   // ---- Suggestions ----

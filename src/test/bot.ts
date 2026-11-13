@@ -48,7 +48,8 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
           (t.capacity ?? 0) >= st.guests || (!!t.joinWith && (t.joinedCapacity ?? 0) >= st.guests && !s.tableChecks[t.joinWith]);
         const size = (t: ReturnType<typeof allTables>[number]) => ((t.capacity ?? 0) >= st.guests ? t.capacity! : t.joinedCapacity!);
         const free = allTables().filter((t) => (!st.section || t.section === st.section) && !s.tableChecks[t.id] && fitsAt(t));
-        free.sort((a, b) => size(a) - size(b));
+        // Keep W tables (joinable for big parties) for last when a smaller table fits.
+        free.sort((a, b) => size(a) + (a.joinWith ? 0.5 : 0) - (size(b) + (b.joinWith ? 0.5 : 0)));
         const table = st.tableId ?? free[0].id;
         actions.seatTable(table, st.guests);
         break;

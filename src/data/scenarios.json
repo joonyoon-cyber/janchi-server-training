@@ -882,7 +882,7 @@
           "id": "r1",
           "kind": "order",
           "party": "p1",
-          "say": "We want the Ultimate all you can eat. Let's start with the galbi, beef tongue, scallops, and a brisket.",
+          "say": "We want the Ultimate all you can eat. Let's start with the galbi, beef tongue, scallops, and a brisket. And a spicy tuna biscuit.",
           "expect": [
             {
               "posId": "ultimate-ayce",
@@ -902,6 +902,10 @@
             },
             {
               "posId": "15-brisket-ayce",
+              "qty": 1
+            },
+            {
+              "posId": "36-sp-tuna-buscuit",
               "qty": 1
             }
           ]
@@ -999,79 +1003,6 @@
               "qty": 1
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "void-after-send",
-      "title": "Cancel After Sending + Cash",
-      "level": "advanced",
-      "summary": "Void an item that was already ordered, then take cash.",
-      "time": {
-        "weekday": 4,
-        "hour": 20,
-        "minute": 0
-      },
-      "parties": {
-        "p1": 2
-      },
-      "targetSeconds": 300,
-      "stages": [
-        {
-          "id": "seat",
-          "kind": "seat",
-          "party": "p1",
-          "speaker": "host",
-          "guests": 2,
-          "section": "ABC",
-          "say": "Two guests, A B C BAR section."
-        },
-        {
-          "id": "r1",
-          "kind": "order",
-          "party": "p1",
-          "say": "Two Premium AYCE. A Coke and a Sprite. Start us with brisket and pork belly.",
-          "expect": [
-            {
-              "posId": "premium-ayce-dinner",
-              "qty": 2
-            },
-            {
-              "posId": "coke",
-              "qty": 1
-            },
-            {
-              "posId": "sprite",
-              "qty": 1
-            },
-            {
-              "posId": "15-brisket-ayce",
-              "qty": 1
-            },
-            {
-              "posId": "18-pork-belly-ayce",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "id": "v",
-          "kind": "void",
-          "party": "p1",
-          "item": {
-            "posId": "sprite",
-            "qty": 1
-          },
-          "say": "Sorry, can you cancel the Sprite? I'll just have water."
-        },
-        {
-          "id": "pay",
-          "kind": "pay",
-          "party": "p1",
-          "method": "cash",
-          "cashGiven": 100,
-          "askChange": true,
-          "say": "We're ready to pay. Here's $100."
         }
       ]
     },

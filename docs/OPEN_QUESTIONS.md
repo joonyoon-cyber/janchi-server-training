@@ -38,6 +38,8 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 * Modifiers: **soon tofu** asks spice (NO SPICY / MILD / MEDIUM / SPICY / VERY SPICY) and protein (ASSORTED / BEEF / SEAFOOD / VEGI); **bibimbap** asks protein (BEEF / CHICKEN / TOFU / VEGI / SPICY PORK). All $0.00.
 * Gift certificates: Quick Serve → ▼ under the menu groups → CERTIFICATE (the only group on page 2) → Open Price pad (cents) → Tender. Not taxed; no kitchen prompt. Physical card activation is done by hand.
 
+* **Void** is only for fixing the server's own entry mistakes (wrong item or quantity sent), not for things guests no longer want. Guests point out an item they didn't order right after it is sent; items are scored on what is on the check at the end, so voiding the mistake and ringing the right item earns the points back.
+* **Ultimate tables** order Ultimate items (AYCE ULTIMATE: galbi, beef tongue, scallops, spicy tuna biscuit, japchae).
 * **Table sizes**: A, B, Y3–Y5 seat up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&2, W3&4 or W5&6 are used together. In Scenarios and the Test, seating a party at a table that is too small (or outside the section) is refused with the guest's or host's pushback and costs 2 points; so is opening a table's check before the guests ask for it. Free Play has no restrictions.
 
 **Screens and buttons**

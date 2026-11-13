@@ -223,6 +223,51 @@ describe('answers from the restaurant (11/2026)', () => {
   });
 });
 
+describe('guest wording and Ultimate tables', () => {
+  it('Ultimate tables order Ultimate items; changes name the item; no cancel-after-send requests', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const sc = generateScenario('advanced', { rng: seededRng(seed), alaCarte: false, ultimate: true, interrupt: true, extraRounds: 1 });
+      const ids = sc.stages.flatMap((s) => (s.kind === 'order' ? s.expect.map((i) => i.posId) : []));
+      expect(ids.some((i) => posItem(i).category === 'ayce-ultimate')).toBe(true);
+      expect(sc.stages.some((s) => s.kind === 'void')).toBe(false);
+      for (const s of sc.stages) if (s.kind === 'order' && s.interrupt) expect(s.interrupt.say).not.toMatch(/make that/);
+    }
+  });
+});
+
+describe('void fixes your own mistakes', () => {
+  it('a wrong item sent costs points; voiding it and ringing the right one gives them back', () => {
+    const sc = scenarios.find((x) => x.id === 'mvp-premium-dinner')!;
+    const wrong = (id: string, items: OrderStage['expect']) =>
+      id === 'r1' ? items.map((i) => (i.posId === '18-pork-belly-ayce' ? { ...i, posId: '27-pork-blg-ayce' } : i)) : items;
+    startScenario(sc);
+    playPerfect(sc, { mutateOrder: wrong });
+    const bad = getRun().result!;
+    expect(bad.incorrect.some((x) => x.includes('Not ordered by the guests: 27. PORK BLG AYCE'))).toBe(true);
+    expect(bad.score).toBeLessThan(100);
+
+    // Same mistake, then fixed: void the pork bulgogi and send the pork belly.
+    startScenario(sc);
+    let fixed = false;
+    playPerfect(sc, {
+      mutateOrder: (id, items) => {
+        if (id === 'r2' && !fixed) {
+          fixed = true;
+          const c = getState().checks[getRun().run!.partyChecks.p1];
+          const line = c.lines.find((l) => l.posId === '27-pork-blg-ayce')!;
+          actions.voidSent(line.id, 1);
+          return [...items, { posId: '18-pork-belly-ayce', qty: 1 }];
+        }
+        return wrong(id, items);
+      },
+    });
+    const good = getRun().result!;
+    expect(good.correct.some((x) => x.includes('Fixed a wrong entry with Void'))).toBe(true);
+    expect(good.missing).toEqual([]);
+    expect(good.incorrect.filter((x) => x.includes('Not ordered'))).toEqual([]);
+  });
+});
+
 describe('table sizes', () => {
   it('capacities follow the restaurant rules', () => {
     expect([tableCapacity('A3'), tableCapacity('B10'), tableCapacity('Y4'), tableCapacity('C2'), tableCapacity('M5'), tableCapacity('Y1'), tableCapacity('W3')]).toEqual([4, 4, 4, 6, 6, 6, 4]);
@@ -306,7 +351,7 @@ describe('hand-written scenarios', () => {
       mutateOrder: (id, items) => (id === 'r2' ? items.map((i) => (i.posId === '15-brisket-ayce' ? { ...i, qty: 3 } : i)) : items),
     });
     const { result } = getRun();
-    expect(result!.wrongQty[0]).toContain('15. BRISKET AYCE: entered 3, guest asked for 2');
+    expect(result!.wrongQty[0]).toContain('15. BRISKET AYCE: 5 on the check, guests asked for 4');
     expect(result!.paymentMistakes.some((m) => m.includes('credit card'))).toBe(true);
   });
 

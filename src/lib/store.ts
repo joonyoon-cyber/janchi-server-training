@@ -182,6 +182,10 @@ export function setPosGuard(g: typeof guard) {
 export function setPushbackHandler(h: (p: Pushback) => void) {
   showPushback = h;
 }
+/** A guest remark that blocks nothing (e.g. "We didn't order that"). */
+export function pushback(p: Pushback) {
+  showPushback(p);
+}
 function blocked(a: GuardAction): boolean {
   const p = guard?.(a);
   if (!p) return false;

@@ -142,6 +142,17 @@ const APPETIZERS: Record<string, [string, string]> = {
   'tofu-steak-4pcs': ['tofu steak', 'tofu steaks'],
 };
 
+/** Ultimate AYCE only (AYCE ULTIMATE group). Galbi, tongue and scallops count as meat. */
+const ULTIMATE_MEATS: Record<string, [string, string]> = {
+  '25-galbi': ['galbi', 'orders of galbi'],
+  '38-beef-tongue': ['beef tongue', 'orders of beef tongue'],
+  '39-scallop': ['order of scallops', 'orders of scallops'],
+};
+const ULTIMATE_APPS: Record<string, [string, string]> = {
+  '36-sp-tuna-buscuit': ['spicy tuna biscuit', 'spicy tuna biscuits'],
+  '37-japchae-ayce': ['japchae', 'orders of japchae'],
+};
+
 /** AYCE items the server rings in AND brings out themselves (confirmed by the restaurant). */
 export const SERVER_ITEMS: Record<string, [string, string]> = {
   '11-rice-ayce': ['bowl of rice', 'bowls of rice'],
@@ -156,7 +167,7 @@ export const SERVER_ITEMS: Record<string, [string, string]> = {
 };
 const SERVER_ITEMS_TEXT = 'rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew';
 
-const SPOKEN = { ...MEATS, ...AYCE_APPS, ...SERVER_ITEMS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
+const SPOKEN = { ...MEATS, ...ULTIMATE_MEATS, ...ULTIMATE_APPS, ...AYCE_APPS, ...SERVER_ITEMS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
 const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 
 /** Random source; Test mode swaps in a seeded one so a run can be rebuilt from its seed. */
@@ -187,7 +198,6 @@ export interface GenOptions {
   over?: boolean;
   extraRounds?: number;
   interrupt?: boolean;
-  voidDrink?: boolean;
   pay?: 'none' | 'cash' | 'credit' | 'split' | 'cash-card' | 'split-cash';
   /** Add items to the first AYCE order and ask who brings them out: server items, or a kitchen app as a check. */
   serverItems?: 'serve' | 'kitchen' | 'none';
@@ -317,7 +327,15 @@ function build(level: Level, opts: GenOptions): Scenario {
     const seq = drinks.length ? (opts.drinks && opts.drinks !== 'none' ? opts.drinks : pick(['with', 'before', 'after'])) : 'none';
     const over = opts.over ?? (advanced && chance(0.4));
     const first = over ? meatRound(5, undefined, 3) : meatRound(2 + rnd(3));
-    const apps = level !== 'beginner' && chance(0.35) ? [{ posId: pick(Object.keys(AYCE_APPS)), qty: 1 }] : [];
+    let apps = level !== 'beginner' && chance(0.35) ? [{ posId: pick(Object.keys(AYCE_APPS)), qty: 1 }] : [];
+    if (ultimate) {
+      // Ultimate guests order Ultimate items: at least one Ultimate meat now, often a tuna biscuit or japchae.
+      const ult = sample(Object.keys(ULTIMATE_MEATS).filter((u) => !first.some((m) => m.posId === u)), 1)[0];
+      // One of the meats becomes an Ultimate item (same total, so the 4-meat count is unchanged).
+      if (first[0].qty > 1) first.splice(0, 1, { ...first[0], qty: first[0].qty - 1 }, { posId: ult, qty: 1 });
+      else first[0] = { ...first[0], posId: ult };
+      if (chance(0.6)) apps = [{ posId: pick(Object.keys(ULTIMATE_APPS)), qty: 1 }];
+    }
     const intro = guests === 1 ? `Just me tonight. ${capFirst(pkgSay)}, please. I know there's an extra charge for one person.` : pick([`We'll all do ${pkgSay}.`, guests === 1 ? `Just me tonight. ${capFirst(pkgSay)}, please. I know there's an extra charge for one person.` : (guests === 2 ? `${capFirst(pkgSay)} for both of us, please.` : `${capFirst(pkgSay)} for all ${NUM[guests] ?? guests} of us, please.`), `We're doing ${pkgSay}.`]);
     const meatSay = (items: ItemReq[]) => pick([`Let's start with ${list(items)}.`, `To start: ${list(items)}.`, `First round: ${list(items)}.`]);
     const drinkSay = (items: ItemReq[]) => pick([`Can we get ${list(items)}?`, `And to drink, ${list(items)}.`, `${capFirst(list(items))} to drink, please.`]);
@@ -337,11 +355,13 @@ function build(level: Level, opts: GenOptions): Scenario {
         ],
       });
       // The guests drop one meat; ring exactly the 4 they keep.
-      const drop = first[rnd(first.length)];
+      // They drop a regular meat (never the Ultimate item they came for).
+      const droppable = first.filter((m) => !ULTIMATE_MEATS[m.posId]);
+      const drop = droppable.length ? droppable[rnd(droppable.length)] : first[rnd(first.length)];
       const kept = first.map((m) => (m === drop ? { ...m, qty: m.qty - 1 } : m)).filter((m) => m.qty > 0);
       order({
         expect: [...pkg, ...(seq === 'with' ? drinks : []), ...kept, ...apps],
-        say: `Oh, okay. Let's drop ${drop.qty > 1 ? `one of the ${MEATS[drop.posId][1]}` : `the ${MEATS[drop.posId][0]}`} then.${apps.length ? ` And ${list(apps)}, please.` : ''}`,
+        say: `Oh, okay. Let's drop ${drop.qty > 1 ? `one of the ${SPOKEN[drop.posId][1]}` : `the ${SPOKEN[drop.posId][0]}`} then.${apps.length ? ` And ${list(apps)}, please.` : ''}`,
       });
     } else {
       // Server items (ring in AND bring out yourself), or a kitchen app to check they know the difference.
@@ -386,7 +406,7 @@ function build(level: Level, opts: GenOptions): Scenario {
     // modification before sending a follow-up round (intermediate+)
     const extraRounds = opts.extraRounds ?? (level === 'beginner' ? rnd(2) : 1 + rnd(2));
     for (let r = 0; r < extraRounds; r++) {
-      const more = meatRound(1 + rnd(4));
+      const more = meatRound(1 + rnd(4), ultimate ? [...Object.keys(MEATS), ...Object.keys(ULTIMATE_MEATS)] : undefined);
       if (r === 0 && more.length && (opts.interrupt ?? (level !== 'beginner' && chance(0.35)))) {
         // guest changes one quantity mid-entry
         const target = more[0];
@@ -398,7 +418,9 @@ function build(level: Level, opts: GenOptions): Scenario {
             say: pick([`Can we get ${list(more)}?`, `Another round: ${list(more)}, please.`]),
             interrupt: {
               afterAdds: Math.max(1, Math.min(3, more.reduce((s, i) => s + i.qty, 0))),
-              say: changed ? `Actually, make that ${spoken(changed)} instead.` : `Actually, skip the ${MEATS[target.posId][0]}.`,
+              say: changed
+                ? `Actually, can we get ${spoken(changed)} instead of ${spoken(target)}?`
+                : `Actually, we don't need the ${SPOKEN[target.posId][0]} after all.`,
               cancelled: [{ posId: target.posId, qty: 1 }],
             },
           });
@@ -426,12 +448,6 @@ function build(level: Level, opts: GenOptions): Scenario {
     }
     title = `À la carte, party of ${guests}`;
     summary = `Randomized ${level} à la carte table.`;
-  }
-
-  // void after sending (advanced)
-  if (opts.voidDrink ?? (advanced && chance(0.35))) {
-    const drink = allItems.find((i) => DRINKS[i.posId]);
-    if (drink) stages.push({ id: id(), kind: 'void', party: p, item: { posId: drink.posId, qty: 1 }, say: `Sorry, could you cancel one ${DRINKS[drink.posId][0]}? We don't need it after all.` });
   }
 
   let payKind = opts.pay ?? (level === 'beginner' ? 'none' : pick(['cash', 'credit', 'cash', 'credit', 'cash-card', 'split', 'split-cash'] as const));

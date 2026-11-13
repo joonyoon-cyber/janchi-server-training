@@ -37,7 +37,10 @@ export function HelpPanel() {
                 <li>Children: 5–8 and 9–12 prices; under 4 free (ring nothing).</li>
                 <li>Single guest: $5.00 additional charge.</li>
                 <li>Galbi on Premium: +$3.95, limit 1 per person (not enforced by the POS).</li>
-                <li>Ultimate's included drink: ring only ULTIMATE W/ SODA or W/ BEER.</li>
+                <li>Ultimate's included drink: ring only ULTIMATE W/ SODA or W/ BEER. Galbi, beef tongue, scallops, tuna biscuit and japchae for Ultimate tables are in AYCE ULTIMATE.</li>
+                <li>
+                  <b>Void</b> is only for fixing your own entry mistakes (wrong item or quantity sent). Then ring in the right item.
+                </li>
                 <li>
                   <b>Table sizes:</b> A, B, Y3–Y5 up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&amp;2, W3&amp;4 or W5&amp;6 are used
                   together (seat the party at one of the pair).
