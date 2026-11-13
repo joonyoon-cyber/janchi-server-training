@@ -8,7 +8,16 @@ import { TenderListScreen } from './TenderListScreen';
 import { TenderScreen } from './TenderScreen';
 import { TipAdjustScreen } from './TipAdjustScreen';
 
-export type Zoom = 'fit' | 'actual';
+/** 'fit' scales the POS to the window; a percentage shows it at that size with scrolling. */
+export type Zoom = 'fit' | '50' | '75' | '100' | '125' | '150';
+export const ZOOMS: { value: Zoom; label: string }[] = [
+  { value: 'fit', label: 'Fit screen' },
+  { value: '50', label: '50%' },
+  { value: '75', label: '75%' },
+  { value: '100', label: '100%' },
+  { value: '125', label: '125%' },
+  { value: '150', label: '150%' },
+];
 
 /**
  * The POS is laid out on a fixed 1024x768 screen and scaled uniformly, so
@@ -30,10 +39,10 @@ export function PosFrame({ zoom }: { zoom: Zoom }) {
     return () => ro.disconnect();
   }, []);
 
-  const s = zoom === 'fit' ? scale : 1;
+  const s = zoom === 'fit' ? scale : Number(zoom) / 100;
   return (
     <div ref={box} className={`relative h-full w-full ${zoom === 'fit' ? 'overflow-hidden' : 'overflow-auto'}`}>
-      <div style={{ width: 1024 * s, height: 768 * s, margin: zoom === 'fit' ? '6px auto' : 6 }}>
+      <div style={{ width: 1024 * s, height: 768 * s, margin: '6px auto' }}>
         <div
           data-testid="pos-root"
           style={{ width: 1024, height: 768, transform: `scale(${s})`, transformOrigin: 'top left', boxShadow: '0 0 0 5px #0b0f17, 0 8px 24px rgba(0,0,0,.6)', borderRadius: 2 }}

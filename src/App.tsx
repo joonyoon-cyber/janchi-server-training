@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { actions, usePos } from './lib/store';
-import { PosFrame, type Zoom } from './pos/PosFrame';
+import { PosFrame, ZOOMS, type Zoom } from './pos/PosFrame';
 import { quitScenario, startScenario, useTraining } from './training/engine';
 import { HelpPanel } from './training/HelpPanel';
 import { Results } from './training/Results';
@@ -93,7 +93,11 @@ export default function App() {
   });
   const auth = useAuth();
   const test = useTest();
-  const [zoom, setZoomState] = useState<Zoom>(() => readPref<Zoom>('janchi-pos-sim:zoom', 'fit'));
+  const [zoom, setZoomState] = useState<Zoom>(() => {
+    const z = readPref<string>('janchi-pos-sim:zoom', 'fit');
+    // 'actual' was the old name for 100%.
+    return z === 'actual' ? '100' : ZOOMS.some((x) => x.value === z) ? (z as Zoom) : 'fit';
+  });
   const [showSide, setShowSide] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { run, result } = useTraining();
@@ -170,9 +174,21 @@ export default function App() {
           <div className="flex min-h-0 min-w-0 flex-1 flex-col portrait:flex-none">
             {/* POS toolbar: controls for the POS screen only, so the header stays the same on every tab. */}
             <div data-testid="pos-toolbar" className="flex shrink-0 items-center justify-end gap-2 bg-slate-950 px-2 pt-1 text-xs text-slate-200">
-              <button className="rounded border border-slate-700 px-2 py-0.5 hover:bg-slate-800" onClick={() => setZoom(zoom === 'fit' ? 'actual' : 'fit')} title="Fit the POS to the window, or show it at full size with scrolling">
-                {zoom === 'fit' ? 'Zoom 100%' : 'Fit screen'}
-              </button>
+              <label className="flex items-center gap-1" title="Fit the POS to the window, or pick a size and scroll">
+                Zoom
+                <select
+                  data-testid="zoom-select"
+                  value={zoom}
+                  onChange={(e) => setZoom(e.target.value as Zoom)}
+                  className="rounded border border-slate-700 bg-slate-900 px-1 py-0.5 text-slate-100"
+                >
+                  {ZOOMS.map((z) => (
+                    <option key={z.value} value={z.value}>
+                      {z.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {sideContent && (
                 <button className="rounded border border-slate-700 px-2 py-0.5 hover:bg-slate-800" onClick={() => setShowSide((v) => !v)}>
                   {showSide ? 'Hide' : 'Show'} {mode === 'practice' ? 'help' : 'guests'}
@@ -193,7 +209,7 @@ export default function App() {
               <PosFrame zoom={zoom} />
             </div>
           </div>
-          <div className="hidden px-3 py-1 text-center text-xs text-slate-400 portrait:max-md:block">Tip: turn your phone sideways for a larger POS screen, or use Zoom 100% and scroll.</div>
+          <div className="hidden px-3 py-1 text-center text-xs text-slate-400 portrait:max-md:block">Tip: turn your phone sideways for a larger POS screen, or pick a larger Zoom and scroll.</div>
           {showSide && sideContent && (
             <aside className="min-h-[220px] flex-1 border-t border-slate-700 bg-slate-900 landscape:h-auto landscape:w-[min(340px,32vw)] landscape:flex-none landscape:border-l landscape:border-t-0">
               {sideContent}
