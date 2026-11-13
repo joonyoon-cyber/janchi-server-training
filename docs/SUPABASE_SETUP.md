@@ -8,6 +8,10 @@ Never put the secret / service_role key or the database password in this repo.
 Supabase dashboard → **SQL Editor** → **New query** → paste all of `supabase/schema.sql` → **Run**.
 It creates `profiles`, `test_runs`, the `leaderboard` view and their access rules. Re-running is safe.
 
+The leaderboard is public (visible without signing in). If your project was set up before that change,
+run `supabase/public_leaderboard.sql` once the same way. Visitors can read only the leaderboard's columns
+(name, score, clear time, date, number of Tests), never the `test_runs` or `profiles` tables.
+
 ## 2. Google sign-in
 
 **Google Cloud Console** (console.cloud.google.com):
