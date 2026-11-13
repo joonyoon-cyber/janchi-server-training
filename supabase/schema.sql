@@ -72,6 +72,7 @@ create policy "users add their own runs" on public.test_runs
 grant select, insert on public.test_runs to authenticated;
 
 -- Leaderboard: each person's best run (highest score, then fastest clear time).
+-- Only runs of the newest Test version count, so a new Test format starts a fresh leaderboard.
 create or replace view public.leaderboard
 with (security_invoker = true) as
 select distinct on (r.user_id)
@@ -80,9 +81,10 @@ select distinct on (r.user_id)
   r.score,
   r.clear_time_sec,
   r.created_at,
-  (select count(*) from public.test_runs x where x.user_id = r.user_id)::int as attempts
+  (select count(*) from public.test_runs x where x.user_id = r.user_id and x.version = r.version)::int as attempts
 from public.test_runs r
 join public.profiles p on p.id = r.user_id
+where r.version = (select max(version) from public.test_runs)
 order by r.user_id, r.score desc, r.clear_time_sec asc, r.created_at asc;
 
 grant select on public.leaderboard to authenticated;

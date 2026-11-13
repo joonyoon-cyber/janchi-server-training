@@ -77,6 +77,10 @@ export interface PayStage extends StageBase {
   askChange?: boolean;
   /** Guests split the check evenly this many ways (Even Amount Split), all paying by `method`. */
   split?: number;
+  /** With `split`: how many shares (the first ones) are paid in cash with `cashGiven`; the rest by card. */
+  cashShares?: number;
+  /** One check paid partly in cash (this exact amount) and the rest by card. */
+  cashPart?: number;
 }
 
 export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage;

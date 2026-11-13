@@ -350,13 +350,29 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
       ev.paymentMistakes.push(`No payment was taken on ${tableLabel(table)}`);
       ok = 0;
     }
-    const wrongMethod = mine.filter((e) => e.type === 'payment' && e.method !== st.method);
-    if (wrongMethod.length) {
-      ev.paymentMistakes.push(`Used ${wrongMethod.map((e) => (e.type === 'payment' ? e.method : '')).join(', ')} but the guest paid by ${st.method === 'cash' ? 'cash' : 'credit card'}`);
+    // Which payment methods the guests used: all one method, part cash + card, or a split with a cash share.
+    const amounts = (m: 'cash' | 'credit') => mine.flatMap((e) => (e.type === 'payment' && e.method === m ? [e.amount] : []));
+    const cashPays = amounts('cash');
+    const cardPays = amounts('credit');
+    let methodOk: boolean;
+    let want: string;
+    if (st.cashPart) {
+      methodOk = cashPays.length === 1 && Math.abs(cashPays[0] - st.cashPart) < 0.005 && cardPays.length >= 1;
+      want = `${fmt(st.cashPart)} in cash, then the rest by credit card`;
+    } else if (st.split && st.cashShares) {
+      methodOk = cashPays.length === st.cashShares && cardPays.length === st.split - st.cashShares;
+      want = `${st.cashShares} share in cash and ${st.split - st.cashShares} by credit card`;
+    } else {
+      methodOk = (st.method === 'cash' ? cardPays : cashPays).length === 0;
+      want = st.method === 'cash' ? 'cash' : 'credit card';
+    }
+    if (mine.length && !methodOk) {
+      const took = [cashPays.length ? `cash ${cashPays.map(fmt).join(' + ')}` : '', cardPays.length ? `card ${cardPays.map(fmt).join(' + ')}` : ''].filter(Boolean).join(', ');
+      ev.paymentMistakes.push(`Took ${took}; the guests paid ${want}`);
       ok = 0;
-    } else if (mine.length) ev.correct.push(`Took payment by ${st.method === 'cash' ? 'cash' : 'credit card'}`);
+    } else if (mine.length) ev.correct.push(`Took payment: ${want}`);
 
-    if (st.method === 'cash' && st.cashGiven) {
+    if (st.cashGiven && (st.method === 'cash' || st.cashShares || st.cashPart)) {
       possible += 1;
       const first = mine.find((e) => e.type === 'payment' && e.method === 'cash');
       if (first && first.type === 'payment' && Math.abs((first.tendered ?? 0) - st.cashGiven) < 0.005) {
@@ -385,7 +401,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
       } else if (t.gratuity > 0) {
         ev.paymentMistakes.push(`Added a ${fmt(t.gratuity)} gratuity that was not required`);
       }
-      if (st.askChange && st.cashGiven) {
+      if (st.askChange && st.cashGiven && !st.split && !st.cashPart) {
         possible += 1;
         const expChange = fromCents(toCents(st.cashGiven) - toCents(t.totalDue));
         if (rec.changeAnswer !== undefined && Math.abs(rec.changeAnswer - expChange) < 0.005) {
@@ -474,7 +490,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
 
   // ---- Suggestions ----
   const s = ev.suggestions;
-  if (ev.ayceViolations.length) s.push('AYCE allows a maximum of 4 meat items per table per round. Ring in 4, tell the guests the rest will come with the next round, and send the remainder later.');
+  if (ev.ayceViolations.length) s.push('AYCE allows a maximum of 4 meat items per table per round. If guests ask for more, explain the limit and ask them which to drop; do not hold extra meat for later.');
   if (ev.missing.length) s.push('Repeat the order back to the guests and check Order Details against it before pressing Order.');
   if (ev.wrongQty.length) s.push('Watch quantities: tap the line in Order Details and use − / + or Qty to fix them before sending.');
   if (acc.package.p && acc.package.e < acc.package.p) s.push('Check the AYCE PRICE button: the package (Premium lunch vs dinner, Ultimate, children) and the quantity should match the number of guests.');

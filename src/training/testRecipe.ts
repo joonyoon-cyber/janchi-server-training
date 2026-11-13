@@ -1,4 +1,4 @@
-import { generateCounter, generateScenario, seededRng, type GenOptions } from './generator';
+import { generateCounter, generateScenario, seededRng, trackVariety, type GenOptions } from './generator';
 import { scenarios } from './scenarios';
 import type { Level, Scenario, Stage } from './types';
 
@@ -9,34 +9,24 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 2;
+export const TEST_VERSION = 3;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
-export const TEST_TABLES = 20;
+export const TEST_TABLES = 10;
 
-type Slot = { level: Level; opts: GenOptions; label: string } | { counter: 'macaron' | 'gift'; label: string } | { handWritten: string[]; label: string };
+type Slot = { level: Level; opts: GenOptions; label: string } | { counter: ('macaron' | 'gift' | 'takeout')[]; label: string } | { handWritten: string[]; label: string };
 
 const RECIPE: Slot[] = [
-  { label: 'AYCE, drinks with the order', level: 'beginner', opts: { alaCarte: false, drinks: 'with', extraRounds: 0, pay: 'none', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, drinks first', level: 'beginner', opts: { alaCarte: false, drinks: 'before', extraRounds: 0, pay: 'none', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, drinks later + extra round', level: 'intermediate', opts: { alaCarte: false, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, two extra meat rounds', level: 'intermediate', opts: { alaCarte: false, drinks: 'none', extraRounds: 2, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, over the 4-meat limit', level: 'advanced', opts: { alaCarte: false, over: true, pay: 'cash', interrupt: false, voidDrink: false, guests: 3 } },
-  { label: 'AYCE, guest changes the order', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'credit', over: false, voidDrink: false } },
-  { label: 'AYCE, cancel after sending', level: 'advanced', opts: { alaCarte: false, drinks: 'with', extraRounds: 0, voidDrink: true, pay: 'cash', over: false, interrupt: false } },
-  { label: 'AYCE, party of 5+ (auto 18%)', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, party of 6 splits the check', level: 'advanced', opts: { alaCarte: false, guests: 6, extraRounds: 0, pay: 'split', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, split check', level: 'intermediate', opts: { alaCarte: false, guests: 3, extraRounds: 1, pay: 'split', over: false, interrupt: false, voidDrink: false } },
-  { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, drinks first, two rounds', level: 'intermediate', opts: { alaCarte: false, drinks: 'before', extraRounds: 1, pay: 'cash', over: false, interrupt: false, voidDrink: false } },
-  { label: 'AYCE, single guest', level: 'intermediate', opts: { alaCarte: false, guests: 1, extraRounds: 1, pay: 'cash', over: false, interrupt: false, voidDrink: false } },
-  { label: 'À la carte, card', level: 'intermediate', opts: { alaCarte: true, pay: 'credit', voidDrink: false } },
+  { label: 'AYCE, drinks with the order + another round', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
+  { label: 'AYCE, over the 4-meat limit (drop the extra)', level: 'advanced', opts: { alaCarte: false, over: true, extraRounds: 1, pay: 'cash', interrupt: false, voidDrink: false, guests: 3 } },
+  { label: 'AYCE, guest changes the order; part cash, rest card', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'cash-card', over: false, voidDrink: false } },
+  { label: 'AYCE, party of 5+ splits with one cash share', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false, voidDrink: false } },
+  { label: 'AYCE, drinks first, cancel after sending, split on cards', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, voidDrink: true, pay: 'split', over: false, interrupt: false } },
+  { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false, voidDrink: false } },
   { label: 'À la carte, cash', level: 'intermediate', opts: { alaCarte: true, pay: 'cash', voidDrink: false } },
-  { label: 'À la carte, split check', level: 'intermediate', opts: { alaCarte: true, guests: 2, pay: 'split', voidDrink: false } },
-  { label: 'Macaron ice cream to go', counter: 'macaron' },
-  { label: 'Gift card sale', counter: 'gift' },
-  { label: 'House policy question', handWritten: ['e-meat-limit', 'ayce-same-choice'] },
-  { label: 'Family with kids or a combo', handWritten: ['family-kids', 'combo-dinner'] },
+  { label: 'Take-out order at the counter', counter: ['takeout'] },
+  { label: 'Macaron to go or a gift card', counter: ['macaron', 'gift'] },
+  { label: 'House policy, family or combo', handWritten: ['ayce-same-choice', 'family-kids', 'combo-dinner'] },
 ];
 
 export function newSeed(): number {
@@ -46,15 +36,18 @@ export function newSeed(): number {
 /** The 20 tables of a Test, each a separate scenario (Friday dinner, no lunch pricing). */
 export function buildTables(seed: number): Scenario[] {
   const rng = seededRng(seed);
+  // Ask for as many different menu items as possible across the shift.
+  trackVariety(true);
   const tables = RECIPE.map((slot, i): Scenario => {
     let sc: Scenario;
-    if ('counter' in slot) sc = generateCounter(slot.counter, { rng });
+    if ('counter' in slot) sc = generateCounter(slot.counter[Math.floor(rng() * slot.counter.length)], { rng });
     else if ('handWritten' in slot) {
       const id = slot.handWritten[Math.floor(rng() * slot.handWritten.length)];
       sc = structuredClone(scenarios.find((s) => s.id === id)!);
     } else sc = generateScenario(slot.level, { ...slot.opts, lunch: false, rng });
     return { ...sc, id: `test-${seed}-${i}` };
   });
+  trackVariety(false);
   // Seeded shuffle (Fisher-Yates) so the arrival order differs between runs.
   for (let i = tables.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));

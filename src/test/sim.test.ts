@@ -337,6 +337,23 @@ describe('test mode: one shift', () => {
     playPerfect(sc);
     expect(getRun().result!.score).toBe(100);
   });
+  it('flags paying all by card when the guest paid part in cash, or a split share in cash', () => {
+    const mixed = scenarios.find((x) => x.id === 'part-cash-part-card')!;
+    startScenario(mixed);
+    playPerfect(mixed, { payMethodOverride: 'credit', ignoreCashPart: true });
+    expect(getRun().result!.paymentMistakes.some((m) => m.includes('in cash, then the rest by credit card'))).toBe(true);
+    const split = scenarios.find((x) => x.id === 'split-one-cash')!;
+    startScenario(split);
+    playPerfect(split, { ignoreCashPart: true });
+    expect(getRun().result!.paymentMistakes.some((m) => m.includes('1 share in cash'))).toBe(true);
+  });
+  it('a shift asks for many different meats and drinks', () => {
+    const sc = buildTest(2024);
+    const ids = new Set(sc.stages.flatMap((s) => (s.kind === 'order' ? s.expect.map((i) => i.posId) : [])));
+    const meats = [...ids].filter((i) => isMeat(i));
+    expect(meats.length).toBeGreaterThanOrEqual(8);
+    expect([...ids].length).toBeGreaterThanOrEqual(25);
+  });
   it('flags a kitchen ticket for macarons and an ignored split', () => {
     const mac = generateCounter('macaron', { rng: seededRng(5) });
     startScenario(mac);

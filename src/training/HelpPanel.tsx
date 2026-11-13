@@ -31,7 +31,7 @@ export function HelpPanel() {
             <div className="rounded-lg bg-slate-800 p-3">
               <div className="mb-1 font-semibold text-amber-300">AYCE house rules (from the AYCE menu)</div>
               <ul className="list-disc space-y-1 pl-5 text-slate-300">
-                <li>Max 4 meat items per order, per table, at a time. Beef Tongue 6oz and Scallop 8pcs are paid add-ons and don't count.</li>
+                <li>Max 4 meat items per order, per table, at a time. If guests ask for more, explain the limit and ask them which to drop; don't hold extra meat for later. Beef Tongue 6oz and Scallop 8pcs are paid add-ons and don't count.</li>
                 <li>Everyone at the table does AYCE, or everyone orders à la carte. AYCE tables can still add à la carte items. The POS doesn't enforce this; you do.</li>
                 <li>Premium lunch price: Mon–Fri only. Weekend lunch rings PREMIUM AYCE (DINNER).</li>
                 <li>Children: 5–8 and 9–12 prices; under 4 free (ring nothing).</li>

@@ -18,9 +18,10 @@ function Intro({ auth }: { auth: Auth }) {
         <div className="text-xs font-semibold uppercase tracking-wider text-sky-300">Test mode</div>
         <h2 className="text-2xl font-semibold">Service test: a {TEST_TABLES}-table shift</h2>
         <p className="mt-1 text-slate-300">
-          A Friday dinner shift in one section (A B C BAR or M Y W). {TEST_TABLES} parties arrive one after another and you look after up to 10 tables at
-          once, so requests from different tables come in mixed together: seating, AYCE rounds, the 4-meat limit, à la carte, guests changing their minds, cancellations, parties of 5+, split checks,
-          cash and card, a macaron to go and a gift card sale. Every Test has the same mix; the dishes, parties and order change each time.
+          A Friday dinner shift in one section (A B C BAR or M Y W). {TEST_TABLES} parties arrive one after another and several tables are open at
+          once, so requests from different tables come in mixed together: seating, AYCE rounds, the 4-meat limit, à la carte, guests changing their minds,
+          cancellations, parties of 5+, split checks (including one guest paying cash), part cash and part card, and counter guests (take-out, macarons
+          or a gift card). Every Test has the same mix; the dishes, drinks, parties and order change each time.
         </p>
       </div>
       <div className="rounded-lg bg-slate-800 p-4 text-sm text-slate-300">

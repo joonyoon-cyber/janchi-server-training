@@ -14,6 +14,8 @@ export interface BotOptions {
   payMethodOverride?: 'cash' | 'credit';
   /** Always press Order (prints a kitchen ticket) even for macarons. */
   alwaysOrder?: boolean;
+  /** Pay everything by card even when the guest pays part (or a share) in cash. */
+  ignoreCashPart?: boolean;
   /** Ignore the guests' request to split the check. */
   noSplit?: boolean;
 }
@@ -79,7 +81,16 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         const method = opts.payMethodOverride ?? st.method;
         if (st.split && !opts.noSplit) {
           actions.splitEvenly(st.split);
-          for (let i = 0; i < st.split; i++) actions.pay('credit', 100000);
+          for (let i = 0; i < st.split; i++) {
+            if (i < (st.cashShares ?? 0) && !opts.ignoreCashPart) actions.pay('cash', st.cashGiven!, st.cashGiven!);
+            else actions.pay('credit', 100000);
+          }
+          actions.leaveTender();
+          break;
+        }
+        if (st.cashPart && !opts.ignoreCashPart) {
+          actions.pay('cash', st.cashPart, st.cashPart);
+          actions.pay('credit', 100000);
           actions.leaveTender();
           break;
         }
