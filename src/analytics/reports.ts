@@ -1,4 +1,4 @@
-import { readXlsx, type Cell } from './xlsx';
+import { readWorkbook, type Cell, type Sheet } from './xlsx';
 
 // ---- Values -------------------------------------------------------------------
 
@@ -156,13 +156,31 @@ export interface Punch {
   workHours: number;
 }
 
+/** One scheduled shift from the weekly schedule workbook. */
+export interface ScheduledShift {
+  /** Name as written on the schedule (often a first name). */
+  name: string;
+  /** Row group: Server, Food runner / Busser, Host, Bartender… */
+  role: string;
+  /** Role for this shift ("H)5:00-9:00" = working as Host). */
+  shiftRole: string;
+  day: Date;
+  meal: 'Lunch' | 'Dinner';
+  start: Date;
+  /** Null for shifts "until close" (C). */
+  end: Date | null;
+  raw: string;
+  week: string;
+}
+
 // ---- Report kinds ---------------------------------------------------------------
 
-export type Kind = 'sales' | 'tips' | 'salesByDate' | 'cancels' | 'voids' | 'discounts' | 'priceChanges' | 'timecard';
+export type Kind = 'sales' | 'tips' | 'salesByDate' | 'cancels' | 'voids' | 'discounts' | 'priceChanges' | 'timecard' | 'schedule';
 export type ExtraKind = 'salesSummary' | 'salesByEmployee' | 'personOrdering';
 
 export const REPORTS: { kind: Kind; title: string; what: string }[] = [
   { kind: 'timecard', title: 'Time Card', what: 'Clock-ins and clock-outs' },
+  { kind: 'schedule', title: 'Shift schedule', what: 'Weekly schedule workbook (one tab per week): roles and shifts' },
   { kind: 'sales', title: 'Detailed Sales List', what: 'Every item on every check, with tips and payments' },
   { kind: 'tips', title: 'Employee Tips', what: 'Tips per check and who they went to' },
   { kind: 'salesByDate', title: 'Sales Record by Employee Date', what: 'Checks, cash and card sales per person per day' },
@@ -188,6 +206,7 @@ export interface Parsed {
   discounts?: DiscountTicket[];
   priceChanges?: PriceChange[];
   timecard?: Punch[];
+  schedule?: ScheduledShift[];
 }
 
 export interface LoadedFile {
@@ -395,6 +414,106 @@ function parseTimecard(rows: Row[]): Punch[] {
   return out;
 }
 
+// ---- Shift schedule workbook ----------------------------------------------------------
+
+const ROLE_CODES: Record<string, string> = { H: 'Host', S: 'Server', B: 'Bartender', F: 'Food runner / Busser', R: 'Food runner / Busser' };
+
+function roleName(raw: string): string {
+  const r = raw.replace(/\s+/g, ' ').trim();
+  if (/F\/R|BUSS|RUNNER/i.test(r)) return 'Food runner / Busser';
+  if (/SERV/i.test(r)) return 'Server';
+  if (/HOST/i.test(r)) return 'Host';
+  if (/BAR/i.test(r)) return 'Bartender';
+  return r;
+}
+
+/**
+ * Times on the schedule have no AM/PM ("11:00-4:00", "4:00-C"). Starts at 10-11 are morning,
+ * 12 is noon, 1-6 afternoon/evening; 7-9 are morning on the lunch side and evening on the dinner side.
+ * The end is the first matching time after the start. "C" means until close.
+ */
+export function parseShift(text: string, day: Date, meal: 'Lunch' | 'Dinner'): { start: Date; end: Date | null; role: string | null } | null {
+  let t = text.trim().toUpperCase().replace(/\s+/g, '');
+  if (!t) return null;
+  let role: string | null = null;
+  const pre = /^([A-Z]{1,2})\)/.exec(t);
+  if (pre) {
+    role = ROLE_CODES[pre[1][0]] ?? null;
+    t = t.slice(pre[0].length);
+  }
+  const m = /^(\d{1,2})(?::(\d{2}))?(AM|PM|A|P)?[-–~TO]+(?:(\d{1,2})(?::(\d{2}))?(AM|PM|A|P)?|(C|CL|CLOSE|CLOSING))$/.exec(t);
+  if (!m) return null;
+  const at = (h: number, min: number) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, min);
+  let sh = +m[1];
+  const smin = +(m[2] ?? 0);
+  if (m[3]) {
+    if (m[3][0] === 'P' && sh < 12) sh += 12;
+    if (m[3][0] === 'A' && sh === 12) sh = 0;
+  } else if (sh >= 1 && sh <= 6) sh += 12;
+  else if (sh >= 7 && sh <= 9 && meal === 'Dinner') sh += 12;
+  const start = at(sh, smin);
+  if (m[7]) return { start, end: null, role };
+  let eh = +m[4];
+  const emin = +(m[5] ?? 0);
+  if (m[6]) {
+    if (m[6][0] === 'P' && eh < 12) eh += 12;
+    if (m[6][0] === 'A' && eh === 12) eh = 0;
+    return { start, end: at(eh, emin), role };
+  }
+  let end = at(eh % 12, emin);
+  while (end <= start) end = new Date(+end + 12 * 3600000);
+  return { start, end, role };
+}
+
+/** A workbook is a schedule when a tab has a "Name" header followed by Lunch/Dinner columns. */
+function looksLikeSchedule(sheets: Sheet[]): boolean {
+  return sheets.some((sh) => {
+    const i = sh.rows.findIndex((r) => r.some((c) => str(c).toLowerCase() === 'name'));
+    return i >= 0 && sh.rows.slice(i, i + 3).some((r) => r.some((c) => /^lunch$/i.test(str(c))) && r.some((c) => /^dinner$/i.test(str(c))));
+  });
+}
+
+function parseSchedule(sheets: Sheet[]): ScheduledShift[] {
+  const out: ScheduledShift[] = [];
+  for (const sh of sheets) {
+    const rows = sh.rows;
+    const hi = rows.findIndex((r) => r.some((c) => str(c).toLowerCase() === 'name'));
+    if (hi < 0) continue;
+    const iName = rows[hi].findIndex((c) => str(c).toLowerCase() === 'name');
+    const mi = rows.findIndex((r, i) => i >= hi && i <= hi + 2 && r.some((c) => /^(lunch|dinner)$/i.test(str(c))));
+    if (mi < 0) continue;
+    // Dates sit in the header row, one per day, above its Lunch column (cells are merged across Lunch/Dinner).
+    const cols: { c: number; day: Date; meal: 'Lunch' | 'Dinner' }[] = [];
+    let day: Date | null = null;
+    for (let c = iName + 1; c < Math.max(rows[hi].length, rows[mi].length); c++) {
+      const d = parseDate(rows[hi][c] ?? null);
+      if (d) day = d;
+      const label = str(rows[mi][c] ?? null);
+      if (/^lunch$/i.test(label) || /^dinner$/i.test(label)) {
+        if (day) cols.push({ c, day, meal: /^lunch$/i.test(label) ? 'Lunch' : 'Dinner' });
+      } else if (label || str(rows[hi][c] ?? null)) {
+        if (!d) break; // "Shifts", "SIGN" and other summary columns
+      }
+    }
+    let role = '';
+    for (let r = mi + 1; r < rows.length; r++) {
+      const row = rows[r];
+      const roleCell = iName > 0 ? str(row[iName - 1] ?? null) : '';
+      if (roleCell) role = roleName(roleCell);
+      const name = str(row[iName] ?? null);
+      if (!name || /^(name|total|notes?)$/i.test(name)) continue;
+      for (const { c, day: d, meal } of cols) {
+        const raw = str(row[c] ?? null);
+        if (!raw) continue;
+        const p = parseShift(raw, d, meal);
+        if (!p) continue;
+        out.push({ name: name.replace(/\s+/g, ' '), role, shiftRole: p.role ?? role, day: d, meal, start: p.start, end: p.end, raw, week: sh.name });
+      }
+    }
+  }
+  return out;
+}
+
 // ---- Detection and loading -----------------------------------------------------------
 
 function kindOf(title: string): Kind | ExtraKind | null {
@@ -406,13 +525,21 @@ function kindOf(title: string): Kind | ExtraKind | null {
 
 /** Read one export, recognize it by the title in its first cell, and parse it. */
 export function loadReport(fileName: string, data: ArrayBuffer | Uint8Array, into: Parsed): LoadedFile {
-  let rows: Cell[][];
+  let sheets: Sheet[];
   try {
-    rows = readXlsx(data);
+    sheets = readWorkbook(data);
   } catch (e) {
     return { fileName, kind: null, title: '', rows: 0, from: null, to: null, error: e instanceof Error ? e.message : String(e) };
   }
+  const rows: Cell[][] = sheets[0].rows;
   const title = str(rows[0]?.find((c) => str(c)) ?? null);
+  if (!kindOf(title) && looksLikeSchedule(sheets)) {
+    const v = parseSchedule(sheets);
+    if (!v.length) return { fileName, kind: 'schedule', title: 'Shift schedule', rows: 0, from: null, to: null, error: 'No shifts found in this schedule.' };
+    into.schedule = v;
+    const [from, to] = range(v.map((x) => x.day));
+    return { fileName, kind: 'schedule', title: 'Shift schedule', rows: v.length, from, to };
+  }
   const kind = kindOf(title);
   const base = { fileName, kind, title, rows: 0, from: null, to: null };
   if (!kind) return { ...base, error: `Not a report this page uses ("${title || 'no title'}").` };

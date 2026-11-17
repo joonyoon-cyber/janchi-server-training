@@ -1,8 +1,8 @@
-import { strToU8, zipSync } from 'fflate';
+import { strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { CHECKS, overview, robustZ, type CheckResult } from '../analytics/checks';
 import { People } from '../analytics/people';
-import { loadReport, parseDate, personKey, type Parsed, type Punch, type Receipt } from '../analytics/reports';
+import { loadReport, parseDate, parseShift, personKey, type Parsed, type Punch, type Receipt } from '../analytics/reports';
 import { readXlsx } from '../analytics/xlsx';
 
 // All names and numbers below are made up.
@@ -161,8 +161,8 @@ describe('anomaly checks', () => {
   it('classifies discount notes and catches oversized discounts', () => {
     const t = (ticket: string, amount: number, base: number, note: string) => ({ ticket, placed: d('2026-11-01 18:00'), table: 'Take Out', items: [{ menu: 'X', amount: base }], itemsAmount: base, name: '<<20%>>', amount, note, placedBy: 'PAT DOE', approval: '' });
     const p: Parsed = { discounts: [t('2026110110001', 4, 20, 'EMPLOYEE'), t('2026110110002', 8, 20, 'EMPLOYEE'), t('2026110110003', 12, 20, 'EMPLOYEE'), t('2026110110004', 4, 20, 'COUSIN'), t('2026110110005', 4, 20, '')] };
-    const what = run('discounts', p).findings.map((f) => f.what);
-    expect(what).toEqual(['Discount applied twice?', 'Discount bigger than its label', 'Discount for family/friends?', 'Discount with no reason']);
+    const what = run('discounts', p).findings.filter((f) => f.sev !== 'low').map((f) => f.what);
+    expect(what).toEqual(['Discount applied twice?', 'Discount bigger than its label', 'On-duty 20% for someone else']);
   });
 
   it('finds items given away by price changes and $0 lines', () => {
@@ -207,5 +207,126 @@ describe('anomaly checks', () => {
     const o = overview(res);
     expect(o.people[0].emp).toBe('E E');
     expect(o.people[0].reasons[0]).toMatch(/Cash voids/i);
+  });
+});
+
+/** A workbook with several tabs, like the weekly schedule. */
+function workbook(sheets: Record<string, (string | number | null)[][]>): Uint8Array {
+  const files: Record<string, Uint8Array> = {};
+  const names = Object.keys(sheets);
+  names.forEach((n, i) => {
+    const one = readXlsxFiles(xlsx(sheets[n]));
+    files[`xl/worksheets/sheet${i + 1}.xml`] = one;
+  });
+  files['xl/workbook.xml'] = strToU8(`<workbook><sheets>${names.map((n, i) => `<sheet name="${n}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`);
+  files['xl/_rels/workbook.xml.rels'] = strToU8(`<Relationships>${names.map((_, i) => `<Relationship Id="rId${i + 1}" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}</Relationships>`);
+  return zipSync(files);
+}
+function readXlsxFiles(z: Uint8Array): Uint8Array {
+  return unzipSync(z)['xl/worksheets/sheet1.xml'];
+}
+
+// Excel serial for a local date (the schedule's date cells).
+const serial = (y: number, m: number, d: number) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000);
+
+function week(start: [number, number, number], rows: (string | null)[][]): (string | number | null)[][] {
+  const header: (string | number | null)[] = [null, 'Name'];
+  const meals: (string | null)[] = [null, null];
+  for (let i = 0; i < 7; i++) {
+    header.push(serial(start[0], start[1], start[2] + i), null);
+    meals.push('Lunch', 'Dinner');
+  }
+  header.push('Shifts');
+  return [['WEEK TITLE'], [], header, meals, ...rows];
+}
+
+describe('shift schedule', () => {
+  it('reads AM/PM-less times, close and role prefixes', () => {
+    const day = new Date(2026, 10, 2);
+    const t = (x: Date | null) => (x ? `${x.getHours()}:${String(x.getMinutes()).padStart(2, '0')}` : 'close');
+    const p = (s: string, m: 'Lunch' | 'Dinner') => {
+      const r = parseShift(s, day, m)!;
+      return `${t(r.start)}-${t(r.end)}${r.role ? ` ${r.role}` : ''}`;
+    };
+    expect(p('11:00-4:00', 'Lunch')).toBe('11:00-16:00');
+    expect(p('10:30-4:00', 'Lunch')).toBe('10:30-16:00');
+    expect(p('1:00-4:30', 'Lunch')).toBe('13:00-16:30');
+    expect(p('4:00-9:00', 'Dinner')).toBe('16:00-21:00');
+    expect(p('5:30-C', 'Dinner')).toBe('17:30-close');
+    expect(p('H)5:00-9:00', 'Dinner')).toBe('17:00-21:00 Host');
+    expect(parseShift('  ', day, 'Lunch')).toBeNull();
+  });
+
+  it('reads every weekly tab with its dates and roles', () => {
+    const wb = workbook({
+      'NOV 2 - NOV 8': week([2026, 11, 2], [
+        ['Server', 'Pat', null, '4:00-9:00'],
+        [null, 'Sam', '11:00-4:00', null, null, '5:30-C'],
+        ['F/R\nBusser', 'Lee', null, '4:00-C'],
+      ]),
+      'NOV 9 - NOV 15': week([2026, 11, 9], [['Server', 'Pat', null, null, null, 'H)5:00-9:00']]),
+    });
+    const parsed: Parsed = {};
+    const f = loadReport('Schedule.xlsx', wb, parsed);
+    expect(f.kind).toBe('schedule');
+    const s = parsed.schedule!;
+    expect(s).toHaveLength(5);
+    const pat = s.filter((x) => x.name === 'Pat');
+    expect(pat.map((x) => [x.day.getDate(), x.meal, x.role, x.shiftRole])).toEqual([
+      [2, 'Dinner', 'Server', 'Server'],
+      [10, 'Dinner', 'Server', 'Host'],
+    ]);
+    expect(s.find((x) => x.name === 'Lee')!.role).toBe('Food runner / Busser');
+    expect(s.find((x) => x.name === 'Sam' && x.meal === 'Dinner')!.day.getDate()).toBe(3);
+  });
+
+  it('flags clocking out well after the scheduled end', () => {
+    const shift = (name: string, raw: string, d: number, meal: 'Lunch' | 'Dinner') => {
+      const day = new Date(2026, 10, d);
+      const x = parseShift(raw, day, meal)!;
+      return { name, role: 'Server', shiftRole: 'Server', day, meal, start: x.start, end: x.end, raw, week: 'w' };
+    };
+    const p: Parsed = {
+      schedule: [shift('Pat', '4:00-9:00', 2, 'Dinner'), shift('Pat', '5:00-C', 3, 'Dinner'), shift('Pat', '4:00-9:00', 4, 'Dinner'), shift('Pat', '4:00-9:00', 6, 'Dinner')],
+      timecard: [
+        punch('PAT DOE', '2026-11-02 16:00', '2026-11-02 21:05'), // fine
+        punch('PAT DOE', '2026-11-03 17:00', '2026-11-03 23:10'), // 70 min past close
+        punch('PAT DOE', '2026-11-05 16:00', '2026-11-05 21:00'), // not scheduled that day
+      ],
+    };
+    const r = run('overstay', p);
+    expect(r.findings.map((f) => [f.what, f.sev])).toEqual(
+      expect.arrayContaining([
+        ['Clocked out after the shift', 'high'],
+        ['Worked an unscheduled shift', 'medium'],
+        ['Scheduled, no clock-in', 'low'],
+      ]),
+    );
+    expect(r.findings.some((f) => f.when?.getDate() === 2)).toBe(false);
+  });
+});
+
+describe('employee discount policy', () => {
+  const ticket = (n: number, label: string, note: string, placedAt: string, table = 'Take Out', items = [{ menu: 'BULGOGI DNR', amount: 25 }]) => {
+    const base = items.reduce((s, i) => s + i.amount, 0);
+    return { ticket: `20261102100${n}`, placed: d(placedAt), table, items, itemsAmount: base, name: `<<${label}%>>`, amount: (base * +label) / 100, note, placedBy: 'PAT DOE', approval: '' };
+  };
+  const p = (discounts: Parsed['discounts']): Parsed => ({
+    discounts,
+    timecard: [punch('PAT DOE', '2026-11-02 16:00', '2026-11-02 22:00'), punch('SAM ROE', '2026-11-03 11:00', '2026-11-03 15:00')],
+  });
+  const whats = (x: Parsed) => run('discounts', x).findings.filter((f) => f.sev !== 'low').map((f) => f.what);
+
+  it('accepts the policy as written', () => {
+    expect(whats(p([ticket(1, '10', 'PAT SELF', '2026-11-03 19:00', 'A1'), ticket(2, '10', 'SAM MOTHER', '2026-11-02 19:00', 'A2'), ticket(3, '20', 'PAT', '2026-11-02 18:00')]))).toEqual([]);
+  });
+
+  it('catches the ways it gets bent', () => {
+    expect(whats(p([ticket(1, '10', 'PAT COUSIN', '2026-11-03 19:00', 'A1')]))).toEqual(['Off-duty 10% for someone not eligible']);
+    expect(whats(p([ticket(2, '10', 'EMPLOYEE', '2026-11-03 19:00', 'A1')]))).toEqual(['Off-duty 10% note incomplete']);
+    expect(whats(p([ticket(3, '10', 'PAT SELF', '2026-11-02 19:00', 'A1')]))).toEqual(['Off-duty 10% while on duty']);
+    expect(whats(p([ticket(4, '20', 'PAT', '2026-11-03 19:00')]))).toEqual(['On-duty 20% outside a shift']);
+    expect(whats(p([ticket(5, '20', 'PAT', '2026-11-02 18:00', 'Take Out', [{ menu: '(DRAFT) SAPPORO', amount: 7 }])]))).toEqual(['On-duty 20% on alcohol']);
+    expect(whats(p([ticket(6, '20', 'PAT', '2026-11-02 18:00', 'C1', [{ menu: 'PREMIUM AYCE (DINNER)', amount: 116.85 }])]))).toEqual(['On-duty 20% on a guest-sized check']);
   });
 });

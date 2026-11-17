@@ -1,4 +1,7 @@
-import { personKey, type Parsed, type Receipt } from './reports';
+import { personKey, type Parsed, type Receipt, type ScheduledShift } from './reports';
+
+/** Shifts marked C (until close) end at this time: the median clock-out on closing shifts. */
+export const CLOSE_HOUR = 22;
 
 /** Shared logins like "Mnager Manager" or "Owner Owner" are not one person. */
 export function isGeneric(name: string): boolean {
@@ -30,6 +33,13 @@ export class People {
   private daily = new Map<string, { day: Date; checks: number }[]>();
   /** Clocked shifts per person, to tell apart two people with the same first name. */
   private shifts = new Map<string, [number, number][]>();
+  /** From the schedule workbook: role and scheduled shifts per person. */
+  private roles = new Map<string, string>();
+  private scheduled = new Map<string, ScheduledShift[]>();
+  private schedName = new Map<string, string>();
+  /** Days covered by the time card and the schedule. */
+  private tcSpan: [number, number] | null = null;
+  private schedSpan: [number, number] | null = null;
 
   constructor(private p: Parsed) {
     const add = (name: string) => {
@@ -59,8 +69,101 @@ export class People {
       add(c.canceledBy);
     });
     p.voids?.forEach((v) => add(v.emp));
+    if (p.timecard?.length) {
+      const t = p.timecard.map((x) => +startOfDay(x.in));
+      this.tcSpan = [Math.min(...t), +endOfDay(new Date(Math.max(...t)))];
+    }
+    if (p.schedule?.length) {
+      const t = p.schedule.map((x) => +x.day);
+      this.schedSpan = [Math.min(...t), +endOfDay(new Date(Math.max(...t)))];
+      // Resolve schedule names after every report's names are known; names with a surname hint first,
+      // so "Sam R." claims Sam Roe and plain "Sam" gets the other Sam.
+      const names = [...new Set(p.schedule.map((x) => x.name))].sort((a, b) => b.split(' ').length - a.split(' ').length);
+      const claimed = new Set<string>();
+      for (const n of names) {
+        const k = this.resolveScheduleName(n, claimed);
+        claimed.add(k);
+        this.schedName.set(n, k);
+        if (!this.display.has(k)) add(n);
+      }
+      const roleCount = new Map<string, Map<string, number>>();
+      p.schedule.forEach((x) => {
+        const k = this.schedName.get(x.name)!;
+        if (!this.scheduled.has(k)) this.scheduled.set(k, []);
+        this.scheduled.get(k)!.push(x);
+        const m = roleCount.get(k) ?? new Map<string, number>();
+        m.set(x.role, (m.get(x.role) ?? 0) + 1);
+        roleCount.set(k, m);
+      });
+      roleCount.forEach((m, k) => this.roles.set(k, [...m.entries()].sort((a, b) => b[1] - a[1])[0][0]));
+    }
     p.discounts?.forEach((d) => add(d.placedBy));
     p.priceChanges?.forEach((c) => add(c.emp));
+  }
+
+  private resolveScheduleName(name: string, claimed: Set<string>): string {
+    const words = personKey(name.replace(/\./g, ' ')).split(' ');
+    const cands = [...(this.byFirst.get(words[0]) ?? [])];
+    if (cands.length === 1) return cands[0];
+    if (words.length > 1) {
+      const hit = cands.filter((c) => c.split(' ').slice(1).some((w) => w.startsWith(words[1])));
+      if (hit.length === 1) return hit[0];
+    }
+    const free = cands.filter((c) => !claimed.has(c));
+    if (free.length === 1) return free[0];
+    return personKey(name);
+  }
+
+  /** Person key for a name as written on the schedule. */
+  ofScheduleName(name: string): string {
+    return this.schedName.get(name) ?? personKey(name);
+  }
+
+  /** Role on the schedule (Server, Host, Bartender, Food runner / Busser), if scheduled. */
+  role(key: string): string | undefined {
+    return this.roles.get(key);
+  }
+
+  hasSchedule(): boolean {
+    return this.scheduled.size > 0;
+  }
+
+  shiftsOf(key: string): ScheduledShift[] {
+    return this.scheduled.get(key) ?? [];
+  }
+
+  /** Scheduled end, with "until close" shifts ending at CLOSE_HOUR. */
+  static endOf(s: ScheduledShift): Date {
+    return s.end ?? new Date(s.day.getFullYear(), s.day.getMonth(), s.day.getDate(), CLOSE_HOUR, 0);
+  }
+
+  inTimecard(t: Date): boolean {
+    return !!this.tcSpan && +t >= this.tcSpan[0] && +t <= this.tcSpan[1];
+  }
+  inSchedule(t: Date): boolean {
+    return !!this.schedSpan && +t >= this.schedSpan[0] && +t <= this.schedSpan[1];
+  }
+
+  /**
+   * Was this person working at time t? 'clocked' (time card), 'scheduled' (schedule only),
+   * 'off' (the time card covers the day and they weren't clocked in), 'unscheduled' (only the
+   * schedule covers the day and they weren't on it), or 'unknown'.
+   */
+  onDuty(key: string, t: Date): 'clocked' | 'scheduled' | 'off' | 'unscheduled' | 'unknown' {
+    if ((this.shifts.get(key) ?? []).some(([a, b]) => +t >= a && +t <= b)) return 'clocked';
+    if (this.shiftsOf(key).some((x) => +t >= +x.start - 30 * 60000 && +t <= +People.endOf(x) + 60 * 60000)) return 'scheduled';
+    // Someone on neither report (a shared login, a new hire) can't be judged.
+    if (!this.shifts.has(key) && !this.scheduled.has(key)) return 'unknown';
+    if (this.inTimecard(t)) return 'off';
+    if (this.inSchedule(t)) return 'unscheduled';
+    return 'unknown';
+  }
+
+  /** Every first name we know, for spotting names in discount notes. */
+  firstNames(): Map<string, string[]> {
+    const m = new Map<string, string[]>();
+    this.byFirst.forEach((ks, f) => m.set(f, [...ks]));
+    return m;
   }
 
   key(name: string): string {
@@ -114,7 +217,8 @@ export class People {
   servers(from: Date | null, to: Date | null, min = 25): string[] {
     const keys = new Set<string>([...this.daily.keys()]);
     if (!this.p.salesByDate) this.p.sales?.forEach((r) => keys.add(this.ofReceipt(r)));
-    return [...keys].filter((k) => !isGeneric(k) && (this.checks(k, from, to) ?? 0) >= min).sort();
+    // With a schedule, only people scheduled as servers count as servers.
+    return [...keys].filter((k) => !isGeneric(k) && (!this.hasSchedule() || this.roles.get(k) === 'Server') && (this.checks(k, from, to) ?? 0) >= min).sort();
   }
 }
 

@@ -1,4 +1,4 @@
-import { People, endOfDay, isGeneric, startOfDay } from './people';
+import { CLOSE_HOUR, People, endOfDay, isGeneric, startOfDay } from './people';
 import { dayKey, type Kind, type Parsed, type Punch, type Receipt } from './reports';
 
 // ---- Result shapes --------------------------------------------------------------
@@ -22,8 +22,10 @@ export interface Metric {
   key: string;
   label: string;
   fmt: 'pct' | 'num' | 'money' | 'pts';
-  /** Direction that looks bad. Metrics with a direction count toward "Who stands out". */
+  /** Direction that looks bad (colored against the team). */
   worse?: 'high' | 'low';
+  /** False keeps a metric out of "Who stands out" (e.g. overtime is a payroll issue, not theft). */
+  inOverview?: boolean;
   help: string;
 }
 
@@ -115,6 +117,12 @@ const timecards: Check = {
         return h !== null && h >= 0.25 && h <= 14 && x.out!.getDate() === x.in.getDate();
       });
       const suggest = (x: Punch) => {
+        // The schedule knows the planned end of that day's shift.
+        const planned = people
+          .shiftsOf(k)
+          .filter((s) => s.day.toDateString() === x.in.toDateString() && +People.endOf(s) > +x.in)
+          .sort((a, b) => Math.abs(+a.start - +x.in) - Math.abs(+b.start - +x.in))[0];
+        if (planned) return People.endOf(planned);
         const near = normal.filter((n) => Math.abs(minutesOfDay(n.in) - minutesOfDay(x.in)) <= 120);
         const m = median((near.length ? near : normal).map((n) => minutesOfDay(n.out!)));
         if (m === null || m <= minutesOfDay(x.in)) return null;
@@ -178,6 +186,172 @@ const timecards: Check = {
         { key: 'hours', label: 'Hours', fmt: 'num', help: 'Hours worked, not counting shifts over 14 hours.' },
         { key: 'missed', label: 'Missed clock-outs', fmt: 'num', help: 'Shifts with no clock-out, over 14 hours, or ending on a later day.' },
         { key: 'edits', label: 'Edited punches', fmt: 'num', help: 'Punches a manager changed.' },
+      ],
+      rows,
+      findings,
+    };
+  },
+};
+
+// ---- 1b. Stayed past their shift (schedule vs time card) ------------------------------------
+
+const GRACE_MIN = 15;
+
+const overstay: Check = {
+  id: 'overstay',
+  group: 'Time cards',
+  title: 'Stayed past their shift',
+  question: 'Compares each clock-in and clock-out with that person\'s scheduled shift: who keeps clocking out well after their shift ends, clocks in early, or works days they weren\'t scheduled.',
+  how: `Each punch is matched to the scheduled shift(s) it overlaps that day. Shifts marked C (until close) are treated as ending at ${CLOSE_HOUR - 12}:00 PM, the usual closing clock-out. Up to ${GRACE_MIN} minutes either way is not counted.`,
+  needs: ['timecard', 'schedule'],
+  run(p, people) {
+    const punches = (p.timecard ?? []).filter((x) => x.out && hoursOf(x)! <= 14 && hoursOf(x)! >= 0.1);
+    const [tcA, tcB] = span(punches.map((x) => x.in));
+    const findings: Finding[] = [];
+    const per = new Map<string, { sched: number; worked: number; extra: number; over: number; lates: number[]; early: number; unsched: number; noshow: number }>();
+    const get = (k: string) => {
+      if (!per.has(k)) per.set(k, { sched: 0, worked: 0, extra: 0, over: 0, lates: [], early: 0, unsched: 0, noshow: 0 });
+      return per.get(k)!;
+    };
+    const used = new Set<object>();
+    for (const x of punches) {
+      const k = people.key(x.emp);
+      const all = people.shiftsOf(k);
+      if (!all.length) continue; // kitchen staff etc. are not on this schedule
+      const g = get(k);
+      g.worked += hoursOf(x)!;
+      const sameDay = all.filter((s) => s.day.toDateString() === x.in.toDateString());
+      if (!sameDay.length) {
+        if (people.inSchedule(x.in)) {
+          g.unsched++;
+          findings.push({ sev: 'medium', emp: k, when: x.in, what: 'Worked an unscheduled shift', detail: `Clocked ${fmtTime(x.in)}–${fmtTime(x.out!)} (${hoursOf(x)!.toFixed(1)} h) on ${fmtDay(x.in)} with no shift on the schedule. Covering for someone?`, amount: hoursOf(x)! });
+        }
+        continue;
+      }
+      const overlap = (s: (typeof all)[number]) => Math.min(+x.out!, +People.endOf(s)) - Math.max(+x.in, +s.start);
+      const match = sameDay.filter((s) => overlap(s) > 0);
+      // Clocked back in shortly after the shift ended: that is staying late, not another shift.
+      const justAfter = match.length ? undefined : sameDay.find((s) => +x.in >= +People.endOf(s) && +x.in - +People.endOf(s) <= 90 * 60000);
+      if (justAfter) {
+        const late = (+x.out! - +People.endOf(justAfter)) / 60000;
+        const extra = hoursOf(x)!;
+        g.over++;
+        g.extra += extra;
+        g.lates.push(late);
+        findings.push({
+          sev: late >= 60 ? 'high' : 'medium',
+          emp: k,
+          when: x.in,
+          what: 'Clocked back in after the shift',
+          detail: `${fmtDay(x.in)}: shift ${justAfter.raw} ended ${fmtTime(People.endOf(justAfter))}; clocked in again ${fmtTime(x.in)}–${fmtTime(x.out!)} (${Math.round(extra * 60)} min).`,
+          amount: extra,
+        });
+        continue;
+      }
+      if (!match.length) {
+        g.unsched++;
+        findings.push({
+          sev: 'medium',
+          emp: k,
+          when: x.in,
+          what: 'Worked outside the scheduled shift',
+          detail: `${fmtDay(x.in)}: clocked ${fmtTime(x.in)}–${fmtTime(x.out!)} (${hoursOf(x)!.toFixed(1)} h), but the schedule only has ${sameDay.map((s) => `${s.meal.toLowerCase()} ${s.raw}`).join(' and ')}. Swapped or extra shift?`,
+          amount: hoursOf(x)!,
+        });
+        continue;
+      }
+      match.forEach((s) => used.add(s));
+      if (match.length > 1) {
+        const ord = [...match].sort((a, b) => +a.start - +b.start);
+        const gap = (+ord[1].start - +People.endOf(ord[0])) / 60000;
+        if (gap >= 30)
+          findings.push({
+            sev: 'low',
+            emp: k,
+            when: x.in,
+            what: 'No clock-out between shifts',
+            detail: `${fmtDay(x.in)}: one punch ${fmtTime(x.in)}–${fmtTime(x.out!)} covers ${ord.map((s) => s.raw).join(' and ')}, so the ${Math.round(gap)}-minute break between them was paid.`,
+            amount: gap / 60,
+          });
+      }
+      const start = new Date(Math.min(...match.map((s) => +s.start)));
+      const end = new Date(Math.max(...match.map((s) => +People.endOf(s))));
+      const shiftText = match.map((s) => s.raw).join(' + ');
+      const late = (+x.out! - +end) / 60000;
+      const early = (+start - +x.in) / 60000;
+      if (late > GRACE_MIN) {
+        g.over++;
+        g.extra += late / 60;
+        g.lates.push(late);
+        findings.push({
+          sev: late >= 60 ? 'high' : late >= 30 ? 'medium' : 'low',
+          emp: k,
+          when: x.in,
+          what: 'Clocked out after the shift',
+          detail: `${fmtDay(x.in)}: scheduled ${shiftText} (until ${fmtTime(end)}), clocked out ${fmtTime(x.out!)}: ${Math.round(late)} min over.`,
+          amount: late / 60,
+        });
+      }
+      if (early > GRACE_MIN) {
+        g.early++;
+        g.extra += early / 60;
+        findings.push({ sev: early >= 30 ? 'medium' : 'low', emp: k, when: x.in, what: 'Clocked in early', detail: `${fmtDay(x.in)}: scheduled ${shiftText} from ${fmtTime(start)}, clocked in ${fmtTime(x.in)}: ${Math.round(early)} min early.`, amount: early / 60 });
+      }
+    }
+    // Scheduled shifts inside the time card period with no punch at all.
+    if (tcA && tcB) {
+      const punched = new Set(punches.map((x) => people.key(x.emp)));
+      const missingPeople = new Set<string>();
+      for (const s of p.schedule ?? []) {
+        if (s.day < startOfDay(tcA) || s.day > endOfDay(tcB)) continue;
+        const kk = people.ofScheduleName(s.name);
+        get(kk).sched += (+People.endOf(s) - +s.start) / 3600000;
+        if (!punched.has(kk)) {
+          get(kk).noshow++;
+          if (!missingPeople.has(kk)) {
+            missingPeople.add(kk);
+            findings.push({ sev: 'medium', emp: kk, when: null, what: 'On the schedule, not on the time card', detail: `"${s.name}" is scheduled in this period but never clocked in. A different name on the time card, or not clocking in at all?` });
+          }
+          continue;
+        }
+        if (!used.has(s)) {
+          get(kk).noshow++;
+          findings.push({ sev: 'low', emp: kk, when: s.start, what: 'Scheduled, no clock-in', detail: `${fmtDay(s.day)} ${s.meal.toLowerCase()} ${s.raw}: no punch that matches. Swapped shifts, or forgot to clock in?` });
+        }
+      }
+    }
+    const rows: EmpRow[] = [...per.entries()]
+      .filter(([, g]) => g.worked > 0 || g.sched > 0)
+      .map(([k, g]) => ({
+        emp: k,
+        values: {
+          sched: Math.round(g.sched * 10) / 10,
+          worked: Math.round(g.worked * 10) / 10,
+          extra: Math.round(g.extra * 10) / 10,
+          extraPct: g.sched >= 8 ? (g.extra / g.sched) * 100 : null,
+          over: g.over,
+          late: median(g.lates),
+          unsched: g.unsched,
+          noshow: g.noshow,
+        },
+      }))
+      .sort((a, b) => (b.values.extra ?? 0) - (a.values.extra ?? 0));
+    const totalExtra = rows.reduce((s, r) => s + (r.values.extra ?? 0), 0);
+    return {
+      period: periodText(tcA, tcB),
+      summary: [
+        `${totalExtra.toFixed(1)} hours were clocked outside scheduled shifts (beyond ${GRACE_MIN} minutes' grace) by people on the schedule.`,
+        'Kitchen staff are not on the schedule, so they are not included.',
+      ],
+      metrics: [
+        { key: 'sched', label: 'Scheduled hours', fmt: 'num', help: 'Hours on the schedule in the time card period (C shifts end at close).' },
+        { key: 'worked', label: 'Clocked hours', fmt: 'num', help: 'Hours on the time card.' },
+        { key: 'extra', label: 'Extra hours', fmt: 'num', help: 'Time clocked before the scheduled start or after the scheduled end, beyond the grace period.' },
+        { key: 'extraPct', label: 'Extra vs scheduled', fmt: 'pct', help: 'Extra hours as a % of scheduled hours (8+ scheduled hours needed).' },
+        { key: 'over', label: 'Late clock-outs', fmt: 'num', help: `Shifts clocked out more than ${GRACE_MIN} minutes after the scheduled end.` },
+        { key: 'late', label: 'Typical overstay (min)', fmt: 'num', help: 'Median minutes past the scheduled end, on late clock-outs.' },
+        { key: 'unsched', label: 'Unscheduled shifts', fmt: 'num', help: 'Shifts worked on a day with nothing on the schedule.' },
+        { key: 'noshow', label: 'Scheduled, no punch', fmt: 'num', help: 'Scheduled shifts with no clock-in.' },
       ],
       rows,
       findings,
@@ -524,79 +698,150 @@ const voids: Check = {
   },
 };
 
-// ---- 6. Discounts -------------------------------------------------------------------------
+// ---- 6. Discounts (house policy) ----------------------------------------------------------------
+//
+// Off-duty 10%: employees and immediate family (parents, siblings, spouse, children) dining outside
+//   working hours. The note must name the employee and the relationship ("MARIA SELF", "MARIA MOTHER").
+// On-duty 20%: food the employee orders and eats themselves (take-out included) during their scheduled shift.
 
-const NOTE_KIND: [RegExp, string][] = [
-  [/FAMIL|COUSIN|FRIEND|MOM|DAD|SISTER|BROTHER|WIFE|HUSBAND|GIRLFRIEND|BOYFRIEND|TIA|TIO|PRIM[OA]|AMIG/i, 'family/friends'],
-  [/EMP|MPLOY|PLOYE|EMOL|WORK|WOKER|WROKER|STAFF/i, 'employee'],
-  [/ANTS?\b|HAIR|BUG|COLD|LATE|WRONG|COMPLAIN|BURN|RAW|SICK|WAIT|MISTAKE|SORRY/i, 'complaint'],
-  [/COUPON|PROMO|YELP|GROUPON|BIRTHDAY|BDAY|REVIEW|GOOGLE|VIP|MILITARY|POLICE|FIRE|NURSE|TEACHER|STUDENT|SENIOR/i, 'promotion'],
-];
+const IMMEDIATE = /\b(SELF|ME|MOM|MOTHER|MAMA|MADRE|DAD|FATHER|PAPA|PADRE|PARENTS?|SISTER|SIS|HERMANA|BROTHER|BRO|HERMANO|SIBLINGS?|SPOUSE|WIFE|ESPOSA|HUSBAND|ESPOSO|SON|HIJO|DAUGHTER|HIJA|CHILD|CHILDREN|KIDS?)\b/;
+const NOT_IMMEDIATE = /\b(COUSIN|PRIM[OA]|FRIENDS?|AMIG[OA]S?|AUNT|TIA|UNCLE|TIO|NIECE|NEPHEW|SOBRIN[OA]|GRAND\w*|ABUEL[OA]|GIRLFRIEND|BOYFRIEND|GF|BF|NOVI[OA]|IN-?LAWS?|SUEGR[OA]|CUÑAD[OA]|CUNAD[OA]|BABYSITTER|NEIGHBOU?R|COWORKER)\b/;
+const DRINK = /SODA|COKE|SPRITE|FANTA|PEPSI|\bTEA\b|COFFEE|LEMONADE|JUICE|WATER|ARNOLD|RAMUNE|MILKIS|SMOOTHIE|SLUSH|DRINK/i;
+const ALCOHOL = /BEER|DRAFT|SOJU|WINE|GLASS\)|BOTTLE|PITCHER|SAKE|MAKGEOLLI|COCKTAIL|MARGARITA|SAPPORO|ASAHI|COORS|LAGUNITAS|HITE|CASS|TERRA|\bIPA\b|SHOT|HIGHBALL|CHAR\. HOUSE|CAB\b|CABERNET|CHARDONNAY|MOSCATO|SAU\. BL|PINOT|MERLOT/i;
+
 export function noteKind(note: string): string {
-  if (!note.trim()) return 'no note';
-  for (const [re, k] of NOTE_KIND) if (re.test(note)) return k;
+  const n = note.toUpperCase();
+  if (!n.trim()) return 'no note';
+  if (NOT_IMMEDIATE.test(n) || /FAMIL/.test(n)) return 'family/friends';
+  if (IMMEDIATE.test(n)) return 'employee + family';
+  if (/EMP|MPLOY|PLOYE|EMOL|WORK|WOKER|WROKER|STAFF/.test(n)) return 'employee';
+  if (/ANTS?\b|HAIR|BUG|COLD|LATE|WRONG|COMPLAIN|BURN|RAW|SICK|WAIT|MISTAKE|SORRY/.test(n)) return 'complaint';
+  if (/COUPON|PROMO|YELP|GROUPON|BIRTHDAY|BDAY|REVIEW|GOOGLE|VIP|MILITARY|POLICE|FIRE|NURSE|TEACHER|STUDENT|SENIOR/.test(n)) return 'promotion';
   return 'other (name?)';
+}
+
+/** Employee named in a discount note: a known first name (and surname hint) among its words. */
+function namedEmployee(note: string, people: People, placer = '', ignore: string[] = []): string | null {
+  const words = note.toUpperCase().replace(/[^A-Z\s]/g, ' ').split(/\s+/).filter((w) => w.length >= 3 && !ignore.includes(w));
+  const firsts = people.firstNames();
+  for (let i = 0; i < words.length; i++) {
+    const ks = firsts.get(words[i]);
+    if (!ks?.length) continue;
+    if (ks.length === 1) return ks[0];
+    const hint = words[i + 1];
+    const hit = hint ? ks.filter((k) => k.split(' ').slice(1).some((w) => w.startsWith(hint.slice(0, 3)))) : [];
+    if (hit.length === 1) return hit[0];
+    // Two people share the first name: the one who rang it in is the likeliest.
+    return ks.includes(placer) ? placer : ks[0];
+  }
+  return null;
 }
 
 const discounts: Check = {
   id: 'discounts',
   group: 'Free food and discounts',
-  title: 'Discounts',
-  question: 'Discounts given without a reason, for friends and family, or bigger than the button says (a "10%" that comes out at 50%) are the easiest way to give guests free food in return for a better tip.',
-  how: 'Per discount: its note is sorted into employee / family-friends / complaint / promotion / other / none, and its size is compared with the % in its name. Per person: discounts and discount dollars per 100 checks closed.',
+  title: 'Discounts and the employee policy',
+  question:
+    'Checks each discount against the house policy. 10% off-duty: employee or immediate family, outside working hours, with "NAME RELATIONSHIP" in the note. 20% on-duty: food the employee eats themselves during their scheduled shift. Also discounts with no reason or bigger than their button.',
+  how: 'The note is read for an employee\'s first name and a relationship word. Working hours come from the time card (clocked in) or the schedule (scheduled shift); a day neither covers is marked "can\'t verify". Drinks and alcohol on a 20% check, or a 20% on a dine-in table with a large check, suggest it wasn\'t just the employee\'s own food.',
   needs: ['discounts', 'salesByDate'],
   run(p, people) {
     const ds = p.discounts ?? [];
     const findings: Finding[] = [];
-    const per = new Map<string, { n: number; amt: number; noNote: number; family: number }>();
+    const per = new Map<string, { n: number; amt: number; breaks: number; noNote: number }>();
+    const flag = (f: Finding) => findings.push(f);
+    const nameless = new Map<string, number>();
+    const unverified = new Map<string, number>();
     for (const d of ds) {
       if (d.amount <= 0) continue;
       const k = people.key(d.placedBy);
-      const kind = noteKind(d.note);
-      const g = per.get(k) ?? { n: 0, amt: 0, noNote: 0, family: 0 };
+      const g = per.get(k) ?? { n: 0, amt: 0, breaks: 0, noNote: 0 };
       g.n++;
       g.amt += d.amount;
-      if (kind === 'no note') g.noNote++;
-      if (kind === 'family/friends' || kind === 'other (name?)') g.family++;
       per.set(k, g);
+      const before = findings.length;
       const label = /(\d+)\s*%/.exec(d.name)?.[1];
       const base = d.itemsAmount;
       const realPct = base > 0 ? (d.amount / base) * 100 : null;
+      const note = d.note.toUpperCase();
       const where = `${d.table || 'Check'}: ${money(d.amount)} off ${money(base)}${d.name ? ` (${d.name.replace(/[<>]/g, '')})` : ''}${d.note ? `, note "${d.note}"` : ', no note'}.`;
+      const base0 = { emp: k, when: d.placed, amount: d.amount, ref: d.ticket };
       if (label && realPct !== null && realPct > +label + 10 && d.amount >= 5) {
         const twice = realPct <= 2 * +label + 1.5;
-        findings.push({
-          sev: twice ? 'medium' : 'high',
-          emp: k,
-          when: d.placed,
-          what: twice ? 'Discount applied twice?' : 'Discount bigger than its label',
-          detail: `${where} That is ${pct(realPct)}, not ${label}%.`,
-          amount: d.amount,
-          ref: d.ticket,
-        });
-      } else if (kind === 'family/friends' || kind === 'other (name?)') {
-        findings.push({ sev: 'medium', emp: k, when: d.placed, what: 'Discount for family/friends?', detail: where, amount: d.amount, ref: d.ticket });
-      } else if (kind === 'no note') {
-        findings.push({ sev: d.amount >= 10 ? 'medium' : 'low', emp: k, when: d.placed, what: 'Discount with no reason', detail: where, amount: d.amount, ref: d.ticket });
-      } else if (d.amount >= 20) {
-        findings.push({ sev: 'medium', emp: k, when: d.placed, what: 'Large discount', detail: where, amount: d.amount, ref: d.ticket });
+        flag({ ...base0, sev: twice ? 'medium' : 'high', what: twice ? 'Discount applied twice?' : 'Discount bigger than its label', detail: `${where} That is ${pct(realPct)}, not ${label}%.` });
       }
+      const named = namedEmployee(d.note, people, k);
+      const duty = (who: string) => people.onDuty(who, d.placed);
+      const dutyText = (s: string) => (s === 'clocked' ? 'was clocked in' : s === 'scheduled' ? 'was on a scheduled shift' : 'was not working');
+      if (label === '10') {
+        const rel = NOT_IMMEDIATE.exec(note)?.[1] ?? (/FAMIL/.test(note) ? 'FAMILY' : null);
+        if (rel) {
+          flag({ ...base0, sev: 'high', what: 'Off-duty 10% for someone not eligible', detail: `${where} "${rel}" is not immediate family: the 10% covers the employee, parents, siblings, spouse and children only.` });
+        } else if (!named || !IMMEDIATE.test(note)) {
+          flag({ ...base0, sev: 'medium', what: 'Off-duty 10% note incomplete', detail: `${where} The note should name the employee and the relationship, e.g. "MARIA SELF" or "MARIA MOTHER".` });
+        }
+        const who = named ?? null;
+        if (who) {
+          const s = duty(who);
+          if (s === 'clocked' || s === 'scheduled')
+            flag({
+              ...base0,
+              sev: s === 'clocked' ? 'high' : 'medium',
+              what: 'Off-duty 10% while on duty',
+              detail: `${where} ${people.name(who)} ${dutyText(s)} at ${fmtTime(d.placed)}; the 10% is only for dining outside working hours.`,
+            });
+        }
+      } else if (label === '20') {
+        const who = named ?? k;
+        const s = duty(who);
+        if (s === 'off')
+          flag({ ...base0, sev: 'high', what: 'On-duty 20% outside a shift', detail: `${where} ${people.name(who)} was not clocked in at ${fmtTime(d.placed)}; the 20% is only during their scheduled shift.` });
+        else if (s === 'unscheduled')
+          flag({ ...base0, sev: 'medium', what: 'On-duty 20% outside a shift', detail: `${where} ${people.name(who)} was not on the schedule at ${fmtTime(d.placed)} (no time card for that day to confirm; shifts may have been swapped).` });
+        else if (s === 'unknown') unverified.set(who, (unverified.get(who) ?? 0) + 1);
+        const other = NOT_IMMEDIATE.exec(note)?.[1] ?? (/FAMIL/.test(note) ? 'FAMILY' : null) ?? IMMEDIATE.exec(note.replace(/\bSELF\b|\bME\b/g, ''))?.[1] ?? null;
+        if (other)
+          flag({ ...base0, sev: 'high', what: 'On-duty 20% for someone else', detail: `${where} The note says "${other}": the 20% is only for the employee's own food. Family can get the 10% when the employee is off duty.` });
+        const booze = d.items.filter((i) => ALCOHOL.test(i.menu));
+        const drinks = d.items.filter((i) => DRINK.test(i.menu) && !ALCOHOL.test(i.menu));
+        if (booze.length) flag({ ...base0, sev: 'high', what: 'On-duty 20% on alcohol', detail: `${where} Includes ${booze.map((i) => i.menu).join(', ')}. The 20% is for food only.` });
+        else if (drinks.length) flag({ ...base0, sev: 'low', what: 'On-duty 20% on drinks', detail: `${where} Includes ${drinks.map((i) => i.menu).join(', ')}. The policy covers food.` });
+        if (!/take\s*out|to\s*go/i.test(d.table) && base >= 45)
+          flag({ ...base0, sev: 'medium', what: 'On-duty 20% on a guest-sized check', detail: `${where} A ${money(base)} dine-in check looks like more than one employee's own meal.` });
+        if (!named) nameless.set(k, (nameless.get(k) ?? 0) + 1);
+      } else {
+        const kind = noteKind(d.note);
+        if (kind === 'no note') flag({ ...base0, sev: d.amount >= 10 ? 'medium' : 'low', what: 'Discount with no reason', detail: where });
+        else if (kind === 'family/friends' || kind === 'other (name?)') flag({ ...base0, sev: 'medium', what: 'Discount for family/friends?', detail: where });
+        else if (d.amount >= 20) flag({ ...base0, sev: 'medium', what: 'Large discount', detail: where });
+      }
+      if (!d.note.trim()) g.noNote++;
+      if (findings.slice(before).some((f) => f.sev !== 'low')) g.breaks++;
     }
+    nameless.forEach((n, k) =>
+      findings.push({ sev: 'low', emp: k, when: null, what: "20% notes don't say who", detail: `${n} on-duty discount${n > 1 ? 's' : ''} rung by ${people.name(k)} don't name the employee; they were checked against ${people.name(k)}. Ask staff to write their name.` }),
+    );
+    unverified.forEach((n, k) =>
+      findings.push({ sev: 'low', emp: k, when: null, what: "Can't verify the shift", detail: `${n} on-duty discount${n > 1 ? 's' : ''} for ${people.name(k)} on days with no time card or schedule (or not on either report).` }),
+    );
     const [a, b] = span(ds.map((d) => d.placed));
     const servers = people.servers(a, b);
     const rows: EmpRow[] = servers.map((k) => {
-      const g = per.get(k) ?? { n: 0, amt: 0, noNote: 0, family: 0 };
+      const g = per.get(k) ?? { n: 0, amt: 0, breaks: 0, noNote: 0 };
       const checks = people.checks(k, a, b);
-      return { emp: k, values: { checks, n: g.n, amt: g.amt, per100: per100(g.n, checks), amt100: per100(g.amt, checks), noNote: g.noNote, family: g.family } };
+      return { emp: k, values: { checks, n: g.n, amt: g.amt, per100: per100(g.n, checks), amt100: per100(g.amt, checks), breaks: g.breaks, breakPct: g.n >= 5 ? (g.breaks / g.n) * 100 : null } };
     });
-    rows.sort((x, y) => (y.values.amt100 ?? 0) - (x.values.amt100 ?? 0));
+    rows.sort((x, y) => (y.values.breaks ?? 0) - (x.values.breaks ?? 0));
     const total = [...per.values()].reduce((s, g) => s + g.amt, 0);
+    const broken = [...per.values()].reduce((s, g) => s + g.breaks, 0);
     const byKind = new Map<string, number>();
     ds.forEach((d) => d.amount > 0 && byKind.set(noteKind(d.note), (byKind.get(noteKind(d.note)) ?? 0) + d.amount));
     return {
       period: periodText(a, b),
       summary: [
-        `${money(total)} in discounts. By note: ${[...byKind.entries()].sort((x, y) => y[1] - x[1]).map(([k, v]) => `${k} ${money(v)}`).join(' · ')}.`,
+        `${money(total)} in discounts on ${ds.filter((d) => d.amount > 0).length} checks; ${broken} of them don't follow the policy or need a closer look.`,
+        `By note: ${[...byKind.entries()].sort((x, y) => y[1] - x[1]).map(([k, v]) => `${k} ${money(v)}`).join(' · ')}.`,
+        people.hasSchedule() || p.timecard ? 'On/off duty is checked with the time card and the schedule.' : 'Load the Time Card and the shift schedule to check whether discounts were used on or off duty.',
       ],
       metrics: [
         { key: 'checks', label: 'Checks closed', fmt: 'num', help: 'Checks this person closed in the period.' },
@@ -604,8 +849,8 @@ const discounts: Check = {
         { key: 'amt', label: 'Value', fmt: 'money', help: 'Total discounted.' },
         { key: 'per100', label: 'Per 100 checks', fmt: 'num', worse: 'high', help: 'Discounts per 100 checks closed.' },
         { key: 'amt100', label: '$ per 100 checks', fmt: 'money', worse: 'high', help: 'Discount dollars per 100 checks closed.' },
-        { key: 'noNote', label: 'No note', fmt: 'num', help: 'Discounts without a reason.' },
-        { key: 'family', label: 'Family / names', fmt: 'num', help: 'Notes that mention family, friends or a name.' },
+        { key: 'breaks', label: 'Policy problems', fmt: 'num', help: 'Discounts they rang that break the policy or need a look (amber or red).' },
+        { key: 'breakPct', label: '% with problems', fmt: 'pct', worse: 'high', help: 'Share of their discounts with a policy problem (5+ discounts needed).' },
       ],
       rows,
       findings,
@@ -836,7 +1081,7 @@ const logins: Check = {
   },
 };
 
-export const CHECKS: Check[] = [timecards, tipsPool, gratuity, lateCancels, voids, discounts, freeItems, tipsForFreebies, logins];
+export const CHECKS: Check[] = [timecards, overstay, tipsPool, gratuity, lateCancels, voids, discounts, freeItems, tipsForFreebies, logins];
 
 // ---- Overview: who stands out --------------------------------------------------------------------
 
@@ -871,7 +1116,7 @@ export function overview(results: Record<string, CheckResult>): Overview {
     const r = results[c.id];
     if (!r) continue;
     for (const m of r.metrics) {
-      if (!m.worse) continue;
+      if (!m.worse || m.inOverview === false) continue;
       const id = `${c.id}.${m.key}`;
       const zs = robustZ(r.rows.map((row) => row.values[m.key] ?? null));
       if (zs.every((x) => x === null)) continue;

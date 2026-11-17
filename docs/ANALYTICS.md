@@ -3,7 +3,7 @@
 The **Analytics** tab appears only for the owner account. It reads POS back-office exports
 **in the browser**: nothing is uploaded, stored or sent anywhere, and closing the page clears it.
 
-## Files to export (8)
+## Files to load (8 POS exports + the schedule)
 
 Use the same date range for every file; the last 60–90 days works best. Each file is recognized by
 the title in its first cell, so file names don't matter.
@@ -18,6 +18,12 @@ the title in its first cell, so file names don't matter.
 | Void Detail | Paid checks voided (cash voids especially) |
 | Sales Discount Report | Discounts, their notes, and discounts bigger than their label |
 | Item Price Change History | Prices lowered or set to $0 |
+| **Shift schedule** (your weekly schedule workbook, one tab per week) | Roles (only scheduled Servers are compared as servers), scheduled shifts for overstays, and on/off duty for employee discounts |
+
+The schedule workbook is recognized by its layout: a "Name" column, a date above each day's Lunch and
+Dinner columns, role groups in the first column (Server, F/R Busser, Host, Bartender). Times have no
+AM/PM (`11:00-4:00` is 11 AM–4 PM, `4:00-9:00` is 4–9 PM), `C` means until close (treated as 10:00 PM,
+the usual closing clock-out), and a prefix like `H)` means that shift is worked as Host.
 
 Not needed (the same data is in the files above): **Detailed Sales List 2**, **Sales Record by
 Employee**, **Sales Record by Person Ordering**. The page recognizes and skips them.
@@ -26,12 +32,13 @@ Employee**, **Sales Record by Person Ordering**. The page recognizes and skips t
 
 | Check | Looks for |
 |---|---|
-| Missed clock-outs | Shifts with no clock-out, over 14 hours, or ending on a later day (with a suggested clock-out time); very long shifts, accidental punches, overlaps, edits |
+| Missed clock-outs | Shifts with no clock-out, over 14 hours, or ending on a later day (suggested clock-out: the scheduled end, else the person's usual time); very long shifts, accidental punches, overlaps, edits |
+| Stayed past their shift | Clock-outs 15+ minutes after the scheduled end, early clock-ins, clocking back in after a shift, no clock-out between lunch and dinner, unscheduled shifts, scheduled shifts with no punch |
 | Tips kept out of the pool | Cash tips entered vs what the person's card tip rate suggests; cash and card checks closed with a $0 tip |
 | Large parties without the 18% | 5+ AYCE dinners but fewer than 5 guests entered; parties of 5+ tipped under 17.5% |
 | Items taken off after they were served | Items cancelled 20+ minutes after ordering; Ultimate switched to Premium; adult AYCE changed to a child price |
 | Paid checks voided | Voided checks, with cash-paid ones in red |
-| Discounts | No reason, family/friends notes, discounts bigger than their label |
+| Discounts and the employee policy | **Off-duty 10%**: only employee + immediate family (parents, siblings, spouse, children), outside working hours, note "NAME RELATIONSHIP". **On-duty 20%**: only the employee's own food during their scheduled shift (flags: outside a shift, for someone else, alcohol/drinks, guest-sized dine-in checks). Also discounts with no reason or bigger than their button |
 | Free or cheaper items | Price changes down, items rung at $0 or below their usual price, employee items rung in bulk |
 | Bigger tips when something was free | Tip % on a server's checks with something free vs their other checks |
 | Checks outside shifts and shared logins | Checks closed while the server wasn't clocked in; checks under shared logins |

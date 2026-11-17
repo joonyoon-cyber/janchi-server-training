@@ -87,7 +87,10 @@ function MetricTable({ result, people }: { result: CheckResult; people: People }
         <tbody>
           {result.rows.map((r, i) => (
             <tr key={r.emp} className="border-t border-slate-800/80">
-              <td className="whitespace-nowrap px-3 py-1.5 font-medium">{people.name(r.emp)}</td>
+              <td className="whitespace-nowrap px-3 py-1.5 font-medium">
+                {people.name(r.emp)}
+                {people.role(r.emp) && <span className="ml-2 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-normal text-slate-400">{people.role(r.emp)}</span>}
+              </td>
               {result.metrics.map((m) => (
                 <td key={m.key} className={`whitespace-nowrap px-2 py-1.5 text-right tabular-nums ${zClass(z[m.key]?.[i])}`}>
                   {fmtValue(r.values[m.key], m.fmt)}
@@ -294,7 +297,7 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
 
   const extras = files.filter((f) => f.kind && EXTRA_REPORTS.some((x) => x.kind === f.kind));
   const errors = files.filter((f) => f.error);
-  const loadedRanges = files.filter((f) => f.from && f.to && REPORTS.some((r) => r.kind === f.kind));
+  const loadedRanges = files.filter((f) => f.from && f.to && f.kind !== 'schedule' && REPORTS.some((r) => r.kind === f.kind));
   const spans = loadedRanges.map((f) => Math.round((+f.to! - +f.from!) / 86400000));
   const anyReady = CHECKS.some(ready);
   const cur = view && view !== 'overview' ? CHECKS.find((c) => c.id === view) : null;
@@ -346,7 +349,7 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
         >
           <div className="text-3xl">📂</div>
           <div className="font-semibold">{busy ? 'Reading…' : 'Drop the .xlsx files here, or click to choose'}</div>
-          <div className="text-xs text-slate-400">Select several at once. Each file is recognized by its title, so file names don't matter.</div>
+          <div className="text-xs text-slate-400">Select several at once, including the weekly schedule workbook. Each file is recognized by its contents, so file names don't matter.</div>
           <input
             ref={input}
             data-testid="file-input"

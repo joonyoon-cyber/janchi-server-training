@@ -28,25 +28,53 @@ function colIndex(ref: string): number {
   return n - 1;
 }
 
-/**
- * Read the first worksheet of an .xlsx file into rows of cells.
- * Small and dependency-light on purpose: the POS exports are plain single-sheet tables.
- * Their size metadata is often wrong, so every cell is read from its own reference.
- */
-export function readXlsx(data: ArrayBuffer | Uint8Array): Cell[][] {
+export interface Sheet {
+  name: string;
+  rows: Cell[][];
+}
+
+/** Read every worksheet of an .xlsx file, in workbook order, with their tab names. */
+export function readWorkbook(data: ArrayBuffer | Uint8Array): Sheet[] {
   const files = unzipSync(data instanceof Uint8Array ? data : new Uint8Array(data));
   const dec = new TextDecoder();
-  const sheetName =
-    Object.keys(files)
-      .filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/i.test(n))
-      .sort((a, b) => parseInt(a.replace(/\D/g, ''), 10) - parseInt(b.replace(/\D/g, ''), 10))[0] ?? '';
-  if (!sheetName) throw new Error('This file has no worksheet. Is it an Excel (.xlsx) export?');
+  const find = (re: RegExp) => Object.keys(files).find((n) => re.test(n));
+  const sheetFiles = Object.keys(files)
+    .filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/i.test(n))
+    .sort((a, b) => parseInt(a.replace(/\D/g, ''), 10) - parseInt(b.replace(/\D/g, ''), 10));
+  if (!sheetFiles.length) throw new Error('This file has no worksheet. Is it an Excel (.xlsx) export?');
 
   const shared: string[] = [];
-  const ss = Object.keys(files).find((n) => /^xl\/sharedStrings\.xml$/i.test(n));
+  const ss = find(/^xl\/sharedStrings\.xml$/i);
   if (ss) for (const m of dec.decode(files[ss]).matchAll(/<si>([\s\S]*?)<\/si>/g)) shared.push(textOf(m[1]));
 
-  const xml = dec.decode(files[sheetName]);
+  // Tab names and order come from workbook.xml + its relationships.
+  const order: { name: string; file: string }[] = [];
+  const wb = find(/^xl\/workbook\.xml$/i);
+  const rels = find(/^xl\/_rels\/workbook\.xml\.rels$/i);
+  if (wb && rels) {
+    const target = new Map<string, string>();
+    for (const m of dec.decode(files[rels]).matchAll(/<Relationship\b([^>]*)\/?>/g)) {
+      const id = /\bId="([^"]+)"/.exec(m[1])?.[1];
+      const t = /\bTarget="([^"]+)"/.exec(m[1])?.[1];
+      if (id && t) target.set(id, t.replace(/^\/?(xl\/)?/, 'xl/'));
+    }
+    for (const m of dec.decode(files[wb]).matchAll(/<sheet\b([^>]*)\/?>/g)) {
+      const name = decode(/\bname="([^"]*)"/.exec(m[1])?.[1] ?? '');
+      const id = /\br:id="([^"]+)"/.exec(m[1])?.[1];
+      const file = id ? target.get(id) : undefined;
+      if (file && files[file]) order.push({ name, file });
+    }
+  }
+  if (!order.length) sheetFiles.forEach((f, i) => order.push({ name: `Sheet${i + 1}`, file: f }));
+  return order.map(({ name, file }) => ({ name, rows: readSheet(dec.decode(files[file]), shared) }));
+}
+
+/** Read the first worksheet of an .xlsx file into rows of cells. */
+export function readXlsx(data: ArrayBuffer | Uint8Array): Cell[][] {
+  return readWorkbook(data)[0].rows;
+}
+
+function readSheet(xml: string, shared: string[]): Cell[][] {
   const rows: Cell[][] = [];
   for (const rm of xml.matchAll(/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g)) {
     const rAttr = /\br="(\d+)"/.exec(rm[1]);
