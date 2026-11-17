@@ -174,18 +174,16 @@ describe('anomaly checks', () => {
     expect(r.findings.map((f) => f.what).sort()).toEqual(['Item rung at $0', 'Price changed to $0']);
   });
 
-  it('compares cash tips entered with the card tip rate', () => {
-    const day = (emp: string, cash: number, card: number) => ({ day: d('2026-11-01'), emp, checks: 100, cash, card, tip: 0, total: cash + card });
-    const tip = (emp: string, cash: number, card: number, i: number) => ({ emp, added: d('2026-11-01 20:00'), receipt: `20261101100${i}`, cash, card, total: cash + card });
-    const p: Parsed = {
-      salesByDate: [day('PAT DOE', 2000, 11500), day('SAM ROE', 2000, 11500)],
-      tips: [tip('PAT DOE', 20, 1500, 1), tip('SAM ROE', 300, 1500, 2)],
-      sales: [],
-    };
-    const r = run('tips-pool', p);
-    const pat = r.rows.find((x) => x.emp === 'PAT DOE')!;
-    expect(pat.values.capture).toBeCloseTo(6.67, 1);
-    expect(r.findings.find((f) => f.what === 'Cash tips not entered')?.emp).toBe('PAT DOE');
+  it('flags $0 card tips without the automatic 18% (likely cash tips)', () => {
+    const sales = [
+      receipt(1, 'PAT', { tip: 0, card: 90 }),
+      receipt(2, 'PAT', { tip: 15, card: 105 }),
+      receipt(3, 'PAT', { persons: 6, tip: 0, card: 300 }), // automatic 18% table: not counted
+      receipt(4, 'PAT', { tip: 0, cash: 90, card: 0 }), // cash: not counted
+    ];
+    const r = run('tips-pool', { sales });
+    expect(r.findings.map((f) => f.what)).toEqual(['$0 card tip (cash tip?)']);
+    expect(r.findings[0].ref).toBe(sales[0].receipt);
   });
 
   it('robust z-scores point at the outlier', () => {
@@ -290,14 +288,14 @@ describe('shift schedule', () => {
       schedule: [shift('Pat', '4:00-9:00', 2, 'Dinner'), shift('Pat', '5:00-C', 3, 'Dinner'), shift('Pat', '4:00-9:00', 4, 'Dinner'), shift('Pat', '4:00-9:00', 6, 'Dinner')],
       timecard: [
         punch('PAT DOE', '2026-11-02 16:00', '2026-11-02 21:05'), // fine
-        punch('PAT DOE', '2026-11-03 17:00', '2026-11-03 23:10'), // 70 min past close
+        punch('PAT DOE', '2026-11-03 17:00', '2026-11-03 23:10'), // closes 10 PM: 70 min after closing
         punch('PAT DOE', '2026-11-05 16:00', '2026-11-05 21:00'), // not scheduled that day
       ],
     };
     const r = run('overstay', p);
     expect(r.findings.map((f) => [f.what, f.sev])).toEqual(
       expect.arrayContaining([
-        ['Clocked out after the shift', 'high'],
+        ['Stayed long after closing', 'medium'],
         ['Worked an unscheduled shift', 'medium'],
         ['Scheduled, no clock-in', 'low'],
       ]),

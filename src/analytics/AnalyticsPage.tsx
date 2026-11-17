@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CHECKS, overview, robustZ, type Check, type CheckResult, type Finding, type Metric, type Severity } from './checks';
 import { People } from './people';
+import { FlaggedView, PersonView } from './PersonView';
 import { EXTRA_REPORTS, REPORTS, loadReport, type Kind, type LoadedFile, type Parsed } from './reports';
 
 const SEV: Record<Severity, { label: string; chip: string; dot: string }> = {
@@ -105,7 +106,7 @@ function MetricTable({ result, people }: { result: CheckResult; people: People }
   );
 }
 
-function Findings({ result, people, name }: { result: CheckResult; people: People; name: string }) {
+function Findings({ result, people, name, onPerson }: { result: CheckResult; people: People; name: string; onPerson?: (emp: string) => void }) {
   const [sev, setSev] = useState<Severity | 'all'>('all');
   const [who, setWho] = useState('');
   const [limit, setLimit] = useState(60);
@@ -170,7 +171,15 @@ function Findings({ result, people, name }: { result: CheckResult; people: Peopl
                     {SEV[f.sev].label}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-2 py-2 font-medium">{people.name(f.emp)}</td>
+                <td className="whitespace-nowrap px-2 py-2 font-medium">
+                  {onPerson ? (
+                    <button className="underline decoration-dotted underline-offset-2 hover:text-sky-200" onClick={() => onPerson(f.emp)}>
+                      {people.name(f.emp)}
+                    </button>
+                  ) : (
+                    people.name(f.emp)
+                  )}
+                </td>
                 <td className="whitespace-nowrap px-2 py-2 text-xs text-slate-400">{fmtWhen(f.when) || 'Whole period'}</td>
                 <td className="whitespace-nowrap px-2 py-2">{f.what}</td>
                 <td className="min-w-[18rem] px-2 py-2 text-slate-300">{f.detail}</td>
@@ -189,7 +198,7 @@ function Findings({ result, people, name }: { result: CheckResult; people: Peopl
   );
 }
 
-function OverviewView({ results, people }: { results: Record<string, CheckResult>; people: People }) {
+function OverviewView({ results, people, onPerson }: { results: Record<string, CheckResult>; people: People; onPerson: (emp: string) => void }) {
   const o = useMemo(() => overview(results), [results]);
   const ran = CHECKS.filter((c) => results[c.id] && c.id !== 'timecards').length;
   if (!o.people.length) return <div className="text-sm text-slate-400">Run the checks first (or load more files): this compares people across them.</div>;
@@ -219,7 +228,9 @@ function OverviewView({ results, people }: { results: Record<string, CheckResult
                 <td className="whitespace-nowrap px-3 py-2">
                   <div className="font-semibold">
                     {i < 3 && p.score >= 2 && <span className="mr-1">{['🔴', '🟠', '🟡'][i]}</span>}
-                    {people.name(p.emp)}
+                    <button className="underline decoration-dotted underline-offset-2 hover:text-sky-200" onClick={() => onPerson(p.emp)}>
+                      {people.name(p.emp)}
+                    </button>
                   </div>
                   {p.reasons.length > 0 && <div className="max-w-[16rem] whitespace-normal text-[11px] text-slate-400">{p.reasons.join(' · ')}</div>}
                 </td>
@@ -254,6 +265,7 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLElement>(null);
   const [runs, setRuns] = useState(0);
+  const [person, setPerson] = useState<string | null>(null);
   // Bring the results into view after each Run.
   useEffect(() => {
     if (runs) resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -294,13 +306,32 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
     setView('overview');
     setRuns((n) => n + 1);
   };
+  /** Run whatever hasn't run yet, so per-person and flagged views see every check. */
+  const ensureAll = () => {
+    const missing = CHECKS.filter((c) => ready(c) && !results[c.id]);
+    if (!missing.length) return;
+    const add: Record<string, CheckResult> = {};
+    missing.forEach((c) => (add[c.id] = c.run(parsed, people)));
+    setResults((old) => ({ ...old, ...add }));
+  };
+  const openPerson = (emp: string) => {
+    ensureAll();
+    setPerson(emp);
+    setView('person');
+    setRuns((n) => n + 1);
+  };
+  const openFlagged = () => {
+    ensureAll();
+    setView('flagged');
+    setRuns((n) => n + 1);
+  };
 
   const extras = files.filter((f) => f.kind && EXTRA_REPORTS.some((x) => x.kind === f.kind));
   const errors = files.filter((f) => f.error);
   const loadedRanges = files.filter((f) => f.from && f.to && f.kind !== 'schedule' && REPORTS.some((r) => r.kind === f.kind));
   const spans = loadedRanges.map((f) => Math.round((+f.to! - +f.from!) / 86400000));
   const anyReady = CHECKS.some(ready);
-  const cur = view && view !== 'overview' ? CHECKS.find((c) => c.id === view) : null;
+  const cur = view && !['overview', 'flagged', 'person'].includes(view) ? CHECKS.find((c) => c.id === view) : null;
   const curRes = cur ? results[cur.id] : null;
 
   return (
@@ -393,14 +424,39 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
       <section className="space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="text-lg font-bold">2 · Run the checks</h3>
-          <button
-            data-testid="run-all"
-            disabled={!anyReady}
-            className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/40 hover:bg-sky-500 disabled:opacity-40"
-            onClick={runAll}
-          >
-            Run all & see who stands out
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              data-testid="person-select"
+              disabled={!anyReady}
+              value=""
+              onChange={(e) => e.target.value && openPerson(e.target.value)}
+              className="rounded-full bg-slate-900 px-4 py-2 text-sm text-slate-200 ring-1 ring-slate-700 disabled:opacity-40"
+            >
+              <option value="">Look at one person…</option>
+              {people.everyone().map((k) => (
+                <option key={k} value={k}>
+                  {people.name(k)}
+                  {people.role(k) ? ` (${people.role(k)})` : ''}
+                </option>
+              ))}
+            </select>
+            <button
+              data-testid="flagged-all"
+              disabled={!anyReady}
+              className="rounded-full border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800 disabled:opacity-40"
+              onClick={openFlagged}
+            >
+              All flagged entries
+            </button>
+            <button
+              data-testid="run-all"
+              disabled={!anyReady}
+              className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/40 hover:bg-sky-500 disabled:opacity-40"
+              onClick={runAll}
+            >
+              Run all & see who stands out
+            </button>
+          </div>
         </div>
         {GROUPS.map((g) => (
           <div key={g}>
@@ -456,6 +512,14 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
               <button className={`rounded-full px-3 py-1 font-semibold ${view === 'overview' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-300'}`} onClick={() => setView('overview')}>
                 Who stands out
               </button>
+              <button className={`rounded-full px-3 py-1 font-semibold ${view === 'flagged' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-300'}`} onClick={() => setView('flagged')}>
+                All flagged entries
+              </button>
+              {person && (
+                <button className={`rounded-full px-3 py-1 font-semibold ${view === 'person' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-300'}`} onClick={() => setView('person')}>
+                  👤 {people.name(person)}
+                </button>
+              )}
               {CHECKS.filter((c) => results[c.id]).map((c) => (
                 <button key={c.id} className={`rounded-full px-3 py-1 font-semibold ${view === c.id ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-300'}`} onClick={() => setView(c.id)}>
                   {c.title}
@@ -466,8 +530,16 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
           {view === 'overview' ? (
             <>
               <h3 className="text-2xl font-black">Who stands out</h3>
-              <OverviewView results={results} people={people} />
+              <OverviewView results={results} people={people} onPerson={openPerson} />
             </>
+          ) : view === 'flagged' ? (
+            <>
+              <h3 className="text-2xl font-black">All flagged entries</h3>
+              <p className="text-sm text-slate-400">Every single entry the checks flagged, worst first. Click a name to see everything for that person.</p>
+              <FlaggedView results={results} people={people} onPerson={openPerson} />
+            </>
+          ) : view === 'person' && person ? (
+            <PersonView emp={person} parsed={parsed} people={people} results={results} />
           ) : cur && curRes ? (
             <>
               <div>
@@ -486,13 +558,13 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
               {/* For time cards the fixes are the point; elsewhere the team comparison comes first. */}
               {cur.id === 'timecards' ? (
                 <>
-                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} />
+                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
                   <MetricTable result={curRes} people={people} />
                 </>
               ) : (
                 <>
                   <MetricTable result={curRes} people={people} />
-                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} />
+                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
                 </>
               )}
             </>

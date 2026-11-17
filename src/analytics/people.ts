@@ -1,7 +1,11 @@
 import { personKey, type Parsed, type Receipt, type ScheduledShift } from './reports';
 
-/** Shifts marked C (until close) end at this time: the median clock-out on closing shifts. */
-export const CLOSE_HOUR = 22;
+/** Restaurant closing time: Mon–Sat 10:00 PM, Sunday 9:00 PM. Shifts marked C run until then. */
+export function closingTime(day: Date): Date {
+  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), day.getDay() === 0 ? 21 : 22, 0);
+}
+/** Closing duties after closing time that are normal for a C shift. */
+export const CLOSE_GRACE_MIN = 45;
 
 /** Shared logins like "Mnager Manager" or "Owner Owner" are not one person. */
 export function isGeneric(name: string): boolean {
@@ -132,9 +136,9 @@ export class People {
     return this.scheduled.get(key) ?? [];
   }
 
-  /** Scheduled end, with "until close" shifts ending at CLOSE_HOUR. */
+  /** Scheduled end; "until close" shifts end at closing time (10 PM, Sundays 9 PM). */
   static endOf(s: ScheduledShift): Date {
-    return s.end ?? new Date(s.day.getFullYear(), s.day.getMonth(), s.day.getDate(), CLOSE_HOUR, 0);
+    return s.end ?? closingTime(s.day);
   }
 
   inTimecard(t: Date): boolean {
@@ -151,12 +155,17 @@ export class People {
    */
   onDuty(key: string, t: Date): 'clocked' | 'scheduled' | 'off' | 'unscheduled' | 'unknown' {
     if ((this.shifts.get(key) ?? []).some(([a, b]) => +t >= a && +t <= b)) return 'clocked';
-    if (this.shiftsOf(key).some((x) => +t >= +x.start - 30 * 60000 && +t <= +People.endOf(x) + 60 * 60000)) return 'scheduled';
+    if (this.shiftsOf(key).some((x) => +t >= +x.start - 30 * 60000 && +t <= +People.endOf(x) + (x.end ? 30 : 30 + CLOSE_GRACE_MIN) * 60000)) return 'scheduled';
     // Someone on neither report (a shared login, a new hire) can't be judged.
     if (!this.shifts.has(key) && !this.scheduled.has(key)) return 'unknown';
     if (this.inTimecard(t)) return 'off';
     if (this.inSchedule(t)) return 'unscheduled';
     return 'unknown';
+  }
+
+  /** Everyone in the files except shared logins, by name. Scheduled staff first. */
+  everyone(): string[] {
+    return [...this.display.keys()].filter((k) => !isGeneric(k)).sort((a, b) => Number(!this.roles.has(a)) - Number(!this.roles.has(b)) || this.name(a).localeCompare(this.name(b)));
   }
 
   /** Every first name we know, for spotting names in discount notes. */

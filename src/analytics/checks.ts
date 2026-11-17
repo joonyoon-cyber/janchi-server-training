@@ -1,4 +1,4 @@
-import { CLOSE_HOUR, People, endOfDay, isGeneric, startOfDay } from './people';
+import { CLOSE_GRACE_MIN, People, closingTime, endOfDay, isGeneric, startOfDay } from './people';
 import { dayKey, type Kind, type Parsed, type Punch, type Receipt } from './reports';
 
 // ---- Result shapes --------------------------------------------------------------
@@ -202,7 +202,7 @@ const overstay: Check = {
   group: 'Time cards',
   title: 'Stayed past their shift',
   question: 'Compares each clock-in and clock-out with that person\'s scheduled shift: who keeps clocking out well after their shift ends, clocks in early, or works days they weren\'t scheduled.',
-  how: `Each punch is matched to the scheduled shift(s) it overlaps that day. Shifts marked C (until close) are treated as ending at ${CLOSE_HOUR - 12}:00 PM, the usual closing clock-out. Up to ${GRACE_MIN} minutes either way is not counted.`,
+  how: `Each punch is matched to the scheduled shift(s) it overlaps that day. Up to ${GRACE_MIN} minutes either way is not counted. Shifts marked C run until closing (10:00 PM, Sundays 9:00 PM) and closing duties vary, so closers get ${CLOSE_GRACE_MIN} minutes after closing and are also compared with the other closers that night.`,
   needs: ['timecard', 'schedule'],
   run(p, people) {
     const punches = (p.timecard ?? []).filter((x) => x.out && hoursOf(x)! <= 14 && hoursOf(x)! >= 0.1);
@@ -214,6 +214,16 @@ const overstay: Check = {
       return per.get(k)!;
     };
     const used = new Set<object>();
+    // Clock-outs of everyone on a closing (C) shift, per night, to compare closers with each other.
+    const closers = new Map<string, { k: string; out: Date }[]>();
+    for (const x of punches) {
+      const k = people.key(x.emp);
+      const c = people.shiftsOf(k).find((s) => !s.end && s.day.toDateString() === x.in.toDateString() && +x.out! > +s.start);
+      if (!c) continue;
+      const day = c.day.toDateString();
+      if (!closers.has(day)) closers.set(day, []);
+      closers.get(day)!.push({ k, out: x.out! });
+    }
     for (const x of punches) {
       const k = people.key(x.emp);
       const all = people.shiftsOf(k);
@@ -279,7 +289,28 @@ const overstay: Check = {
       const shiftText = match.map((s) => s.raw).join(' + ');
       const late = (+x.out! - +end) / 60000;
       const early = (+start - +x.in) / 60000;
-      if (late > GRACE_MIN) {
+      const closing = match.some((s) => !s.end) && +end === Math.max(...match.map((s) => +People.endOf(s)));
+      if (closing) {
+        const others = (closers.get(x.in.toDateString()) ?? []).filter((o) => o.k !== k);
+        const lastOther = others.length ? new Date(Math.max(...others.map((o) => +o.out))) : null;
+        const pastOthers = lastOther ? (+x.out! - +lastOther) / 60000 : null;
+        if (late > CLOSE_GRACE_MIN || (pastOthers !== null && pastOthers > 30 && late > GRACE_MIN)) {
+          const over = Math.max(0, late - CLOSE_GRACE_MIN);
+          g.over++;
+          g.extra += over / 60;
+          g.lates.push(late);
+          findings.push({
+            sev: late >= 90 || (pastOthers ?? 0) >= 60 ? 'high' : late >= 60 || (pastOthers ?? 0) >= 30 ? 'medium' : 'low',
+            emp: k,
+            when: x.in,
+            what: 'Stayed long after closing',
+            detail: `${fmtDay(x.in)}: closing shift (${shiftText}); closed at ${fmtTime(closingTime(x.in))}, clocked out ${fmtTime(x.out!)}: ${Math.round(late)} min after closing.${
+              lastOther ? ` The other closers that night left by ${fmtTime(lastOther)}${pastOthers! > 0 ? ` (${Math.round(pastOthers!)} min earlier)` : ''}.` : ' No one else closed that night.'
+            }`,
+            amount: over / 60,
+          });
+        }
+      } else if (late > GRACE_MIN) {
         g.over++;
         g.extra += late / 60;
         g.lates.push(late);
@@ -340,7 +371,7 @@ const overstay: Check = {
     return {
       period: periodText(tcA, tcB),
       summary: [
-        `${totalExtra.toFixed(1)} hours were clocked outside scheduled shifts (beyond ${GRACE_MIN} minutes' grace) by people on the schedule.`,
+        `${totalExtra.toFixed(1)} hours were clocked outside scheduled shifts by people on the schedule (beyond ${GRACE_MIN} minutes' grace, or ${CLOSE_GRACE_MIN} minutes after closing for closers).`,
         'Kitchen staff are not on the schedule, so they are not included.',
       ],
       metrics: [
@@ -348,7 +379,7 @@ const overstay: Check = {
         { key: 'worked', label: 'Clocked hours', fmt: 'num', help: 'Hours on the time card.' },
         { key: 'extra', label: 'Extra hours', fmt: 'num', help: 'Time clocked before the scheduled start or after the scheduled end, beyond the grace period.' },
         { key: 'extraPct', label: 'Extra vs scheduled', fmt: 'pct', help: 'Extra hours as a % of scheduled hours (8+ scheduled hours needed).' },
-        { key: 'over', label: 'Late clock-outs', fmt: 'num', help: `Shifts clocked out more than ${GRACE_MIN} minutes after the scheduled end.` },
+        { key: 'over', label: 'Late clock-outs', fmt: 'num', help: `Clocked out more than ${GRACE_MIN} minutes after a set end time, or more than ${CLOSE_GRACE_MIN} minutes after closing (or well after the other closers) on a C shift.` },
         { key: 'late', label: 'Typical overstay (min)', fmt: 'num', help: 'Median minutes past the scheduled end, on late clock-outs.' },
         { key: 'unsched', label: 'Unscheduled shifts', fmt: 'num', help: 'Shifts worked on a day with nothing on the schedule.' },
         { key: 'noshow', label: 'Scheduled, no punch', fmt: 'num', help: 'Scheduled shifts with no clock-in.' },
@@ -359,115 +390,118 @@ const overstay: Check = {
   },
 };
 
-// ---- 2. Tips kept out of the pool -------------------------------------------------------
+// ---- 2. Tips kept out of the pool -----------------------------------------------------------
+//
+// Cash tips are counted on paper, so the POS has no cash-tip amounts. What it does show:
+// card tips per check. A card check with no automatic 18% and a $0 tip most likely means the guest
+// tipped in cash; a server whose card tips are low for their sales may be steering tips into cash.
+
+/** Auto-gratuity (18%) is on the check: 5+ guests, or a tip of ~18% exactly. */
+const hasAutoTip = (r: Receipt) => r.persons >= 5 || (r.subtotal > 0 && Math.abs(r.tip / r.subtotal - 0.18) < 0.002);
 
 const tipsPool: Check = {
   id: 'tips-pool',
   group: 'Tips',
-  title: 'Tips kept out of the pool',
-  question: 'With pooled tips, every tip should be entered on the POS. Cash tips that are never entered, and card checks closed with no tip (the guest may have handed over cash), can go straight into a server\'s pocket.',
-  how: 'Cash tips entered ÷ cash sales is compared with the same person\'s card tip rate: if guests tip about the same either way, a big gap means cash tips are not being entered. "$0-tip checks" counts dine-in checks of $30+ closed with no tip at all (parties under 5).',
-  needs: ['tips', 'salesByDate', 'sales'],
+  title: 'Tips that may not reach the pool',
+  question:
+    'Cash tips are counted on paper, so only card tips show up here. A card check with no automatic 18% and a $0 tip usually means the guest left cash; a server with many of those, or with card tips that are low for their sales, deserves a look at whether that cash made it to the tip sheet.',
+  how: 'Dine-in checks of $20+ paid fully by card, without the automatic 18% (fewer than 5 guests). Per server: share with a $0 tip, share with a tip under 10%, and the median tip %. Over the longer Tips report period: card tips ÷ card sales. Cash share of sales is shown for context only.',
+  needs: ['sales'],
   run(p, people) {
+    const sales = p.sales ?? [];
+    const per = new Map<string, { n: number; zero: number; low: number; pcts: number[]; zeroAmt: number }>();
+    const findings: Finding[] = [];
+    for (const r of sales) {
+      if (!isDineIn(r) || r.subtotal < 20 || !(r.card > 0) || r.cash > 0 || hasAutoTip(r)) continue;
+      const k = people.ofReceipt(r);
+      if (isGeneric(k)) continue;
+      const g = per.get(k) ?? { n: 0, zero: 0, low: 0, pcts: [], zeroAmt: 0 };
+      const tp = tipPct(r)!;
+      g.n++;
+      g.pcts.push(tp);
+      if (r.tip === 0) {
+        g.zero++;
+        g.zeroAmt += r.subtotal;
+        findings.push({
+          sev: r.subtotal >= 100 ? 'medium' : 'low',
+          emp: k,
+          when: r.dt,
+          what: '$0 card tip (cash tip?)',
+          detail: `${r.table}, ${r.persons} guest${r.persons === 1 ? '' : 's'}: ${money(r.subtotal)} on card with no tip. If the guest left cash, it should be on the tip sheet for ${fmtDay(r.dt)}.`,
+          amount: r.subtotal,
+          ref: r.receipt,
+        });
+      } else if (tp < 10) {
+        g.low++;
+        findings.push({ sev: 'low', emp: k, when: r.dt, what: 'Very low card tip', detail: `${r.table}: ${money(r.tip)} (${pct(tp)}) on ${money(r.subtotal)}.`, amount: r.subtotal, ref: r.receipt });
+      }
+      per.set(k, g);
+    }
+    // Longer view: card tips vs card sales (Tips report + Sales by Employee Date).
+    const long = new Map<string, { cardTips: number; cardSales: number; cash: number; total: number }>();
     const tips = p.tips ?? [];
     const daily = p.salesByDate ?? [];
     const [a1, b1] = span(tips.map((t) => t.added));
     const [a2, b2] = span(daily.map((d) => d.day));
     const from = a1 && a2 ? (a1 > a2 ? a1 : a2) : null;
     const to = b1 && b2 ? (b1 < b2 ? b1 : b2) : null;
-    const inRange = (d: Date) => !!from && !!to && d >= startOfDay(from) && d <= endOfDay(to);
-    const servers = people.servers(from, to);
-    const agg = new Map<string, { cashSales: number; cardSales: number; cashTips: number; cardTips: number }>();
-    servers.forEach((k) => agg.set(k, { cashSales: 0, cardSales: 0, cashTips: 0, cardTips: 0 }));
-    daily.forEach((d) => {
-      const g = agg.get(people.key(d.emp));
-      if (g && inRange(d.day)) {
-        g.cashSales += d.cash;
+    if (from && to) {
+      const inRange = (d: Date) => d >= startOfDay(from) && d <= endOfDay(to);
+      daily.forEach((d) => {
+        if (!inRange(d.day)) return;
+        const k = people.key(d.emp);
+        const g = long.get(k) ?? { cardTips: 0, cardSales: 0, cash: 0, total: 0 };
         g.cardSales += d.card;
-      }
-    });
-    tips.forEach((t) => {
-      const g = agg.get(people.key(t.emp));
-      if (g && inRange(t.added)) {
-        g.cashTips += t.cash;
-        g.cardTips += t.card;
-      }
-    });
-    // Check level (Detailed Sales List): $0 tips on dine-in checks.
-    const zero = new Map<string, { cash: number; cashZero: number; card: number; cardZero: number }>();
-    const findings: Finding[] = [];
-    (p.sales ?? []).forEach((r) => {
-      if (!isDineIn(r) || r.subtotal < 30 || r.persons >= 5) return;
-      const k = people.ofReceipt(r);
-      if (!agg.has(k)) return;
-      if (!zero.has(k)) zero.set(k, { cash: 0, cashZero: 0, card: 0, cardZero: 0 });
-      const z = zero.get(k)!;
-      const cashPaid = r.cash > 0 && r.card === 0;
-      if (cashPaid) {
-        z.cash++;
-        if (r.tip === 0) z.cashZero++;
-      } else if (r.card > 0 && r.cash === 0) {
-        z.card++;
-        if (r.tip === 0) {
-          z.cardZero++;
-          if (r.subtotal >= 80) findings.push({ sev: 'low', emp: k, when: r.dt, what: '$0 tip on card', detail: `${r.table}, ${r.persons} guests, ${money(r.subtotal)} paid by card with no tip.`, amount: r.subtotal, ref: r.receipt });
-        }
-      }
-    });
-    const rows: EmpRow[] = [];
-    let missingTotal = 0;
-    for (const [k, g] of agg) {
-      const cardRate = g.cardSales - g.cardTips > 0 ? g.cardTips / (g.cardSales - g.cardTips) : null;
-      const cashRate = g.cashSales > 0 ? g.cashTips / g.cashSales : null;
-      const capture = cardRate && cashRate !== null && g.cashSales >= 1000 ? Math.min(150, (cashRate / cardRate) * 100) : null;
-      const missing = cardRate !== null ? Math.max(0, g.cashSales * cardRate - g.cashTips) : null;
-      if (missing) missingTotal += missing;
-      const z = zero.get(k);
-      rows.push({
+        g.cash += d.cash;
+        g.total += d.cash + d.card;
+        long.set(k, g);
+      });
+      tips.forEach((t) => {
+        if (!inRange(t.added)) return;
+        const g = long.get(people.key(t.emp));
+        if (g) g.cardTips += t.card;
+      });
+    } else if (daily.length) {
+      daily.forEach((d) => {
+        const k = people.key(d.emp);
+        const g = long.get(k) ?? { cardTips: 0, cardSales: 0, cash: 0, total: 0 };
+        g.cash += d.cash;
+        g.total += d.cash + d.card;
+        long.set(k, g);
+      });
+    }
+    const [a, b] = span(sales.map((r) => r.dt));
+    const keys = new Set([...people.servers(from ?? a, to ?? b), ...[...per.keys()].filter((k) => (per.get(k)?.n ?? 0) >= 20 && (!people.hasSchedule() || people.role(k) === 'Server'))]);
+    const rows: EmpRow[] = [...keys].map((k) => {
+      const g = per.get(k);
+      const l = long.get(k);
+      return {
         emp: k,
         values: {
-          cashSales: g.cashSales,
-          cashTips: g.cashTips,
-          cardRate: cardRate !== null ? cardRate * 100 : null,
-          cashRate: cashRate !== null ? cashRate * 100 : null,
-          capture,
-          missing,
-          cashZero: z && z.cash >= 5 ? (z.cashZero / z.cash) * 100 : null,
-          cardZero: z && z.card >= 20 ? (z.cardZero / z.card) * 100 : null,
+          n: g?.n ?? 0,
+          zero: g && g.n >= 20 ? (g.zero / g.n) * 100 : null,
+          low: g && g.n >= 20 ? ((g.zero + g.low) / g.n) * 100 : null,
+          med: g && g.n >= 20 ? median(g.pcts) : null,
+          longRate: l && from && l.cardSales - l.cardTips > 1000 ? (l.cardTips / (l.cardSales - l.cardTips)) * 100 : null,
+          cashShare: l && l.total > 1000 ? (l.cash / l.total) * 100 : null,
         },
-      });
-      if (capture !== null && capture < 35 && missing && missing > 100) {
-        findings.push({
-          sev: capture < 20 ? 'high' : 'medium',
-          emp: k,
-          when: null,
-          what: 'Cash tips not entered',
-          detail: `Entered ${money(g.cashTips)} in cash tips on ${money(g.cashSales)} of cash sales (${(cashRate! * 100).toFixed(1)}%), but earns ${(cardRate! * 100).toFixed(1)}% on cards. About ${money(missing)} in cash tips may not have reached the pool.`,
-          amount: missing,
-        });
-      }
-    }
-    rows.sort((a, b) => (a.values.capture ?? 999) - (b.values.capture ?? 999));
-    const caps = rows.map((r) => r.values.capture).filter((v): v is number => v !== null);
-    const teamCap = median(caps);
+      };
+    });
+    rows.sort((x, y) => (y.values.zero ?? -1) - (x.values.zero ?? -1));
+    const all = [...per.values()].reduce((s, g) => ({ n: s.n + g.n, zero: s.zero + g.zero }), { n: 0, zero: 0 });
     return {
-      period: periodText(from, to),
+      period: periodText(a, b),
       summary: [
-        ...(teamCap !== null && teamCap < 50
-          ? [`Across the team, cash tips entered are only about ${pct(teamCap)} of what the card tip rates suggest. That points to a team-wide habit of not entering cash tips (or cash tips handled outside the POS), so start with the people at the top of the table.`]
-          : []),
-        `If cash tables tipped like card tables, about ${money(missingTotal)} more in cash tips would have been entered for the pool in this period.`,
-        'Some of that is normal (cash guests often tip less, or leave the tip on the table for the pool). Look at who is far below everyone else.',
+        `${all.zero} of ${all.n} card checks without the automatic 18% had a $0 tip (${all.n ? pct((all.zero / all.n) * 100) : '–'}). Most of those guests probably tipped in cash: compare them with the tip sheet for those days.`,
+        'Red in the table = far more $0-tip card checks, or far lower card tips, than the rest of the team.',
       ],
       metrics: [
-        { key: 'cashSales', label: 'Cash sales', fmt: 'money', help: 'Cash taken in the period.' },
-        { key: 'cashTips', label: 'Cash tips entered', fmt: 'money', help: 'Cash tips entered on the POS.' },
-        { key: 'cashRate', label: 'Cash tip rate', fmt: 'pct', help: 'Cash tips entered ÷ cash sales.' },
-        { key: 'cardRate', label: 'Card tip rate', fmt: 'pct', help: 'Card tips ÷ card sales (before tips).' },
-        { key: 'capture', label: 'Cash tips vs card', fmt: 'pct', worse: 'low', help: 'Cash tip rate as a % of the card tip rate. 100% = cash guests tip as much as card guests.' },
-        { key: 'missing', label: 'Possibly missing', fmt: 'money', help: 'Cash sales × card tip rate − cash tips entered.' },
-        { key: 'cashZero', label: 'Cash checks with $0 tip', fmt: 'pct', worse: 'high', help: 'Dine-in checks paid fully in cash with no tip entered (5+ such checks needed).' },
-        { key: 'cardZero', label: 'Card checks with $0 tip', fmt: 'pct', worse: 'high', help: 'Dine-in card checks of $30+ with no tip (parties under 5; 20+ such checks needed). Guests may have handed the server cash instead.' },
+        { key: 'n', label: 'Card checks', fmt: 'num', help: 'Dine-in card checks of $20+ without the automatic 18%.' },
+        { key: 'zero', label: '$0 tip', fmt: 'pct', worse: 'high', help: 'Share of those checks with no tip at all (likely tipped in cash). 20+ checks needed.' },
+        { key: 'low', label: 'Under 10% tip', fmt: 'pct', worse: 'high', help: 'Share with no tip or a tip under 10%.' },
+        { key: 'med', label: 'Median card tip', fmt: 'pct', worse: 'low', help: 'Median tip % on those checks.' },
+        { key: 'longRate', label: 'Card tips ÷ card sales', fmt: 'pct', worse: 'low', help: 'Over the Tips report period: card tips ÷ card sales before tips (includes tax and large parties).' },
+        { key: 'cashShare', label: 'Cash share of sales', fmt: 'pct', help: 'Share of their sales paid in cash (context: more cash means more cash tips to hand in).' },
       ],
       rows,
       findings,

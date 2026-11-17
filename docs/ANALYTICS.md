@@ -22,8 +22,8 @@ the title in its first cell, so file names don't matter.
 
 The schedule workbook is recognized by its layout: a "Name" column, a date above each day's Lunch and
 Dinner columns, role groups in the first column (Server, F/R Busser, Host, Bartender). Times have no
-AM/PM (`11:00-4:00` is 11 AM–4 PM, `4:00-9:00` is 4–9 PM), `C` means until close (treated as 10:00 PM,
-the usual closing clock-out), and a prefix like `H)` means that shift is worked as Host.
+AM/PM (`11:00-4:00` is 11 AM–4 PM, `4:00-9:00` is 4–9 PM), `C` means until close (10:00 PM Mon–Sat, 9:00 PM Sunday;
+closers get 45 minutes for closing duties and are compared with the other closers that night), and a prefix like `H)` means that shift is worked as Host.
 
 Not needed (the same data is in the files above): **Detailed Sales List 2**, **Sales Record by
 Employee**, **Sales Record by Person Ordering**. The page recognizes and skips them.
@@ -34,7 +34,7 @@ Employee**, **Sales Record by Person Ordering**. The page recognizes and skips t
 |---|---|
 | Missed clock-outs | Shifts with no clock-out, over 14 hours, or ending on a later day (suggested clock-out: the scheduled end, else the person's usual time); very long shifts, accidental punches, overlaps, edits |
 | Stayed past their shift | Clock-outs 15+ minutes after the scheduled end, early clock-ins, clocking back in after a shift, no clock-out between lunch and dinner, unscheduled shifts, scheduled shifts with no punch |
-| Tips kept out of the pool | Cash tips entered vs what the person's card tip rate suggests; cash and card checks closed with a $0 tip |
+| Tips that may not reach the pool | Cash tips are counted on paper, so only card tips are used: card checks with no automatic 18% and a $0 tip (likely a cash tip: compare with the tip sheet), tips under 10%, median card tip %, card tips ÷ card sales; cash share of sales for context |
 | Large parties without the 18% | 5+ AYCE dinners but fewer than 5 guests entered; parties of 5+ tipped under 17.5% |
 | Items taken off after they were served | Items cancelled 20+ minutes after ordering; Ultimate switched to Premium; adult AYCE changed to a child price |
 | Paid checks voided | Voided checks, with cash-paid ones in red |
@@ -42,6 +42,11 @@ Employee**, **Sales Record by Person Ordering**. The page recognizes and skips t
 | Free or cheaper items | Price changes down, items rung at $0 or below their usual price, employee items rung in bulk |
 | Bigger tips when something was free | Tip % on a server's checks with something free vs their other checks |
 | Checks outside shifts and shared logins | Checks closed while the server wasn't clocked in; checks under shared logins |
+
+**All flagged entries** lists every flagged entry from every check, worst first. **Look at one person**
+shows everything for one employee: all their flags, where they differ from the team, and every entry
+in the files (shifts vs schedule, checks served, day-by-day sales and tips for the tip sheet, discounts,
+removed items, voids, price changes), with flagged entries highlighted.
 
 **Who stands out** compares servers on every measure with a direction (robust z-scores: median and
 MAD) and adds up how far above the team each person is. It is a pointer for where to look, not proof.
