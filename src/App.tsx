@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { actions, usePos } from './lib/store';
 import { PosFrame, ZOOMS, type Zoom } from './pos/PosFrame';
 import { quitScenario, startScenario, useTraining } from './training/engine';
@@ -8,12 +8,15 @@ import { ScenarioPanel } from './training/ScenarioPanel';
 import { ScenarioPicker } from './training/ScenarioPicker';
 import { Leaderboard } from './training/Leaderboard';
 import { Team } from './training/Team';
+
+// Loaded only when the owner opens it (keeps the spreadsheet code out of everyone else's download).
+const AnalyticsPage = lazy(() => import('./analytics/AnalyticsPage'));
 import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
 import { openSignIn, signOut, useAuth } from './lib/supabase';
 import { SignInDialog } from './auth/SignInDialog';
 
-type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team';
+type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team' | 'analytics';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'practice', label: 'Free Play' },
@@ -21,6 +24,7 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'test', label: 'Test' },
   { id: 'leaderboard', label: 'Leaderboard' },
   { id: 'team', label: 'Team' },
+  { id: 'analytics', label: 'Analytics' },
 ];
 
 function readPref<T extends string>(key: string, fallback: T): T {
@@ -110,7 +114,7 @@ export default function App() {
     if (mode === 'test' && test.phase === 'shift' && !confirm('Quit the Test? This run will not be saved.')) return;
     if (mode === 'test') testActions.quit();
     if (m !== 'practice' && mode === 'practice') quitScenario();
-    if (m === 'practice' || m === 'leaderboard' || m === 'team') {
+    if (m === 'practice' || m === 'leaderboard' || m === 'team' || m === 'analytics') {
       quitScenario();
       actions.loadPractice();
     }
@@ -139,7 +143,7 @@ export default function App() {
           </div>
         </div>
         <nav className="flex rounded-full bg-slate-900 p-1 text-xs font-semibold ring-1 ring-slate-800">
-          {MODES.filter((m) => m.id !== 'team' || auth.profile?.is_owner).map((m) => (
+          {MODES.filter((m) => (m.id !== 'team' && m.id !== 'analytics') || auth.profile?.is_owner).map((m) => (
             <button
               key={m.id}
               data-testid={`mode-${m.id}`}
@@ -176,6 +180,10 @@ export default function App() {
             <Leaderboard auth={auth} />
           ) : mode === 'team' ? (
             <Team auth={auth} />
+          ) : mode === 'analytics' ? (
+            <Suspense fallback={<div className="p-6 text-slate-400">Loading…</div>}>
+              <AnalyticsPage isOwner={!!auth.profile?.is_owner} />
+            </Suspense>
           ) : mode === 'test' ? (
             <TestScreens auth={auth} onLeaderboard={() => setMode('leaderboard')} />
           ) : result && run ? (
