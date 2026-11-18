@@ -559,13 +559,8 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
               {/* For time cards the fixes are the point; elsewhere the team comparison comes first. */}
               {cur.id === 'zero-tips' ? (
                 <>
+                  <MetricTable result={curRes} people={people} />
                   <ZeroTipSheet parsed={parsed} people={people} onPerson={openPerson} />
-                  <details className="text-sm">
-                    <summary className="cursor-pointer text-slate-300">Count per server</summary>
-                    <div className="mt-2">
-                      <MetricTable result={curRes} people={people} />
-                    </div>
-                  </details>
                 </>
               ) : cur.id === 'timecards' ? (
                 <>

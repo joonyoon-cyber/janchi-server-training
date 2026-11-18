@@ -1145,7 +1145,7 @@ const zeroTips: Check = {
     const [a, b] = span((p.sales ?? []).map((r) => r.dt));
     return {
       period: periodText(a, b),
-      summary: [`${n} card payments had a $0 tip. They are listed by date below; most of these guests probably tipped in cash.`],
+      summary: [`${n} card payments had a $0 tip. The table shows them per server; the list below has every one by date. Most of these guests probably tipped in cash.`],
       metrics: [
         { key: 'card', label: 'Card payments', fmt: 'num', help: 'Checks paid at least partly by card.' },
         { key: 'zero', label: 'With $0 tip', fmt: 'num', help: 'Card payments with no tip (the automatic 18% counts as a tip).' },
