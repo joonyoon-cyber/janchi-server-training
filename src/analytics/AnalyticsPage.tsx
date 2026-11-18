@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CHECKS, overview, robustZ, type Check, type CheckResult, type Finding, type Metric, type Severity } from './checks';
 import { People } from './people';
 import { FlaggedView, PersonView } from './PersonView';
+import { ZeroTipSheet } from './ZeroTipSheet';
 import { EXTRA_REPORTS, REPORTS, loadReport, type Kind, type LoadedFile, type Parsed } from './reports';
 
 const SEV: Record<Severity, { label: string; chip: string; dot: string }> = {
@@ -556,7 +557,17 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
                 <p className="mt-1">{cur.how}</p>
               </details>
               {/* For time cards the fixes are the point; elsewhere the team comparison comes first. */}
-              {cur.id === 'timecards' ? (
+              {cur.id === 'zero-tips' ? (
+                <>
+                  <ZeroTipSheet parsed={parsed} people={people} onPerson={openPerson} />
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-slate-300">Count per server</summary>
+                    <div className="mt-2">
+                      <MetricTable result={curRes} people={people} />
+                    </div>
+                  </details>
+                </>
+              ) : cur.id === 'timecards' ? (
                 <>
                   <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
                   <MetricTable result={curRes} people={people} />

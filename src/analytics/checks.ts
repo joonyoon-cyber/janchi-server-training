@@ -1115,7 +1115,50 @@ const logins: Check = {
   },
 };
 
-export const CHECKS: Check[] = [timecards, overstay, tipsPool, gratuity, lateCancels, voids, discounts, freeItems, tipsForFreebies, logins];
+// ---- 2b. Card payments with a $0 tip (for the paper tip sheet) -----------------------------
+
+const zeroTips: Check = {
+  id: 'zero-tips',
+  group: 'Tips',
+  title: 'Card payments with $0 tip',
+  question: 'Every card payment closed with no tip, by date, with whose table it was, to check against the paper cash-tip sheet. The automatic 18% counts as a tip, so those checks are not listed.',
+  how: 'All checks in the Detailed Sales List paid at least partly by card with a $0 tip, dine-in and take-out. The table below counts them per server.',
+  needs: ['sales'],
+  run(p, people) {
+    const per = new Map<string, { card: number; zero: number; dine: number }>();
+    for (const r of p.sales ?? []) {
+      if (!(r.card > 0)) continue;
+      const k = people.ofReceipt(r);
+      const g = per.get(k) ?? { card: 0, zero: 0, dine: 0 };
+      g.card++;
+      if (r.tip === 0) {
+        g.zero++;
+        if (isDineIn(r)) g.dine++;
+      }
+      per.set(k, g);
+    }
+    const rows: EmpRow[] = [...per.entries()]
+      .filter(([k]) => !isGeneric(k))
+      .map(([k, g]) => ({ emp: k, values: { card: g.card, zero: g.zero, dine: g.dine, pct: g.card >= 20 ? (g.zero / g.card) * 100 : null } }))
+      .sort((a, b) => (b.values.zero ?? 0) - (a.values.zero ?? 0));
+    const n = [...per.values()].reduce((s, g) => s + g.zero, 0);
+    const [a, b] = span((p.sales ?? []).map((r) => r.dt));
+    return {
+      period: periodText(a, b),
+      summary: [`${n} card payments had a $0 tip. They are listed by date below; most of these guests probably tipped in cash.`],
+      metrics: [
+        { key: 'card', label: 'Card payments', fmt: 'num', help: 'Checks paid at least partly by card.' },
+        { key: 'zero', label: 'With $0 tip', fmt: 'num', help: 'Card payments with no tip (the automatic 18% counts as a tip).' },
+        { key: 'dine', label: 'Dine-in', fmt: 'num', help: 'Of those, dine-in tables (not take-out).' },
+        { key: 'pct', label: '% with $0 tip', fmt: 'pct', worse: 'high', inOverview: false, help: 'Share of their card payments with no tip (20+ needed). Overlaps with "Tips that may not reach the pool".' },
+      ],
+      rows,
+      findings: [],
+    };
+  },
+};
+
+export const CHECKS: Check[] = [timecards, overstay, tipsPool, zeroTips, gratuity, lateCancels, voids, discounts, freeItems, tipsForFreebies, logins];
 
 // ---- Overview: who stands out --------------------------------------------------------------------
 

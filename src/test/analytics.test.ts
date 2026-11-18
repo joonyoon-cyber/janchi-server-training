@@ -328,3 +328,19 @@ describe('employee discount policy', () => {
     expect(whats(p([ticket(6, '20', 'PAT', '2026-11-02 18:00', 'C1', [{ menu: 'PREMIUM AYCE (DINNER)', amount: 116.85 }])]))).toEqual(['On-duty 20% on a guest-sized check']);
   });
 });
+
+describe('card payments with a $0 tip', () => {
+  it('lists card payments with no tip; the automatic 18% and cash checks are left out', async () => {
+    const { zeroTipCardPayments } = await import('../analytics/ZeroTipSheet');
+    const sales = [
+      receipt(1, 'PAT', { tip: 0, card: 90, dt: d('2026-11-02 19:00') }),
+      receipt(2, 'PAT', { tip: 0, card: 25, table: 'Take Out', dt: d('2026-11-01 18:00') }),
+      receipt(3, 'PAT', { persons: 6, tip: 42.07, card: 300 }), // automatic 18% = a tip
+      receipt(4, 'PAT', { tip: 0, cash: 90, card: 0 }), // cash only
+      receipt(5, 'PAT', { tip: 12, card: 80 }),
+    ];
+    expect(zeroTipCardPayments({ sales }).map((r) => r.receipt)).toEqual([sales[1].receipt, sales[0].receipt]);
+    const r = run('zero-tips', { sales });
+    expect(r.rows[0].values).toMatchObject({ card: 4, zero: 2, dine: 1 });
+  });
+});
