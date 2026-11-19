@@ -23,6 +23,10 @@ export interface Profile {
   display_name: string;
   /** The restaurant owner: can clear the leaderboard. Set only by SQL in Supabase. */
   is_owner?: boolean;
+  /** "emoji:🔥:#be1e2d" for a picked avatar, or a small "data:image/jpeg;base64,…" photo. */
+  avatar_url?: string | null;
+  /** The badge shown next to the name on the leaderboard. */
+  featured_badge?: string | null;
 }
 
 export interface LeaderRow {
@@ -32,6 +36,8 @@ export interface LeaderRow {
   clear_time_sec: number;
   created_at: string;
   attempts: number;
+  avatar_url?: string | null;
+  featured_badge?: string | null;
 }
 
 export interface RunRow {
@@ -95,6 +101,24 @@ export async function clearLeaderboard(): Promise<string | null> {
   return error?.message ?? null;
 }
 
+// ---- Password recovery ----------------------------------------------------------
+// Supabase emails a one-time link back to this page; opening it signs the person in and
+// fires PASSWORD_RECOVERY, and the app then asks for a new password.
+export async function sendPasswordReset(email: string): Promise<string | null> {
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
+  if (!error) return null;
+  if (/rate|too many|seconds/i.test(error.message)) return 'Too many reset emails were sent. Please wait a few minutes and try again.';
+  return error.message;
+}
+
+export async function setNewPassword(password: string): Promise<string | null> {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (!error) return null;
+  if (/different from the old/i.test(error.message)) return 'Choose a password different from your old one.';
+  return error.message;
+}
+
 export function signOut() {
   return supabase.auth.signOut();
 }
@@ -103,34 +127,40 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ready, setReady] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     // INITIAL_SESSION fires once the saved session (if any) has been restored.
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data } = supabase.auth.onAuthStateChange((e, s) => {
       setSession(s);
       setReady(true);
+      // Opened the link from a "forgot your password" email: ask for a new password.
+      if (e === 'PASSWORD_RECOVERY') setRecovering(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     if (!session) return setProfile(null);
-    supabase
-      .from('profiles')
-      .select('id, display_name, is_owner')
-      .eq('id', session.user.id)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data as Profile | null));
+    void (async () => {
+      const q = (cols: string) => supabase.from('profiles').select(cols).eq('id', session.user.id).maybeSingle();
+      let r = await q('id, display_name, is_owner, avatar_url, featured_badge');
+      // Before supabase/profile.sql has been run the new columns do not exist yet.
+      if (r.error) r = await q('id, display_name, is_owner');
+      setProfile(r.data as unknown as Profile | null);
+    })();
   }, [session]);
 
-  const rename = async (name: string) => {
+  const updateProfile = async (patch: Partial<Pick<Profile, 'display_name' | 'avatar_url' | 'featured_badge'>>) => {
     if (!session) return 'Not signed in';
-    const { error } = await supabase.from('profiles').update({ display_name: name }).eq('id', session.user.id);
-    if (!error) setProfile((p) => ({ ...(p ?? { id: session.user.id }), display_name: name }));
+    const { error } = await supabase.from('profiles').update(patch).eq('id', session.user.id);
+    if (!error) setProfile((p) => ({ ...(p ?? { id: session.user.id, display_name: '' }), ...patch }));
+    if (error && /column|schema cache/i.test(error.message)) return 'Profile pictures and badges need one more setup step in Supabase (run supabase/profile.sql).';
     return error?.message ?? null;
   };
+  const rename = (name: string) => updateProfile({ display_name: name });
 
-  return { session, profile, ready, rename };
+  return { session, profile, ready, rename, updateProfile, recovering, endRecovery: () => setRecovering(false) };
 }
 
 export async function saveRun(run: { version: number; seed: number; score: number; clear_time_sec: number; tables: unknown; events: unknown }) {
@@ -142,6 +172,19 @@ export async function loadLeaderboard(): Promise<{ rows: LeaderRow[]; error: str
   const { data, error } = await supabase.from('leaderboard').select('*');
   const rows = ((data as LeaderRow[]) ?? []).sort((a, b) => b.score - a.score || a.clear_time_sec - b.clear_time_sec || a.created_at.localeCompare(b.created_at));
   return { rows, error: error?.message ?? null };
+}
+
+/** Everything this person has finished, for their badges. Empty when signed out or on error. */
+export async function loadMyActivity(userId: string) {
+  const [p, r] = await Promise.all([
+    supabase.from('practice_results').select('scenario_id, level, generated, score, duration_sec, mistakes, created_at').eq('user_id', userId).order('created_at').limit(5000),
+    supabase.from('test_runs').select('score, clear_time_sec, created_at').eq('user_id', userId).order('created_at').limit(2000),
+  ]);
+  return {
+    practice: (p.data as { scenario_id: string; level: string; generated: boolean; score: number; duration_sec: number; mistakes: number; created_at: string }[]) ?? [],
+    tests: (r.data as { score: number; clear_time_sec: number; created_at: string }[]) ?? [],
+    error: p.error?.message ?? r.error?.message ?? null,
+  };
 }
 
 export async function loadMyRuns(userId: string): Promise<RunRow[]> {

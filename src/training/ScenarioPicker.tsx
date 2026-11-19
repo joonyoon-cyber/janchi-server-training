@@ -3,6 +3,7 @@ import { generateScenario } from './generator';
 import { bestScores, clearProgress, loadProgress } from './progress';
 import { scenarios } from './scenarios';
 import type { Level, Scenario } from './types';
+import { BUILT_IN, goalText, type Achievements } from './achievements';
 
 
 const LEVELS: { id: Level; label: string; focus: string }[] = [
@@ -11,10 +12,16 @@ const LEVELS: { id: Level; label: string; focus: string }[] = [
   { id: 'advanced', label: 'Advanced', focus: 'AYCE rules, voids after sending, gratuity, multiple tables, policy calls.' },
 ];
 
-export function ScenarioPicker({ onStart }: { onStart: (s: Scenario) => void }) {
+export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scenario) => void; ach: Achievements; onProfile: () => void }) {
   const [level, setLevel] = useState<Level>('beginner');
   const [, force] = useState(0);
-  const best = bestScores();
+  // Best scores from the account (all devices) and this browser.
+  const local = bestScores();
+  const best: Record<string, number> = { ...local };
+  ach.stats.best.forEach((v, k) => (best[k] = Math.max(best[k] ?? 0, v)));
+  const done = BUILT_IN.filter((s) => best[s.id] !== undefined).length;
+  const levelDone = (l: Level) => [BUILT_IN.filter((s) => s.level === l && best[s.id] !== undefined).length, BUILT_IN.filter((s) => s.level === l).length];
+  const nextBadge = ach.badges.find((b) => b.def.group === 'Scenarios' && b.next !== null && b.value > 0) ?? ach.badges.find((b) => b.def.id === 'first-table');
   const history = loadProgress();
   const recent = history.slice(-8).reverse();
   const avg = history.length ? Math.round(history.reduce((s, p) => s + p.score, 0) / history.length) : null;
@@ -28,12 +35,45 @@ export function ScenarioPicker({ onStart }: { onStart: (s: Scenario) => void }) 
           Guests speak in menu language. Find the right buttons yourself; there is no help in Training Mode. Mistakes are allowed and scored afterwards.
         </p>
       </div>
+      <button
+        data-testid="passport-bar"
+        onClick={onProfile}
+        className="block w-full rounded-2xl bg-gradient-to-r from-slate-900 to-sky-950/50 p-4 text-left ring-1 ring-slate-800 transition hover:ring-sky-600"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🛂</span>
+            <div>
+              <div className="font-bold">
+                Scenario passport: {done}/{BUILT_IN.length} finished
+              </div>
+              <div className="text-xs text-slate-400">
+                {done === BUILT_IN.length ? 'Every scenario stamped. Now go for 90+ on all of them!' : 'Finish every scenario at least once to earn the Full Passport badge.'}
+                {nextBadge?.next ? ` Next badge: ${nextBadge.def.icon} ${nextBadge.def.name} (${goalText(nextBadge).toLowerCase()}).` : ''}
+              </div>
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-sky-300">
+            {ach.rank.icon} {ach.rank.title} · 🏅 {ach.badges.reduce((t, b) => t + b.tier, 0)} badges · View all →
+          </span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-full rounded-full bg-gradient-to-r from-sky-700 via-sky-500 to-amber-300" style={{ width: `${(done / BUILT_IN.length) * 100}%` }} />
+        </div>
+      </button>
       <div className="flex flex-wrap gap-2">
-        {LEVELS.map((l) => (
-          <button key={l.id} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${l.id === level ? 'bg-sky-600' : 'bg-slate-700 hover:bg-slate-600'}`} onClick={() => setLevel(l.id)}>
-            {l.label}
-          </button>
-        ))}
+        {LEVELS.map((l) => {
+          const [d, n] = levelDone(l.id);
+          return (
+            <button key={l.id} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${l.id === level ? 'bg-sky-600' : 'bg-slate-700 hover:bg-slate-600'}`} onClick={() => setLevel(l.id)}>
+              {l.label}{' '}
+              <span className={`ml-1 rounded-full px-1.5 text-[11px] tabular-nums ${d === n ? 'bg-amber-400 text-slate-950' : 'bg-black/25'}`}>
+                {d === n ? '✓ ' : ''}
+                {d}/{n}
+              </span>
+            </button>
+          );
+        })}
       </div>
       <p className="text-sm text-slate-300">{lv.focus}</p>
 
@@ -44,7 +84,13 @@ export function ScenarioPicker({ onStart }: { onStart: (s: Scenario) => void }) 
             <button key={s.id} data-testid={`scenario-${s.id}`} className="rounded-lg bg-slate-800 p-4 text-left ring-1 ring-slate-700 hover:ring-sky-500" onClick={() => onStart(s)}>
               <div className="flex items-start justify-between gap-2">
                 <div className="font-semibold">{s.title}</div>
-                {best[s.id] !== undefined && <span className={`rounded px-1.5 text-xs font-bold ${best[s.id] >= 90 ? 'bg-emerald-700' : 'bg-slate-600'}`}>{best[s.id]}</span>}
+                {best[s.id] !== undefined ? (
+                  <span title="Your best score" className={`shrink-0 rounded-full px-2 text-xs font-bold ${best[s.id] >= 90 ? 'bg-amber-400 text-slate-950' : 'bg-sky-700'}`}>
+                    ✓ {best[s.id]}
+                  </span>
+                ) : (
+                  <span className="shrink-0 rounded-full border border-dashed border-slate-600 px-2 text-[10px] font-semibold uppercase text-slate-400">New</span>
+                )}
               </div>
               <div className="mt-1 text-sm text-slate-400">{s.summary}</div>
             </button>

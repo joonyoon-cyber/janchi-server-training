@@ -218,3 +218,26 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .lb-rise, .lb-shine::after, .lb-sparkles { animation: none; }
 }
+
+/* ---- Badges and profile --------------------------------------------------- */
+.badge-earned { box-shadow: 0 0 18px rgba(251, 191, 36, 0.18); }
+@keyframes xp-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.xp-fill { transform-origin: left; animation: xp-fill 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes badge-pop {
+  0% { opacity: 0; transform: translateY(24px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: none; }
+}
+.badge-pop { animation: badge-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes badge-spin {
+  0% { transform: rotate(-20deg) scale(0.6); }
+  70% { transform: rotate(8deg) scale(1.12); }
+  100% { transform: none; }
+}
+.badge-spin { animation: badge-spin 0.8s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .xp-fill, .badge-pop, .badge-spin { animation: none; }
+}

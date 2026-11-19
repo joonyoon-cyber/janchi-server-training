@@ -83,6 +83,7 @@ function Done({ auth, onLeaderboard }: { auth: Auth; onLeaderboard: () => void }
       events: t.events,
     });
     setSave(err ? `Could not save: ${err}` : 'saved');
+    if (!err) window.dispatchEvent(new Event('janchi:activity'));
   };
 
   useEffect(() => {

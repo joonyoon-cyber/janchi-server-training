@@ -44,13 +44,19 @@ export function saveResult(sc: Scenario, ev: Evaluation) {
       score: entry.score,
       duration_sec: Math.round(entry.durationSec),
       mistakes: entry.mistakes,
-    });
+    }).then(announce);
   }
   try {
-    localStorage.setItem(KEY, JSON.stringify([...loadProgress(), entry].slice(-300)));
+    localStorage.setItem(KEY, JSON.stringify([...loadProgress(), entry].slice(-1000)));
   } catch {
     // storage unavailable: results still show on screen
   }
+  announce();
+}
+
+/** Badges and the profile refresh on this (see activity.ts). */
+function announce() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('janchi:activity'));
 }
 
 export function clearProgress() {

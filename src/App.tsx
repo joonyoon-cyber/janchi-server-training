@@ -15,8 +15,14 @@ import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
 import { openSignIn, signOut, useAuth } from './lib/supabase';
 import { SignInDialog } from './auth/SignInDialog';
+import { NewPasswordDialog } from './auth/NewPasswordDialog';
+import { Profile } from './training/Profile';
+import { BadgeToaster } from './training/BadgeToaster';
+import { useAchievements } from './training/activity';
+import { scenarios } from './training/scenarios';
+import { Avatar } from './ui/Avatar';
 
-type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team' | 'analytics';
+type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team' | 'analytics' | 'profile';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'practice', label: 'Free Play' },
@@ -80,9 +86,11 @@ export default function App() {
   const [mode, setModeState] = useState<Mode>(() => {
     const m = readPref<string>('janchi-pos-sim:mode', 'practice');
     // A Test in progress is not kept across reloads; 'training' was the old name of Scenarios.
-    return m === 'training' ? 'scenarios' : m === 'test' ? 'practice' : MODES.some((x) => x.id === m) ? (m as Mode) : 'practice';
+    return m === 'training' ? 'scenarios' : m === 'test' ? 'practice' : m === 'profile' || MODES.some((x) => x.id === m) ? (m as Mode) : 'practice';
   });
   const auth = useAuth();
+  const userId = auth.ready ? auth.session?.user.id ?? null : null;
+  const achievements = useAchievements(userId);
   const test = useTest();
   const [zoom, setZoomState] = useState<Zoom>(() => {
     const z = readPref<string>('janchi-pos-sim:zoom', 'fit');
@@ -99,7 +107,7 @@ export default function App() {
     if (mode === 'test' && test.phase === 'shift' && !confirm('Quit the Test? This run will not be saved.')) return;
     if (mode === 'test') testActions.quit();
     if (m !== 'practice' && mode === 'practice') quitScenario();
-    if (m === 'practice' || m === 'leaderboard' || m === 'team' || m === 'analytics') {
+    if (m === 'practice' || m === 'leaderboard' || m === 'team' || m === 'analytics' || m === 'profile') {
       quitScenario();
       actions.loadPractice();
     }
@@ -144,24 +152,56 @@ export default function App() {
         </button>
         {auth.session ? (
           <span className="flex items-center gap-2 text-xs text-slate-300">
-            {auth.profile?.display_name ?? auth.session.user.email}
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-[11px] font-bold uppercase text-white">
-              {(auth.profile?.display_name ?? auth.session.user.email ?? '?').slice(0, 1)}
-            </span>
+            <button
+              data-testid="open-profile"
+              title="Your profile and badges"
+              className={`flex items-center gap-2 rounded-full py-0.5 pl-3 pr-0.5 transition-colors ${mode === 'profile' ? 'bg-sky-600/25 ring-1 ring-sky-600' : 'hover:bg-slate-800'}`}
+              onClick={() => setMode('profile')}
+            >
+              <span className="text-right leading-tight">
+                <span className="block font-semibold text-slate-100">{auth.profile?.display_name ?? auth.session.user.email}</span>
+                <span className="block text-[10px] text-slate-400">
+                  {achievements.a.rank.icon} {achievements.a.rank.title} · 🏅 {achievements.a.badges.reduce((t, b) => t + b.tier, 0)}
+                </span>
+              </span>
+              <Avatar name={auth.profile?.display_name ?? auth.session.user.email ?? '?'} url={auth.profile?.avatar_url} size="h-8 w-8 text-xs" />
+            </button>
             <button className="rounded-full border border-slate-700 px-3 py-1 hover:bg-slate-800" onClick={() => signOut()}>
               Sign out
             </button>
           </span>
         ) : (
-          <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
-            Sign in
-          </button>
+          <span className="flex items-center gap-2">
+            <button
+              data-testid="open-profile"
+              className={`rounded-full border px-3 py-1 text-xs ${mode === 'profile' ? 'border-sky-600 bg-sky-600/25 text-white' : 'border-slate-700 text-slate-200 hover:bg-slate-800'}`}
+              onClick={() => setMode('profile')}
+            >
+              🏅 Badges
+            </button>
+            <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
+              Sign in
+            </button>
+          </span>
         )}
       </header>
 
       {!showPos ? (
         <main className="min-h-0 flex-1 overflow-y-auto">
-          {mode === 'leaderboard' ? (
+          {mode === 'profile' ? (
+            <Profile
+              auth={auth}
+              ach={achievements.a}
+              history={achievements.history}
+              loading={achievements.loading}
+              onStart={(id) => {
+                const sc = scenarios.find((x) => x.id === id);
+                if (!sc) return;
+                setMode('scenarios');
+                startScenario(sc);
+              }}
+            />
+          ) : mode === 'leaderboard' ? (
             <Leaderboard auth={auth} />
           ) : mode === 'team' ? (
             <Team auth={auth} />
@@ -174,7 +214,7 @@ export default function App() {
           ) : result && run ? (
             <Results scenario={run.scenario} ev={result} onRetry={() => startScenario(run.scenario)} onExit={() => quitScenario()} />
           ) : (
-            <ScenarioPicker onStart={(s) => startScenario(s)} />
+            <ScenarioPicker onStart={(s) => startScenario(s)} ach={achievements.a} onProfile={() => setMode('profile')} />
           )}
         </main>
       ) : (
@@ -236,6 +276,8 @@ export default function App() {
       </footer>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
       <SignInDialog />
+      {auth.recovering && <NewPasswordDialog onDone={auth.endRecovery} />}
+      {auth.ready && <BadgeToaster ach={achievements.a} loading={achievements.loading} who={userId ?? 'guest'} onOpen={() => setMode('profile')} />}
     </div>
   );
 }

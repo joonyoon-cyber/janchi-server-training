@@ -9,10 +9,11 @@ import {
   type useAuth,
 } from "../lib/supabase";
 import { fmtTime } from "./TestMode";
+import { Avatar } from "../ui/Avatar";
+import { BADGE } from "./achievements";
 
 type Auth = ReturnType<typeof useAuth>;
 
-const initial = (name: string) => (name.trim()[0] ?? "?").toUpperCase();
 
 /** Gold, silver and bronze. */
 const MEDAL = [
@@ -68,20 +69,13 @@ function Crown() {
   );
 }
 
-function Avatar({
-  name,
-  size = "h-10 w-10 text-base",
-  className = "",
-}: {
-  name: string;
-  size?: string;
-  className?: string;
-}) {
+/** The badge someone chose to show next to their name. */
+function Featured({ id }: { id?: string | null }) {
+  const b = id ? BADGE.get(id) : undefined;
+  if (!b) return null;
   return (
-    <span
-      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-800 font-bold text-white ${size} ${className}`}
-    >
-      {initial(name)}
+    <span title={b.name} className="ml-1 align-middle text-[0.95em]">
+      {b.icon}
     </span>
   );
 }
@@ -105,6 +99,7 @@ function PodiumSpot({
       <div className={`relative rounded-full ring-4 ${m.ring} ${m.glow}`}>
         <Avatar
           name={row.display_name}
+          url={row.avatar_url}
           size={place === 0 ? "h-20 w-20 text-3xl" : "h-14 w-14 text-xl"}
         />
         <span
@@ -115,6 +110,7 @@ function PodiumSpot({
       </div>
       <div className="mt-3 max-w-full truncate px-1 text-center text-sm font-semibold text-white">
         {row.display_name}
+        <Featured id={row.featured_badge} />
         {me && (
           <span className="ml-1 rounded-full bg-sky-600 px-1.5 py-0.5 align-middle text-[9px] font-bold uppercase">
             You
@@ -225,7 +221,7 @@ export function Leaderboard({ auth }: { auth: Auth }) {
           </div>
         ) : (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-sky-100">
-            <Avatar name={myName} size="h-7 w-7 text-xs" />
+            <Avatar name={myName} url={auth.profile?.avatar_url} size="h-7 w-7 text-xs" />
             {editing ? (
               <form
                 className="flex gap-2"
@@ -345,10 +341,10 @@ export function Leaderboard({ auth }: { auth: Auth }) {
                     <span className="w-7 text-center text-sm font-bold tabular-nums text-slate-400">
                       {i + 4}
                     </span>
-                    <Avatar name={r.display_name} size="h-9 w-9 text-sm" />
+                    <Avatar name={r.display_name} url={r.avatar_url} size="h-9 w-9 text-sm" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 truncate text-sm font-semibold">
-                        <span className="truncate">{r.display_name}</span>
+                        <span className="truncate">{r.display_name}<Featured id={r.featured_badge} /></span>
                         {isMe && (
                           <span className="rounded-full bg-sky-600 px-1.5 py-0.5 text-[9px] font-bold uppercase">
                             You
