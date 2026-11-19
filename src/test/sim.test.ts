@@ -582,3 +582,60 @@ describe('move and join tables', () => {
     }
   });
 });
+
+describe('Void / Edit', () => {
+  const setup = () => {
+    actions.reset({ persist: false });
+    actions.goto('floor');
+    actions.seatTable('B2', 2);
+    actions.addItem('premium-ayce-dinner', 2);
+    actions.addItem('coke-zero', 1);
+    actions.submitOrder();
+    actions.openTable('B2');
+    const c = () => getState().checks[getState().tableChecks.B2];
+    return { c, coke: c().lines.find((l) => l.posId === 'coke-zero')! };
+  };
+
+  it('a void is an unsent -1 line, already off the total; Order sends it with the reason', () => {
+    const { c, coke } = setup();
+    const rate = getState().settings.taxRate;
+    const before = checkTotals(c(), rate).amountDue;
+    expect(actions.addVoid(coke.id, 1, 'NEVER CAME')).toBeNull();
+    const v = c().lines.find((l) => l.qty < 0)!;
+    expect(v).toMatchObject({ posId: 'coke-zero', qty: -1, status: 'new', voidOf: coke.id, reason: 'NEVER CAME' });
+    // The order screen shows it off the total right away (as in the video); the check total follows once it is sent.
+    expect(checkTotals(c(), rate, true).amountDue).toBeLessThan(before);
+    // Nothing more to void on that line.
+    expect(actions.addVoid(coke.id, 1, 'AGAIN')).toMatch(/already been voided/);
+    const rounds = c().rounds;
+    actions.submitOrder();
+    expect(c().lines.find((l) => l.qty < 0)!.status).toBe('sent');
+    expect(c().rounds).toBe(rounds); // a void alone is not a new order round
+    expect(c().voids).toEqual([expect.objectContaining({ posId: 'coke-zero', qty: 1, reason: 'NEVER CAME' })]);
+    expect(checkTotals(c(), rate).amountDue).toBeLessThan(before);
+  });
+
+  it('closing without Order discards the void, like any unsent line', () => {
+    const { c, coke } = setup();
+    actions.addVoid(coke.id, 1, 'NEVER CAME');
+    actions.leaveOrderScreen();
+    expect(c().lines.some((l) => l.qty < 0)).toBe(false);
+    expect(c().voids).toHaveLength(0);
+  });
+
+  it('only ordered items are voided', () => {
+    const { c } = setup();
+    actions.addItem('sprite', 1);
+    const sprite = c().lines.find((l) => l.posId === 'sprite')!;
+    expect(actions.addVoid(sprite.id, 1, 'X')).toMatch(/Only items that have been ordered/);
+  });
+
+  it('the void scenario: voiding the drink that never came scores 100', () => {
+    const sc = scenarios.find((x) => x.id === 'void-missing-drink')!;
+    startScenario(sc);
+    playPerfect(sc);
+    const r = getRun().result!;
+    expect(r.score).toBe(100);
+    expect(r.correct.some((x) => x.startsWith('Voided'))).toBe(true);
+  });
+});

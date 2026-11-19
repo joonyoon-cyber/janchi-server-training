@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 7;
+export const TEST_VERSION = 8;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -17,7 +17,7 @@ export const TEST_TABLES = 10;
 type Slot = { level: Level; opts: GenOptions; label: string } | { counter: ('macaron' | 'gift' | 'takeout')[]; label: string } | { handWritten: string[]; label: string };
 
 const RECIPE: Slot[] = [
-  { label: 'AYCE, drinks with the order + another round', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false , serverItems: 'serve' } },
+  { label: 'AYCE, drinks with the order + another round; a drink never comes (Void / Edit)', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false , serverItems: 'serve', voidDrink: true } },
   { label: 'AYCE, over the 4-meat limit (drop the extra)', level: 'advanced', opts: { alaCarte: false, over: true, extraRounds: 1, pay: 'cash', interrupt: false, guests: 3 , serverItems: 'none' } },
   { label: 'AYCE, guest changes the order; part cash, rest card', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'cash-card', over: false , serverItems: 'none' } },
   { label: 'AYCE, big party splits with one cash share (M Y W: 7-8 on two W tables, joined to pay)', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false , serverItems: 'serve' } },

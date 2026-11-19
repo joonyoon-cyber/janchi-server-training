@@ -204,6 +204,8 @@ export interface GenOptions {
   lunch?: boolean;
   /** Drinks at the bar while they wait, then Move/Join > Move them to a table (A B C BAR). */
   bar?: boolean;
+  /** Later in the meal a drink they ordered never came: take it off with Void / Edit. */
+  voidDrink?: boolean;
 }
 /** Item use counts during a Test build, so a shift asks for many different items. */
 let usage: Map<string, number> | null = null;
@@ -468,6 +470,24 @@ function build(level: Level, opts: GenOptions): Scenario {
     }
     if (seq === 'after') order({ expect: drinks, say: pick([`Oh, can we also get ${list(drinks)}?`, `Could we get some drinks? ${capFirst(list(drinks))}.`]) });
 
+    // A drink that was sent but never came out: the guests ask to take it off (Void / Edit).
+    const voidDrink = opts.voidDrink ?? (level !== 'beginner' && !opts.rng && chance(0.15));
+    if (voidDrink && drinks.length) {
+      const d = drinks[0];
+      const [one, many] = SPOKEN[d.posId];
+      const which = d.qty > 1 ? `one of the ${many}` : `the ${one}`;
+      stages.push({
+        id: id(),
+        kind: 'void',
+        party: p,
+        note: 'A while later.',
+        say: pick([
+          `Excuse me, ${which} never came, and we don't need it anymore. Could you take it off our check?`,
+          `Sorry, we're still waiting on ${d.qty > 1 ? `one more ${one}` : `the ${one}`}. We'll skip it: can you take it off the check?`,
+        ]),
+        item: { posId: d.posId, qty: 1 },
+      });
+    }
     title = `${ultimate ? 'Ultimate' : 'Premium'} AYCE, party of ${guests}${bar ? ', from the bar' : twoTables ? ' on two W tables' : ''}`;
     summary = `Randomized ${level} AYCE table (${bar ? 'drinks at the bar, then moved to a table' : seq === 'none' ? 'no drinks' : `drinks ${seq} AYCE`}${twoTables ? ', two W tables joined to pay' : ''}${over ? ', over the meat limit' : ''}).`;
   } else {

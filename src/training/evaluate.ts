@@ -435,7 +435,10 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (!expected.length) continue;
     const check = checkOf(party);
     const where = Object.keys(sc.parties).length > 1 ? ` (${tableName(party)})` : '';
-    const onCheck = (check?.lines ?? []).filter((l) => l.status === 'sent').map((l) => ({ posId: l.posId, qty: l.qty }));
+    // Net of voids (negative lines): an item fully voided is no longer on the check.
+    const net = new Map<string, number>();
+    (check?.lines ?? []).filter((l) => l.status === 'sent').forEach((l) => net.set(l.posId, (net.get(l.posId) ?? 0) + l.qty));
+    const onCheck = [...net].filter(([, q]) => q > 0).map(([posId, qty]) => ({ posId, qty }));
     const cmp = compareItems(expected, onCheck);
     const pk = (i: { posId: string }) => isAycePackage(i.posId);
     if (expected.some(pk)) score('package', cmp.correct.filter(pk).length === expected.filter(pk).length && !cmp.extra.some(pk) && !cmp.wrongQty.some(pk) ? 1 : 0);

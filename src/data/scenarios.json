@@ -801,6 +801,95 @@
       ]
     },
     {
+      "id": "void-missing-drink",
+      "title": "Void a Drink That Never Came (Void / Edit)",
+      "level": "intermediate",
+      "summary": "A drink was ordered and sent, but it never came out and the guests don't want it anymore. Take it off with Void / Edit (select it, −, type the reason, Apply), then press Order to send the void.",
+      "time": {
+        "weekday": 4,
+        "hour": 19,
+        "minute": 10
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 240,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "say": "Party of two. A B C BAR, please."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "Premium all you can eat for both of us, a Coke Zero and an iced tea. To start: two briskets and a beef bulgogi.",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 2
+            },
+            {
+              "posId": "coke-zero",
+              "qty": 1
+            },
+            {
+              "posId": "iced-tea",
+              "qty": 1
+            },
+            {
+              "posId": "15-brisket-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "17-beef-blg-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "order",
+          "party": "p1",
+          "say": "Next round: two pork bellies and a ribeye, please.",
+          "expect": [
+            {
+              "posId": "18-pork-belly-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "16-ribeye-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "void",
+          "party": "p1",
+          "note": "A while later.",
+          "say": "Excuse me, the Coke Zero never came, and we don't need it anymore. Could you take it off our check?",
+          "item": {
+            "posId": "coke-zero",
+            "qty": 1
+          }
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "ask": "Could we get the check, please?",
+          "say": "One card, please."
+        }
+      ]
+    },
+    {
       "id": "single-guest",
       "title": "Single Guest AYCE",
       "level": "intermediate",

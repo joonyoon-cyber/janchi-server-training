@@ -39,7 +39,9 @@ export function HelpPanel() {
                 <li>Galbi on Premium: +$3.95, limit 1 per person (not enforced by the POS).</li>
                 <li>Ultimate's included drink: ring only ULTIMATE W/ SODA or W/ BEER. Galbi, beef tongue, scallops, tuna biscuit and japchae for Ultimate tables are in AYCE ULTIMATE.</li>
                 <li>
-                  <b>Void</b> is only for fixing your own entry mistakes (wrong item or quantity sent). Then ring in the right item.
+                  <b>Void</b> takes an item off after it was ordered: your own entry mistake (then ring in the right item), or an item that never came out
+                  and the guests no longer want. <b>Void / Edit</b> → select the item → <b>−</b> → type the reason → OK → <b>Apply</b>, then press{' '}
+                  <b>Order</b> to send the void (Close without Order throws it away).
                 </li>
                 <li>
                   <b>Table sizes:</b> A, B, Y3–Y5 up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&amp;2, W3&amp;4 or W5&amp;6 are used

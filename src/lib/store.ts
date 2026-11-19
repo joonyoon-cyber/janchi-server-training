@@ -410,24 +410,55 @@ export const actions = {
     const c = activeCheck();
     if (!c) return;
     const fresh = c.lines.filter((l) => l.status === 'new');
-    if (fresh.length > 0) {
-      const round = c.rounds + 1;
-      set(
-        updateCheck(c.id, (ch) => ({
-          ...ch,
-          rounds: round,
-          lines: ch.lines.map((l) => (l.status === 'new' ? { ...l, status: 'sent', round } : l)),
-        })),
-      );
+    if (!fresh.length) return;
+    const adds = fresh.filter((l) => l.qty > 0);
+    // Voids (negative lines from Void / Edit) go to the kitchen with Order too.
+    const voids = fresh.filter((l) => l.qty < 0);
+    const round = adds.length ? c.rounds + 1 : c.rounds;
+    const origRound = (v: OrderLine) => c.lines.find((l) => l.id === v.voidOf)?.round ?? 0;
+    set(
+      updateCheck(c.id, (ch) => ({
+        ...ch,
+        rounds: round,
+        lines: ch.lines.map((l) => (l.status === 'new' ? { ...l, status: 'sent', round: l.qty < 0 ? origRound(l) : round } : l)),
+        voids: [...ch.voids, ...voids.map((v) => ({ posId: v.posId, qty: -v.qty, round: origRound(v), at: now(), reason: v.reason }))],
+      })),
+    );
+    if (adds.length)
       emit({
         type: 'submit',
         checkId: c.id,
         tableId: c.tableId,
         round,
-        items: fresh.map((l) => ({ posId: l.posId, qty: l.qty })),
+        items: adds.map((l) => ({ posId: l.posId, qty: l.qty })),
         kitchenPrint,
       });
-    }
+    voids.forEach((v) => emit({ type: 'void-sent', checkId: c.id, posId: v.posId, qty: -v.qty, reason: v.reason }));
+  },
+
+  /**
+   * Void / Edit > − on an item already ordered: adds an unsent void line ("-1 COKE ZERO") with
+   * the reason typed in. It comes off the total right away and goes to the kitchen with Order.
+   * Returns an error message, or null.
+   */
+  addVoid(lineId: string, qty: number, reason: string): string | null {
+    const c = activeCheck();
+    const line = c?.lines.find((l) => l.id === lineId);
+    if (!c || !line) return 'Select an item first.';
+    if (line.status !== 'sent' || line.qty <= 0) return 'Only items that have been ordered are voided. Change unsent items directly.';
+    const voided = c.lines.filter((l) => l.voidOf === lineId).reduce((s, l) => s - l.qty, 0);
+    const n = Math.min(qty, line.qty - voided);
+    if (n <= 0) return 'This item has already been voided.';
+    const pending = c.lines.find((l) => l.voidOf === lineId && l.status === 'new');
+    set(
+      updateCheck(c.id, (ch) => ({
+        ...ch,
+        lines: pending
+          ? ch.lines.map((l) => (l.id === pending.id ? { ...l, qty: l.qty - n } : l))
+          : [...ch.lines, { id: uid('l'), posId: line.posId, qty: -n, unitPrice: line.unitPrice, status: 'new', round: 0, modifier: line.modifier, voidOf: lineId, reason }],
+      })),
+    );
+    return null;
   },
 
   /** "Close" on the order screen: unsent items are discarded. */
@@ -449,21 +480,9 @@ export const actions = {
     set({ ...updateCheck(c.id, (ch) => ({ ...ch, lines: kept })), screen: homeFor(c), activeCheckId: null });
   },
 
-  voidSent(lineId: string, qty: number) {
-    const c = activeCheck();
-    const line = c?.lines.find((l) => l.id === lineId);
-    if (!c || !line || line.status !== 'sent') return;
-    const n = Math.min(qty, line.qty);
-    set(
-      updateCheck(c.id, (ch) => ({
-        ...ch,
-        lines: ch.lines
-          .map((l) => (l.id === lineId ? { ...l, qty: l.qty - n } : l))
-          .filter((l) => l.qty > 0),
-        voids: [...ch.voids, { posId: line.posId, qty: n, round: line.round, at: now() }],
-      })),
-    );
-    emit({ type: 'void-sent', checkId: c.id, posId: line.posId, qty: n });
+  /** Void an ordered item and send the void right away (Void / Edit, then Order). */
+  voidSent(lineId: string, qty: number, reason = 'Void') {
+    if (actions.addVoid(lineId, qty, reason) === null) actions.sendOrder(true);
   },
 
   // ---- Tender ------------------------------------------------------------

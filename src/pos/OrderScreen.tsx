@@ -7,6 +7,7 @@ import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './com
 import { IconCancelAll, IconBag, IconForkSpoon, IconGuests, IconModifierBadge, IconPerson, IconVoidLine } from './icons';
 import { bluuPad } from './LoginPad';
 import { modifierGroups } from './modifiers';
+import { VoidEditScreen } from './VoidEdit';
 
 const GRID_X = 185;
 const GRID_Y = 69;
@@ -89,26 +90,13 @@ function requireManager(then: () => void) {
   });
 }
 
-function voidLineFlow(line: OrderLine, qty?: number) {
-  const name = posItem(line.posId).label;
-  if (line.status === 'new') {
-    if (qty === undefined || qty >= line.qty) actions.removeLine(line.id);
-    else actions.setLineQty(line.id, line.qty - qty);
-    return;
-  }
-  const n = qty ?? line.qty;
-  dialogs.confirm(
-    <>
-      <b>{name}</b> has already been ordered.
-      <br />
-      Void {n} of {line.qty}?
-    </>,
-    () => requireManager(() => actions.voidSent(line.id, n)),
-    'Void Ordered Item',
-  );
+function voidLineFlow(line: OrderLine) {
+  if (line.status === 'new') return actions.removeLine(line.id);
+  dialogs.message('This item has already been ordered. Use Void / Edit to void it.');
 }
 
 export function OrderScreen() {
+  const [voidEdit, setVoidEdit] = useState(false);
   const checkId = usePos((s) => s.activeCheckId);
   const checks = usePos((s) => s.checks);
   const settings = usePos((s) => s.settings);
@@ -455,24 +443,7 @@ export function OrderScreen() {
         Close
       </button>
       {btn('Modifier', 146, 665, 104, 44, needLine((l) => (modifierGroups(l.posId) && l.status === 'new' ? chooseModifier(l.id, l.posId) : dialogs.message('There are no modifiers for this item.'))))}
-      {btn('Void / Edit', 257, 665, 105, 44, needLine((l) =>
-        dialogs.keypad({
-          title: 'Void / Edit',
-          subtitle: (
-            <>
-              {posItem(l.posId).label} &mdash; qty {l.qty} ({l.status === 'sent' ? 'ordered' : 'new'})
-              <br />
-              Quantity to void:
-            </>
-          ),
-          initial: String(l.qty),
-          onEnter: (v) => {
-            const n = parseInt(v, 10);
-            if (!n || n < 1) return;
-            voidLineFlow(l, Math.min(n, l.qty));
-          },
-        }),
-      ))}
+      {btn('Void / Edit', 257, 665, 105, 44, () => setVoidEdit(true))}
       {btn('Qty', 369, 665, 104, 44, needLine((l) => {
         if (l.status === 'sent') return dialogs.message('This item has already been ordered. Use Void/Edit to change it.');
         dialogs.keypad({ title: 'Qty', subtitle: posItem(l.posId).label, initial: String(l.qty), onEnter: (v) => actions.setLineQty(l.id, parseInt(v, 10) || 0) });
@@ -495,6 +466,7 @@ export function OrderScreen() {
       <button data-testid="order-Order" className="pos-btn pos-btn-navy" style={{ left: 917, top: 654, width: 89, height: 97, fontSize: 15 }} onClick={() => actions.submitOrder()}>
         Order
       </button>
+      {voidEdit && check && <VoidEditScreen check={check} onClose={() => setVoidEdit(false)} requireManager={requireManager} />}
     </div>
   );
 }

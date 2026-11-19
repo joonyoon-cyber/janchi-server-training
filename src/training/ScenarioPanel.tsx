@@ -25,7 +25,7 @@ function task(st: Stage, run: RunState) {
     case 'order':
       return 'Ring in the request and send it.';
     case 'void':
-      return "Handle the guest's request on the POS.";
+      return 'Take it off the check (Void / Edit), then press Order to send the void.';
     case 'decision':
       return 'Choose how you respond.';
     case 'pay':
@@ -37,7 +37,7 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'move' | 'join' | 'note';
+type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'move' | 'join' | 'void' | 'note';
 
 /** Each kind of request has its own color and icon, so it is clear what the guest wants. */
 const KIND: Record<Kind, { label: string; card: string; current: string; badge: string; icon: string }> = {
@@ -51,6 +51,7 @@ const KIND: Record<Kind, { label: string; card: string; current: string; badge: 
   pay: { label: 'Paying', card: 'bg-amber-950/40 ring-1 ring-amber-800/60', current: 'bg-amber-900/60 ring-2 ring-amber-400', badge: 'bg-amber-500', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
   move: { label: 'Move table', card: 'bg-cyan-950/50 ring-1 ring-cyan-800/60', current: 'bg-cyan-900/70 ring-2 ring-cyan-400', badge: 'bg-cyan-500', icon: 'M4 12h14M13 6l6 6-6 6' },
   join: { label: 'Join tables', card: 'bg-fuchsia-950/40 ring-1 ring-fuchsia-800/60', current: 'bg-fuchsia-900/60 ring-2 ring-fuchsia-400', badge: 'bg-fuchsia-500', icon: 'M9 12h6M8 8H6a4 4 0 0 0 0 8h2M16 8h2a4 4 0 0 1 0 8h-2' },
+  void: { label: 'Take it off', card: 'bg-red-950/50 ring-1 ring-red-800/60', current: 'bg-red-900/60 ring-2 ring-red-400', badge: 'bg-red-500', icon: 'M5 12h14' },
   note: { label: '', card: '', current: '', badge: '', icon: '' },
 };
 
@@ -59,6 +60,7 @@ function kindOf(st: Stage): Kind {
   if (st.kind === 'pay') return 'pay';
   if (st.kind === 'move') return 'move';
   if (st.kind === 'join') return 'join';
+  if (st.kind === 'void') return 'void';
   if (st.kind === 'decision') return st.followUp ? 'serve' : 'question';
   return 'order';
 }

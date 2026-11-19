@@ -93,6 +93,9 @@ export interface OrderLine {
   /** Submission round this line was sent in (0 while unsent). */
   round: number;
   modifier?: string;
+  /** A void (negative qty) of an item already ordered: the line it takes from, and why. */
+  voidOf?: string;
+  reason?: string;
 }
 
 export interface VoidRecord {
@@ -100,6 +103,7 @@ export interface VoidRecord {
   qty: number;
   round: number;
   at: number;
+  reason?: string;
 }
 
 export type PayMethod = 'cash' | 'credit';
@@ -162,7 +166,7 @@ export type PosEvent =
   | { type: 'set-qty'; checkId: string; posId: string; from: number; to: number }
   | { type: 'cancel-all'; checkId: string }
   | { type: 'submit'; checkId: string; tableId: string; round: number; items: { posId: string; qty: number }[]; kitchenPrint: boolean }
-  | { type: 'void-sent'; checkId: string; posId: string; qty: number }
+  | { type: 'void-sent'; checkId: string; posId: string; qty: number; reason?: string }
   | { type: 'discard-unsent'; checkId: string; items: { posId: string; qty: number }[] }
   | { type: 'open-tender'; checkId: string; tableId: string }
   | { type: 'gratuity'; checkId: string; amount: number }
