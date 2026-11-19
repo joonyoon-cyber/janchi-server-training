@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { mappingsForPos, posItem, sectionOfTable, sections, tableDef, tableLabel } from '../lib/menu';
+import { mappingsForPos, posItem, sectionOfTable, sections, tableCapacity, tableDef, tableLabel } from '../lib/menu';
 import { actions, getState, now, onPosEvent, pushback, setPosGuard } from '../lib/store';
 import { evaluate, type Evaluation } from './evaluate';
 import { saveResult } from './progress';
@@ -25,13 +25,43 @@ export function useTraining() {
   );
 }
 
+/** The party a check belongs to (including the second check of a party on two W tables). */
+function partyOf(checkId: string): string | undefined {
+  if (!run) return undefined;
+  return Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === checkId) ?? Object.keys(run.partyExtra ?? {}).find((p) => run!.partyExtra![p].includes(checkId));
+}
+
+/** Remember every check a party has had, so scoring sees both W tables. */
+function own(party: string, checkId: string) {
+  if (!run) return;
+  run.partyAll ??= {};
+  const l = (run.partyAll[party] ??= []);
+  if (!l.includes(checkId)) l.push(checkId);
+}
+
+/** A two-table party with only its first table seated so far. */
+const halfSeated = (s: Stage) => s.kind === 'seat' && !!s.twoTables && !!run?.partyTables[s.party] && !(run.partyExtra?.[s.party]?.length);
+
 /** The party waiting for a table: the current seating request, or one passed with Next. */
 function waitingSeat() {
   if (!run) return undefined;
   const cur = run.scenario.stages[run.stageIndex];
-  if (cur?.kind === 'seat' && !cur.takeout && !run.partyTables[cur.party]) return cur;
-  return run.scenario.stages.find((s, i) => i < run!.stageIndex && s.kind === 'seat' && !s.takeout && !run!.partyTables[s.party]);
+  if (cur?.kind === 'seat' && !cur.takeout && (!run.partyTables[cur.party] || halfSeated(cur))) return cur;
+  return run.scenario.stages.find((s, i) => i < run!.stageIndex && s.kind === 'seat' && !s.takeout && (!run!.partyTables[s.party] || halfSeated(s)));
 }
+
+const isBar = (tableId: string) => /^BAR/i.test(tableId);
+
+/** The most recent move/join request for a party, up to the current one. */
+function requestFor(party: string, kind: 'move' | 'join') {
+  if (!run) return undefined;
+  return run.scenario.stages
+    .map((s, i) => ({ s, i }))
+    .filter(({ s, i }) => i <= run!.stageIndex && s.kind === kind && s.party === party)
+    .pop();
+}
+
+const takeoutCheck = (c: { orderType?: string } | undefined) => c?.orderType === 'takeout';
 
 const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const num = (n: number) => NUM_WORDS[n] ?? String(n);
@@ -47,15 +77,37 @@ setPosGuard((a) => {
   const s = getState();
   if (a.type === 'seat') {
     const st = waitingSeat();
+    const cur = run.scenario.stages[run.stageIndex];
+    if ((!st || st.kind !== 'seat') && cur?.kind === 'move') {
+      return {
+        who: 'Host',
+        text: `Don't open a new check for your bar guests. Use Move/Join to move their check from ${tableLabel(run.partyTables[cur.party] ?? 'the bar')} to the table, so the drinks they already ordered come along.`,
+      };
+    }
     if (!st || st.kind !== 'seat') return { who: 'Host', text: 'Nobody is waiting for a table right now.' };
+    if (st.bar && !isBar(a.tableId)) return { who: 'Host', text: 'They want a drink at the bar while they wait. Seat them at one of the bar seats (BAR 1 to BAR 4).' };
+    if (st.twoTables) {
+      const first = run.partyTables[st.party];
+      const t0 = tableDef(a.tableId);
+      if (!first) {
+        if (!t0?.joinWith || s.tableChecks[t0.joinWith])
+          return { who: 'Host', text: `A party of ${num(st.guests)} sits across two W tables side by side: W1 and W2, W3 and W4, or W5 and W6. Please use a free pair.` };
+        if (a.guests >= st.guests || a.guests > (t0.capacity ?? 4))
+          return { who: 'Host', text: `Seat them as two tables, up to ${num(t0.capacity ?? 4)} at each: part of the party at ${tableLabel(a.tableId)} and the rest at ${tableLabel(t0.joinWith)}. You'll join the two checks when they pay.` };
+      } else if (tableDef(first)?.joinWith !== a.tableId) {
+        const partner = tableDef(first)?.joinWith;
+        return { who: 'Host', text: `Seat the rest of the party at ${partner ? tableLabel(partner) : 'the table'} right next to ${tableLabel(first)}, so they sit together.` };
+      }
+    }
     if (st.section && sectionOfTable(a.tableId) !== st.section) {
       const name = sections.find((x) => x.id === st.section)?.label ?? st.section;
       return { who: 'Host', text: `${tableLabel(a.tableId)} isn't in your section. Please seat them in ${name}.` };
     }
     const t = tableDef(a.tableId);
     const cap = t?.capacity;
-    const canJoin = !!t?.joinWith && !s.tableChecks[t.joinWith] && st.guests <= (t.joinedCapacity ?? 0);
-    if (cap !== undefined && st.guests > cap && !canJoin) {
+    const canJoin = !st.twoTables && !!t?.joinWith && !s.tableChecks[t.joinWith] && st.guests <= (t.joinedCapacity ?? 0);
+    const here = st.twoTables ? a.guests : st.guests;
+    if (cap !== undefined && here > cap && !canJoin) {
       return {
         who: 'Guest',
         text: `"There are ${num(st.guests)} of us. We won't fit at a table for ${num(cap)}."` + (t?.joinWith ? ` (${t.joinWith} is taken, so ${tableLabel(a.tableId)} can't be joined with it.)` : ''),
@@ -63,9 +115,40 @@ setPosGuard((a) => {
     }
     return null;
   }
+  if (a.type === 'move') {
+    const party = partyOf(a.checkId);
+    if (!party) return null;
+    const req = requestFor(party, 'move');
+    if (!req) return { who: 'Guest', text: '"We\'re happy at this table, thanks!"' };
+    if (isBar(a.to)) return { who: 'Host', text: 'Move them to a table, not another bar seat.' };
+    const want = (req.s as { section?: string }).section;
+    if (want && sectionOfTable(a.to) !== want) {
+      const name = sections.find((x) => x.id === want)?.label ?? want;
+      return { who: 'Host', text: `${tableLabel(a.to)} isn't in your section. Move them to a table in ${name}.` };
+    }
+    const guests = s.checks[a.checkId]?.guests ?? 0;
+    const cap = tableCapacity(a.to);
+    if (cap !== undefined && guests > cap) return { who: 'Guest', text: `"There are ${num(guests)} of us. We won't fit at a table for ${num(cap)}."` };
+    return null;
+  }
+  if (a.type === 'join') {
+    const pf = partyOf(a.fromCheckId);
+    const pt = partyOf(a.toCheckId);
+    if (!pf && !pt) return null;
+    if (pf !== pt) return { who: 'Guest', text: '"Excuse me, we\'re not with that table! Please keep our checks separate."' };
+    if (!requestFor(pf!, 'join')) return { who: 'Guest', text: '"We\'re still ordering at both tables. Keep them separate until we\'re ready to pay, please."' };
+    return null;
+  }
   // Print / Tender: only once these guests have asked for the check.
-  const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === a.checkId);
+  const party = partyOf(a.checkId);
   if (!party) return null;
+  // Two W tables are one group: they pay on one check, after the tables are joined.
+  if (run.partyExtra?.[party]?.length && !takeoutCheck(s.checks[a.checkId])) {
+    const asked = requestFor(party, 'join');
+    return asked
+      ? { who: 'Guest', text: `"We're one group. Can you join our two tables into one check first?"` }
+      : { who: 'Guest', text: '"We\'re still eating! We\'ll let you know when we\'re ready for the check."' };
+  }
   const c = s.checks[a.checkId];
   const takeout = c?.orderType === 'takeout';
   if (takeout && a.type === 'print') return null;
@@ -208,7 +291,7 @@ function earlierUnanswered(checkId: string) {
   if (!run) return undefined;
   for (let i = 0; i < run.stageIndex; i++) {
     const st = run.scenario.stages[i];
-    if (st.kind !== 'order' || run.partyChecks[st.party] !== checkId) continue;
+    if (st.kind !== 'order' || partyOf(checkId) !== st.party) continue;
     const rec = run.records.find((r) => r.stageId === st.id);
     if (rec && !rec.submitted && !rec.skipped) return rec;
   }
@@ -221,26 +304,70 @@ onPosEvent((e) => {
   const st = currentStage();
   if (!st) return;
   const partyCheck = run.partyChecks[st.party];
-  const onParty = 'checkId' in e && !!partyCheck && e.checkId === partyCheck;
+  const onParty = 'checkId' in e && !!partyCheck && partyOf(e.checkId) === st.party;
+
+  // Move/Join: the check moved to another table, or two checks became one.
+  if (e.type === 'move-table') {
+    const party = partyOf(e.checkId);
+    if (party) {
+      run.partyTables[party] = e.to;
+      const req = requestFor(party, 'move');
+      const rec = req ? run.records.find((r) => r.stageId === req.s.id) : undefined;
+      if (rec) rec.movedTo = e.to;
+      if (req && req.i === run.stageIndex) {
+        advance();
+        return;
+      }
+    }
+  }
+  if (e.type === 'join-tables') {
+    const party = partyOf(e.toCheckId);
+    if (party) {
+      run.partyChecks[party] = e.toCheckId;
+      own(party, e.toCheckId);
+      run.partyTables[party] = e.to;
+      if (run.partyExtra) run.partyExtra[party] = [];
+      const req = requestFor(party, 'join');
+      const rec = req ? run.records.find((r) => r.stageId === req.s.id) : undefined;
+      if (rec) rec.joined = true;
+      if (req && req.i === run.stageIndex) {
+        advance();
+        return;
+      }
+    }
+  }
 
   // A party re-seated at the same table (e.g. after an empty check was released).
   // (Only when that party's check was dropped; a closed check means a new party took the table.)
   const reseated =
     (e.type === 'seat' || e.type === 'quick-serve') &&
     Object.keys(run.partyTables).find((p) => run!.partyTables[p] === e.tableId && !getState().checks[run!.partyChecks[p]]);
-  if (reseated && (e.type === 'seat' || e.type === 'quick-serve')) run.partyChecks[reseated] = e.checkId;
+  if (reseated && (e.type === 'seat' || e.type === 'quick-serve')) {
+    run.partyChecks[reseated] = e.checkId;
+    own(reseated, e.checkId);
+  }
   // Seated after pressing Next: the seat goes to the earliest party still waiting for a table.
   const isCurrentSeat = st.kind === 'seat' && ((st.takeout && e.type === 'quick-serve') || (!st.takeout && e.type === 'seat'));
   if (!reseated && !isCurrentSeat && (e.type === 'seat' || e.type === 'quick-serve')) {
     const waiting = run.scenario.stages.find(
-      (s, i) => i < run!.stageIndex && s.kind === 'seat' && !!s.takeout === (e.type === 'quick-serve') && !run!.partyTables[s.party],
+      (s, i) => i < run!.stageIndex && s.kind === 'seat' && !!s.takeout === (e.type === 'quick-serve') && (!run!.partyTables[s.party] || halfSeated(s)),
     );
-    if (waiting) {
+    if (waiting && halfSeated(waiting) && e.type === 'seat') {
+      run.partyExtra = { ...(run.partyExtra ?? {}), [waiting.party]: [e.checkId] };
+      own(waiting.party, e.checkId);
+      const r = run.records.find((x) => x.stageId === waiting.id);
+      if (r) {
+        r.seatedTables = [...(r.seatedTables ?? []), e.tableId];
+        r.seatedGuests = (r.seatedGuests ?? 0) + e.guests;
+      }
+    } else if (waiting) {
       run.partyTables[waiting.party] = e.tableId;
       run.partyChecks[waiting.party] = e.checkId;
+      own(waiting.party, e.checkId);
       const r = run.records.find((x) => x.stageId === waiting.id);
       if (r) {
         r.seatedTable = e.tableId;
+        r.seatedTables = [e.tableId];
         if (e.type === 'seat') r.seatedGuests = e.guests;
       }
     }
@@ -248,7 +375,7 @@ onPosEvent((e) => {
 
   // Something they didn't order went to the kitchen: the guests say so (fix it with Void).
   if (e.type === 'submit') {
-    const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === e.checkId);
+    const party = partyOf(e.checkId);
     const check = getState().checks[e.checkId];
     if (party && check) {
       const asked = new Map<string, number>();
@@ -271,7 +398,7 @@ onPosEvent((e) => {
 
   // The check printed for a party that asked for it: they look it over, then pay.
   if (e.type === 'print') {
-    const party = Object.keys(run.partyChecks).find((p) => run!.partyChecks[p] === e.checkId);
+    const party = partyOf(e.checkId);
     const i = run.scenario.stages.findIndex((x, j) => j <= run!.stageIndex && x.kind === 'pay' && x.party === party);
     const rec = i >= 0 ? run.records.find((r) => r.stageId === run!.scenario.stages[i].id) : undefined;
     if (rec) rec.checkPrinted = true;
@@ -293,15 +420,28 @@ onPosEvent((e) => {
       if (st.takeout && e.type === 'quick-serve') {
         run.partyTables[st.party] = e.tableId;
         run.partyChecks[st.party] = e.checkId;
+        own(st.party, e.checkId);
         record().seatedTable = e.tableId;
+        advance();
+        return;
+      }
+      if (!st.takeout && e.type === 'seat' && st.twoTables && run.partyTables[st.party]) {
+        // Second W table of the pair: the party is now seated on two checks.
+        run.partyExtra = { ...(run.partyExtra ?? {}), [st.party]: [e.checkId] };
+        own(st.party, e.checkId);
+        record().seatedTables = [...(record().seatedTables ?? []), e.tableId];
+        record().seatedGuests = (record().seatedGuests ?? 0) + e.guests;
         advance();
         return;
       }
       if (!st.takeout && e.type === 'seat') {
         run.partyTables[st.party] = e.tableId;
         run.partyChecks[st.party] = e.checkId;
+        own(st.party, e.checkId);
         record().seatedTable = e.tableId;
+        record().seatedTables = [e.tableId];
         record().seatedGuests = e.guests;
+        if (st.twoTables) break; // wait for the second table
         advance();
         return;
       }

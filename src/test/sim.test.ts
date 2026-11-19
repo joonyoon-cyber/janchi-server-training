@@ -491,3 +491,94 @@ describe('test mode: one shift', () => {
     expect(getRun().result!.paymentMistakes.some((x) => x.includes('Even Amount Split'))).toBe(true);
   });
 });
+
+describe('move and join tables', () => {
+  const seat = (table: string, guests: number) => {
+    actions.goto('floor');
+    actions.seatTable(table, guests);
+    return getState().tableChecks[table];
+  };
+
+  it('Move takes the check (and its drinks) from a bar seat to an empty table', () => {
+    actions.reset({ persist: false });
+    const id = seat('BAR2', 2);
+    actions.addItem('draft-sapporo', 2);
+    actions.submitOrder();
+    expect(actions.moveTable('BAR2', 'B5')).toBeNull();
+    const s = getState();
+    expect(s.tableChecks.BAR2).toBeUndefined();
+    expect(s.tableChecks.B5).toBe(id);
+    expect(s.checks[id].tableId).toBe('B5');
+    expect(s.checks[id].lines.map((l) => l.posId)).toEqual(['draft-sapporo']);
+    // Moving onto a table that already has a check needs Join.
+    seat('B6', 2);
+    expect(actions.moveTable('B5', 'B6')).toMatch(/already has a check/);
+  });
+
+  it('Join combines two checks: guests and items add up, the 18% applies at 5+ guests', () => {
+    actions.reset({ persist: false });
+    const w1 = seat('W1', 4);
+    actions.addItem('premium-ayce-dinner', 4);
+    actions.submitOrder();
+    const w2 = seat('W2', 4);
+    actions.addItem('premium-ayce-dinner', 4);
+    actions.submitOrder();
+    const rate = getState().settings.taxRate;
+    expect(checkTotals(getState().checks[w1], rate).gratuity).toBe(0);
+    expect(actions.joinTables('W2', 'W1')).toBeNull();
+    const s = getState();
+    const c = s.checks[w1];
+    expect(c.guests).toBe(8);
+    expect(c.lines.reduce((n, l) => n + l.qty, 0)).toBe(8);
+    expect(s.checks[w2].status).toBe('joined');
+    expect(s.tableChecks.W2).toBeUndefined();
+    const t = checkTotals(c, rate);
+    expect(t.gratuity).toBeCloseTo(Math.round(8 * 38.95 * 18) / 100, 2);
+  });
+
+  it('a bar party is moved to a table in a scenario; seating them again is refused', () => {
+    const sc = scenarios.find((x) => x.id === 'bar-to-table')!;
+    startScenario(sc);
+    seat('B5', 2); // not the bar
+    expect(getRun().run!.partyTables.p1).toBeUndefined();
+    seat('BAR1', 2);
+    actions.addItem('draft-sapporo', 2);
+    actions.submitOrder();
+    expect(currentStage()?.kind).toBe('move');
+    seat('B5', 2); // a new check instead of Move
+    expect(getState().tableChecks.B5).toBeUndefined();
+    expect(actions.moveTable('BAR1', 'BAR3')).toBe(''); // refused: another bar seat
+    expect(actions.moveTable('BAR1', 'B5')).toBeNull();
+    expect(currentStage()?.kind).toBe('order');
+    playPerfect(sc);
+    const r = getRun().result!;
+    expect(r.incorrect.filter((x) => x.includes('pushed back'))).toHaveLength(3);
+    expect(r.correct.some((x) => x.includes('Moved the bar guests'))).toBe(true);
+  });
+
+  it('a party of eight sits at two W tables, then joins them before the check', () => {
+    const sc = scenarios.find((x) => x.id === 'party-of-eight')!;
+    startScenario(sc);
+    seat('W1', 8); // all eight at one table: refused
+    expect(getState().tableChecks.W1).toBeUndefined();
+    seat('W3', 4);
+    seat('W5', 4); // not next to W3
+    expect(getState().tableChecks.W5).toBeUndefined();
+    seat('W4', 4);
+    expect(currentStage()?.kind).toBe('order');
+    expect(actions.joinTables('W4', 'W3')).toBe(''); // not ready to pay yet
+    playPerfect(sc);
+    const r = getRun().result!;
+    expect(r.correct).toContain('Joined the two W tables into one check before they paid');
+    expect(r.incorrect.filter((x) => x.includes('pushed back'))).toHaveLength(3);
+  });
+
+  it('every Test shift has a bar move (A B C BAR) or a W-pair join (M Y W)', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const sc = buildTest(seed);
+      const kinds = new Set(sc.stages.map((s) => s.kind));
+      const abc = sc.summary.includes('A B C');
+      expect(kinds.has(abc ? 'move' : 'join')).toBe(true);
+    }
+  });
+});

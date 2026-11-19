@@ -1097,9 +1097,9 @@
     },
     {
       "id": "party-of-eight",
-      "title": "Party of Eight (W tables)",
+      "title": "Party of Eight on Two W Tables (Join)",
       "level": "advanced",
-      "summary": "Eight guests in M Y W: only a joined W pair (W1&2, W3&4, W5&6) seats eight. The 18% tip is added automatically.",
+      "summary": "Eight guests sit across a W pair as two checks (four at each). When they are ready to pay, join the two tables into one check with Move/Join; the 18% tip is added automatically after the join.",
       "time": {
         "weekday": 6,
         "hour": 18,
@@ -1108,7 +1108,7 @@
       "parties": {
         "p1": 8
       },
-      "targetSeconds": 300,
+      "targetSeconds": 330,
       "stages": [
         {
           "id": "seat",
@@ -1117,7 +1117,8 @@
           "speaker": "host",
           "guests": 8,
           "section": "MYW",
-          "say": "Party of eight. M Y W section, please."
+          "twoTables": true,
+          "say": "Party of eight in M Y W. Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), four at each."
         },
         {
           "id": "r1",
@@ -1172,12 +1173,95 @@
           ]
         },
         {
+          "id": "join",
+          "kind": "join",
+          "party": "p1",
+          "note": "Everyone is done eating.",
+          "say": "That was great! We're all one group, so please put both tables on one check."
+        },
+        {
           "id": "pay",
           "kind": "pay",
           "party": "p1",
           "method": "credit",
           "say": "We'll put it all on one card.",
           "ask": "Can we get the check?"
+        }
+      ]
+    },
+    {
+      "id": "bar-to-table",
+      "title": "Bar Guests Move to a Table (Move)",
+      "level": "intermediate",
+      "summary": "Two guests have a drink at the bar while they wait. When a table opens up, move their check from the bar to the table with Move/Join (their drinks come along), then ring in their AYCE.",
+      "time": {
+        "weekday": 5,
+        "hour": 18,
+        "minute": 30
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 240,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "bar": true,
+          "say": "Two guests are waiting for a table. They'd like a drink at the bar in the meantime: please seat them at the bar."
+        },
+        {
+          "id": "r0",
+          "kind": "order",
+          "party": "p1",
+          "say": "Two draft Sapporos, please.",
+          "expect": [
+            {
+              "posId": "draft-sapporo",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "move",
+          "kind": "move",
+          "party": "p1",
+          "speaker": "host",
+          "section": "ABC",
+          "note": "Twenty minutes later, a table opens up.",
+          "say": "A table just opened up in A B C BAR for your bar guests. Please move them over to it."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "We'll both do Premium all you can eat. To start: two briskets and two pork bellies.",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 2
+            },
+            {
+              "posId": "15-brisket-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "18-pork-belly-ayce",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "ask": "Check, please!",
+          "say": "One card for everything, please."
         }
       ]
     },

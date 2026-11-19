@@ -36,6 +36,22 @@ export interface SeatStage extends StageBase {
   tableId?: string;
   /** Counter guest: start a Quick Serve (takeout) order instead of seating a table. */
   takeout?: boolean;
+  /** Seat them at the bar (BAR 1-4) for drinks while they wait for a table. */
+  bar?: boolean;
+  /** A party of 7-8 seated across a W pair (W1+W2, W3+W4, W5+W6) as two checks, joined when they pay. */
+  twoTables?: boolean;
+}
+
+/** Bar guests get a table: Move/Join > Move their check from the bar to a table. */
+export interface MoveStage extends StageBase {
+  kind: 'move';
+  /** Section the new table must be in. */
+  section?: string;
+}
+
+/** A party on two W tables is ready to pay: Move/Join > Join the two checks into one. */
+export interface JoinStage extends StageBase {
+  kind: 'join';
 }
 
 export interface OrderStage extends StageBase {
@@ -87,7 +103,7 @@ export interface PayStage extends StageBase {
   cashPart?: number;
 }
 
-export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage;
+export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage | MoveStage | JoinStage;
 
 export interface Scenario {
   id: string;
@@ -125,6 +141,12 @@ export interface StageRecord {
   /** seat */
   seatedTable?: string;
   seatedGuests?: number;
+  /** seat (two W tables): both tables, in the order they were seated. */
+  seatedTables?: string[];
+  /** move: the table the check was moved to. */
+  movedTo?: string;
+  /** join: the two tables were joined into one check. */
+  joined?: boolean;
   /** decision */
   choice?: number;
   /** pay */
@@ -142,6 +164,10 @@ export interface RunState {
   finishedAt?: number;
   partyTables: Record<string, string>;
   partyChecks: Record<string, string>;
+  /** A party's second check (the other W table) until the two are joined. */
+  partyExtra?: Record<string, string[]>;
+  /** Every check a party has had (both W tables, before and after a join). */
+  partyAll?: Record<string, string[]>;
   records: StageRecord[];
   /** POS events, tagged with the stage index that was active when they happened. */
   events: StagedEvent[];

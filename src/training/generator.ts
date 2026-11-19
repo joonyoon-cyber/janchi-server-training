@@ -202,6 +202,8 @@ export interface GenOptions {
   /** Add items to the first AYCE order and ask who brings them out: server items, or a kitchen app as a check. */
   serverItems?: 'serve' | 'kitchen' | 'none';
   lunch?: boolean;
+  /** Drinks at the bar while they wait, then Move/Join > Move them to a table (A B C BAR). */
+  bar?: boolean;
 }
 /** Item use counts during a Test build, so a shift asks for many different items. */
 let usage: Map<string, number> | null = null;
@@ -287,13 +289,21 @@ export function generateScenario(level: Level, opts: GenOptions = {}): Scenario 
 
 function build(level: Level, opts: GenOptions): Scenario {
   const taxRate = getState().settings.taxRate;
-  const section = pick(['ABC', 'MYW']);
-  const sectionName = section === 'ABC' ? 'A B C BAR' : 'M Y W';
-  const alaCarte = opts.alaCarte ?? (level !== 'beginner' && chance(0.3));
+  let section = pick(['ABC', 'MYW']);
+  // Random practice tables sometimes start at the bar; Test tables say so explicitly.
+  const bar = opts.bar ?? (!opts.rng && level !== 'beginner' && chance(0.12));
+  const alaCarte = bar ? false : (opts.alaCarte ?? (level !== 'beginner' && chance(0.3)));
   const advanced = level === 'advanced';
   let guests = alaCarte ? 2 + rnd(2) : 2 + rnd(advanced ? 5 : 3);
   if (advanced && !alaCarte && chance(0.35)) guests = 5 + rnd(2);
+  if (advanced && !alaCarte && !bar && !opts.rng && chance(0.15)) guests = 7 + rnd(2);
   if (opts.guests) guests = opts.guests;
+  if (bar && guests > 4) guests = 2 + rnd(2);
+  // 7-8 guests sit across a W pair as two checks and are joined when they pay.
+  const twoTables = !bar && guests >= 7;
+  if (twoTables) section = 'MYW';
+  if (bar) section = 'ABC';
+  const sectionName = section === 'ABC' ? 'A B C BAR' : 'M Y W';
 
   const weekday = rnd(7);
   const lunch = opts.lunch ?? chance(0.3);
@@ -304,7 +314,20 @@ function build(level: Level, opts: GenOptions): Scenario {
   const p = 'p1';
   let n = 0;
   const id = () => `s${n++}`;
-  stages.push({ id: id(), kind: 'seat', party: p, speaker: 'host', guests, section, say: `Party of ${guests}. Please seat them in ${sectionName}.` });
+  if (bar)
+    stages.push({ id: id(), kind: 'seat', party: p, speaker: 'host', guests, section, bar: true, say: `Party of ${guests}. They'd like a drink at the bar while they wait for a table: please seat them at the bar.` });
+  else if (twoTables)
+    stages.push({
+      id: id(),
+      kind: 'seat',
+      party: p,
+      speaker: 'host',
+      guests,
+      section,
+      twoTables: true,
+      say: `Party of ${guests} in M Y W. Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), up to four at each.`,
+    });
+  else stages.push({ id: id(), kind: 'seat', party: p, speaker: 'host', guests, section, say: `Party of ${guests}. Please seat them in ${sectionName}.` });
 
   const allItems: ItemReq[] = [];
   const order = (st: Omit<OrderStage, 'id' | 'kind' | 'party'>) => {
@@ -322,9 +345,9 @@ function build(level: Level, opts: GenOptions): Scenario {
     const pkgSay = ultimate ? pick(['the Ultimate all you can eat', 'Ultimate AYCE']) : pick(['Premium all you can eat', 'the Premium AYCE', 'all you can eat']);
     const pkg: ItemReq[] = [{ posId: pkgId, qty: guests }];
     if (guests === 1) pkg.push({ posId: 'single-person-extra', qty: 1 });
-    const wantDrinks = opts.drinks ? opts.drinks !== 'none' : chance(0.75);
+    const wantDrinks = bar || (opts.drinks ? opts.drinks !== 'none' : chance(0.75));
     const drinks = wantDrinks ? drinkOrder(guests) : [];
-    const seq = drinks.length ? (opts.drinks && opts.drinks !== 'none' ? opts.drinks : pick(['with', 'before', 'after'])) : 'none';
+    const seq = bar ? 'before' : drinks.length ? (opts.drinks && opts.drinks !== 'none' ? opts.drinks : pick(['with', 'before', 'after'])) : 'none';
     const over = opts.over ?? (advanced && chance(0.4));
     const first = over ? meatRound(5, undefined, 3) : meatRound(2 + rnd(3));
     let apps = level !== 'beginner' && chance(0.35) ? [{ posId: pick(Object.keys(AYCE_APPS)), qty: 1 }] : [];
@@ -340,7 +363,21 @@ function build(level: Level, opts: GenOptions): Scenario {
     const meatSay = (items: ItemReq[]) => pick([`Let's start with ${list(items)}.`, `To start: ${list(items)}.`, `First round: ${list(items)}.`]);
     const drinkSay = (items: ItemReq[]) => pick([`Can we get ${list(items)}?`, `And to drink, ${list(items)}.`, `${capFirst(list(items))} to drink, please.`]);
 
-    if (seq === 'before') order({ expect: drinks, say: pick([`Can we start with drinks? ${capFirst(list(drinks))}.`, `Drinks first, please: ${list(drinks)}.`]) });
+    if (seq === 'before')
+      order({
+        expect: drinks,
+        say: bar ? pick([`While we wait: ${list(drinks)}, please.`, `Can we get ${list(drinks)} while we wait?`]) : pick([`Can we start with drinks? ${capFirst(list(drinks))}.`, `Drinks first, please: ${list(drinks)}.`]),
+      });
+    if (bar)
+      stages.push({
+        id: id(),
+        kind: 'move',
+        party: p,
+        speaker: 'host',
+        section,
+        note: 'A little later, a table opens up.',
+        say: `A table just opened up in ${sectionName} for your bar guests. Please move them over to it.`,
+      });
     if (over) {
       stages.push({
         id: id(),
@@ -431,8 +468,8 @@ function build(level: Level, opts: GenOptions): Scenario {
     }
     if (seq === 'after') order({ expect: drinks, say: pick([`Oh, can we also get ${list(drinks)}?`, `Could we get some drinks? ${capFirst(list(drinks))}.`]) });
 
-    title = `${ultimate ? 'Ultimate' : 'Premium'} AYCE, party of ${guests}`;
-    summary = `Randomized ${level} AYCE table (${seq === 'none' ? 'no drinks' : `drinks ${seq} AYCE`}${over ? ', over the meat limit' : ''}).`;
+    title = `${ultimate ? 'Ultimate' : 'Premium'} AYCE, party of ${guests}${bar ? ', from the bar' : twoTables ? ' on two W tables' : ''}`;
+    summary = `Randomized ${level} AYCE table (${bar ? 'drinks at the bar, then moved to a table' : seq === 'none' ? 'no drinks' : `drinks ${seq} AYCE`}${twoTables ? ', two W tables joined to pay' : ''}${over ? ', over the meat limit' : ''}).`;
   } else {
     const entrees = isWeekdayLunch ? LUNCH_ENTREES : DINNER_ENTREES;
     const mains = sample(Object.keys(entrees), 1 + rnd(2)).map((posId) => ({ posId, qty: 1 }));
@@ -485,6 +522,13 @@ function build(level: Level, opts: GenOptions): Scenario {
     stages.push(pay);
   }
 
+  if (twoTables) {
+    // Done eating: one group, one check. Join the two W tables before the check.
+    const join: Stage = { id: id(), kind: 'join', party: p, note: 'Everyone is done eating.', say: pick(["We're all one group, so please put both tables on one check.", "We're ready to pay. Can you put both of our tables on one check?"]) };
+    const payAt = stages.findIndex((x) => x.kind === 'pay');
+    if (payAt >= 0) stages.splice(payAt, 0, join);
+    else stages.push(join);
+  }
   const orderStages = stages.filter((s) => s.kind === 'order').length;
   return {
     id: `gen-${Date.now().toString(36)}-${genSeq++}`,

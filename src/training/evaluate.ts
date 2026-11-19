@@ -155,6 +155,19 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   const recOf = (st: Stage) => run.records.find((r) => r.stageId === st.id);
   const tableName = (party: string) => (run.partyTables[party] ? tableLabel(run.partyTables[party]) : 'not seated');
   const checkOf = (party: string): Check | undefined => pos.checks[run.partyChecks[party]];
+  /** Every check the party had: both W tables before a join, the bar check after a move. */
+  const checksOf = (party: string) => new Set(run.partyAll?.[party] ?? [run.partyChecks[party]]);
+  /** Every table the party sat at or was moved to. */
+  const tablesOf = (party: string) => {
+    const mine = checksOf(party);
+    const t = new Set<string>(run.partyTables[party] ? [run.partyTables[party]] : []);
+    run.events.forEach((e) => {
+      if ((e.type === 'seat' || e.type === 'submit') && mine.has(e.checkId)) t.add(e.tableId);
+      if (e.type === 'move-table' && mine.has(e.checkId)) [e.from, e.to].forEach((x) => t.add(x));
+      if (e.type === 'join-tables' && (mine.has(e.fromCheckId) || mine.has(e.toCheckId))) [e.from, e.to].forEach((x) => t.add(x));
+    });
+    return t;
+  };
   const stageIdx = (st: Stage) => sc.stages.indexOf(st);
   // Orders sent after Next was pressed still count: each request takes the first
   // later Order on its table that no other request has claimed.
@@ -186,6 +199,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         if (exp.some((i) => isAycePackage(i.posId))) score('package', 0);
         score('items', 0, exp.filter((i) => !isAycePackage(i.posId)).length || 1);
       } else if (st.kind === 'void') score('mods', 0);
+      else if (st.kind === 'move' || st.kind === 'join') score('table', 0);
       else if (st.kind === 'decision') score('decisions', 0);
       else if (st.kind === 'pay') {
         score('payment', 0);
@@ -206,6 +220,27 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         if (st.takeout) {
           score('table', 1);
           ev.correct.push('Started a Quick Serve (takeout) order');
+          break;
+        }
+        if (st.bar) {
+          const ok = /^BAR/i.test(t);
+          score('table', ok ? 1 : 0);
+          if (ok) ev.correct.push(`Seated the bar guests at ${tableLabel(t)}`);
+          else ev.incorrect.push(`The guests wanted to wait at the bar, but were seated at ${tableLabel(t)}`);
+          score('guests', rec.seatedGuests === st.guests ? 1 : 0);
+          if (rec.seatedGuests !== st.guests) ev.incorrect.push(`Entered ${rec.seatedGuests} guests; the party has ${st.guests}`);
+          break;
+        }
+        if (st.twoTables) {
+          const ts = rec.seatedTables ?? [t];
+          const pair = ts.length === 2 && tableDef(ts[0])?.joinWith === ts[1];
+          const inSection = !st.section || ts.every((x) => sectionOfTable(x) === st.section);
+          score('table', pair && inSection ? 1 : 0);
+          if (pair && inSection) ev.correct.push(`Seated the party of ${st.guests} across ${ts.map(tableLabel).join(' and ')}`);
+          else ev.incorrect.push(ts.length < 2 ? `Seated only ${tableLabel(ts[0])}; a party of ${st.guests} sits across two W tables` : `Seated at ${ts.map(tableLabel).join(' and ')}, which are not a W pair side by side`);
+          score('guests', rec.seatedGuests === st.guests ? 1 : 0);
+          if (rec.seatedGuests === st.guests) ev.correct.push(`Entered ${st.guests} guests across the two tables`);
+          else ev.incorrect.push(`Entered ${rec.seatedGuests ?? 0} guests across the tables; the party has ${st.guests}`);
           break;
         }
         const okSection = st.tableId ? t === st.tableId : st.section ? sectionOfTable(t) === st.section : true;
@@ -248,7 +283,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         }
         score('submit', 1);
         ev.correct.push(`Sent the order with Order${where}`);
-        if (rec.submitTable && run.partyTables[st.party] !== rec.submitTable) ev.incorrect.push('Order sent on the wrong table');
+        if (rec.submitTable && !tablesOf(st.party).has(rec.submitTable)) ev.incorrect.push('Order sent on the wrong table');
         if (st.kitchenPrint !== undefined && rec.kitchenPrint !== undefined) {
           const ok = rec.kitchenPrint === st.kitchenPrint;
           score('submit', ok ? 1 : 0);
@@ -279,6 +314,20 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
       case 'pay':
         evalPay(st, rec);
         break;
+      case 'move': {
+        const to = rec.movedTo;
+        const ok = !!to && !/^BAR/i.test(to) && (!st.section || sectionOfTable(to) === st.section);
+        score('table', ok ? 1 : 0);
+        if (ok) ev.correct.push(`Moved the bar guests' check to ${tableLabel(to!)}, drinks and all`);
+        else ev.incorrect.push(to ? `Moved the bar guests to ${tableLabel(to)}, which is not a table in your section` : 'Never moved the bar guests to a table (Move/Join > Move)');
+        break;
+      }
+      case 'join': {
+        score('table', rec.joined ? 1 : 0);
+        if (rec.joined) ev.correct.push('Joined the two W tables into one check before they paid');
+        else ev.incorrect.push('The two W tables were never joined into one check (Move/Join > Join)');
+        break;
+      }
     }
   }
 
@@ -411,7 +460,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     const final = new Map(onCheck.map((x) => [x.posId, x.qty]));
     const want = new Map(expected.map((x) => [x.posId, x.qty]));
     run.events.forEach((e) => {
-      if (e.type === 'void-sent' && e.checkId === run.partyChecks[party] && (final.get(e.posId) ?? 0) <= (want.get(e.posId) ?? 0)) {
+      if (e.type === 'void-sent' && checksOf(party).has(e.checkId) && (final.get(e.posId) ?? 0) <= (want.get(e.posId) ?? 0)) {
         ev.correct.push(`Fixed a wrong entry with Void: ${itemName(e.posId)} ×${e.qty}${where}`);
       }
     });
@@ -425,8 +474,10 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     let galbi = 0;
     let rounds = 0;
     let violations = 0;
+    // The 4-meat limit is per table (grill) and round: each W table of a pair counts on its own.
+    const mine = checksOf(party);
     for (const e of run.events) {
-      if (e.type !== 'submit' || e.checkId !== run.partyChecks[party]) continue;
+      if (e.type !== 'submit' || !mine.has(e.checkId)) continue;
       const n = meatCount(e.items);
       if (n > 0) rounds += 1;
       if (n > 4) {
@@ -455,7 +506,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
 
   // ---- Score ----
   const labels: Record<keyof typeof WEIGHTS, string> = {
-    table: 'Table selection',
+    table: 'Tables (seat, move, join)',
     guests: 'Guest count',
     package: 'AYCE package',
     items: 'Menu items & quantities',

@@ -20,7 +20,7 @@ function Intro({ auth }: { auth: Auth }) {
         <p className="mt-1 text-slate-300">
           A Friday dinner shift in one section (A B C BAR or M Y W). {TEST_TABLES} parties arrive one after another and several tables are open at
           once, so requests from different tables come in mixed together: seating, AYCE rounds, the 4-meat limit, à la carte, guests changing their minds,
-          cancellations, parties of 5+, split checks (including one guest paying cash), part cash and part card, and counter guests (take-out, macarons
+          cancellations, parties of 5+ (in M Y W, 7–8 guests on two W tables that you join when they pay), bar guests you move to a table (A B C BAR), split checks (including one guest paying cash), part cash and part card, and counter guests (take-out, macarons
           or a gift card). Every Test has the same mix; the dishes, drinks, parties and order change each time.
         </p>
       </div>

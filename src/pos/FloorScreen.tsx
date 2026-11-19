@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sections } from '../lib/menu';
+import { sections, tableLabel } from '../lib/menu';
 import { checkTotals, fmt } from '../lib/money';
 import { actions, usePos } from '../lib/store';
 import type { Check, TableDef } from '../lib/types';
@@ -71,10 +71,68 @@ export function FloorScreen() {
   const [tenderMode, setTenderMode] = useState(false);
   // Printer icon: tap to arm (red badge -> green check), then tap a table to print its check.
   const [printMode, setPrintMode] = useState(false);
+  // Move/Join: tap the table to move, then where it goes (null = waiting for the first table).
+  const [moveMode, setMoveMode] = useState<{ from: string | null } | null>(null);
   const sec = sections.find((s) => s.id === section) ?? sections[0];
+
+  /** A BLUU-style question with a row of buttons (Move / Join / Cancel, Change Server / …). */
+  const ask = (title: string, text: string, buttons: { label: string; tone: 'dark' | 'light' | 'grey'; onClick?: () => void }[]) =>
+    dialogs.custom((close) => (
+      <Modal w={600} title={title}>
+        <div data-testid="pos-choice" style={{ padding: '60px 24px 40px', textAlign: 'center', fontSize: 19, fontWeight: 'bold', color: '#222' }}>
+          {text}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '0 16px 18px' }}>
+          {buttons.map((b) => (
+            <button
+              key={b.label}
+              data-testid={`choice-${b.label}`}
+              className="pos-btn"
+              style={{
+                position: 'static',
+                width: 128,
+                height: 46,
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#fff',
+                border: 'none',
+                background: b.tone === 'dark' ? '#3b5ec0' : b.tone === 'light' ? '#8ea6ec' : '#9aa0aa',
+              }}
+              onClick={() => {
+                close();
+                b.onClick?.();
+              }}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </Modal>
+    ));
 
   const onTable = (t: TableDef) => {
     const checkId = tableChecks[t.id];
+    if (moveMode) {
+      const from = moveMode.from;
+      if (!from) {
+        if (!checkId) return dialogs.message(`Table ${t.label} has no open check to move.`, 'Move/Join');
+        return setMoveMode({ from: t.id });
+      }
+      const fromLabel = tableLabel(from);
+      if (t.id === from || tableChecks[from] === checkId) return setMoveMode({ from: null });
+      setMoveMode(null);
+      const done = (err: string | null) => err && dialogs.message(err, 'Move/Join');
+      if (!checkId)
+        return ask('Move Table', `Move Table ${fromLabel} to ${t.label}`, [
+          { label: 'Move', tone: 'dark', onClick: () => done(actions.moveTable(from, t.id)) },
+          { label: 'Cancel', tone: 'grey' },
+        ]);
+      return ask('Move/Combine Table', `Would you like to move/combine Table ${fromLabel} to ${t.label}?`, [
+        { label: 'Move', tone: 'dark', onClick: () => done(actions.moveTable(from, t.id)) },
+        { label: 'Join', tone: 'light', onClick: () => done(actions.joinTables(from, t.id)) },
+        { label: 'Cancel', tone: 'grey' },
+      ]);
+    }
     if (printMode) {
       setPrintMode(false);
       if (!checkId) return dialogs.message(`Table ${t.label} has no open check to print.`, 'Print');
@@ -98,7 +156,24 @@ export function FloorScreen() {
       if (!checkId) return dialogs.message(`Table ${t.label} has no open check.`, 'Tender');
       return actions.openTender(checkId);
     }
-    if (checkId) return actions.openTable(t.id);
+    if (checkId) {
+      const c = checks[checkId];
+      // Someone else's check (e.g. after a Join): the POS asks before opening it.
+      if (c && currentUser && c.server !== currentUser)
+        return ask('Order', 'This is not your order. Do you want to proceed?', [
+          {
+            label: 'Change Server',
+            tone: 'dark',
+            onClick: () => {
+              actions.changeServer(checkId);
+              actions.openTable(t.id);
+            },
+          },
+          { label: "Don't Change Server", tone: 'light', onClick: () => actions.openTable(t.id) },
+          { label: 'Cancel', tone: 'grey' },
+        ]);
+      return actions.openTable(t.id);
+    }
     dialogs.keypad({
       title: `Table ${t.label} - Guest Count`,
       subtitle: 'Enter the number of guests',
@@ -150,6 +225,7 @@ export function FloorScreen() {
           title="Print check"
           onClick={() => {
             setTenderMode(false);
+            setMoveMode(null);
             setPrintMode((m) => !m);
           }}
         >
@@ -205,6 +281,11 @@ export function FloorScreen() {
           Select a table to print its check.
         </div>
       )}
+      {moveMode && (
+        <div className="pos-abs" data-testid="move-hint" style={{ left: 32, top: 132, fontSize: 14, color: '#1c5bb8', fontWeight: 'bold' }}>
+          {moveMode.from ? `Select the table to move ${tableLabel(moveMode.from)} to.` : 'Please select the table that needs to be moved.'}
+        </div>
+      )}
       {tenderMode && (
         <div className="pos-abs" style={{ left: 32, top: 132, fontSize: 14, color: '#1c5bb8', fontWeight: 'bold' }}>
           Select a table to tender.
@@ -212,10 +293,20 @@ export function FloorScreen() {
       )}
 
       {rightBtn('Information', 80, () => dialogs.notInSimulator('Information'), { blue: true })}
-      {rightBtn('Move/Join', 148, () => dialogs.notInSimulator('Move/Join'))}
+      {rightBtn(
+        'Move/Join',
+        148,
+        () => {
+          setPrintMode(false);
+          setTenderMode(false);
+          setMoveMode((m) => (m ? null : { from: null }));
+        },
+        { active: !!moveMode },
+      )}
       {rightBtn('Link Table', 213, () => dialogs.notInSimulator('Link Table'))}
       {rightBtn('Tender', 278, () => {
         setPrintMode(false);
+        setMoveMode(null);
         setTenderMode((m) => !m);
       }, { active: tenderMode })}
       {rightBtn('Quick Serve', 343, () => dialogs.notInSimulator('Quick Serve'))}

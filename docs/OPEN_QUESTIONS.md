@@ -17,7 +17,7 @@ are not asked again.
 | 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
 | 7 | **AYCE exception for guests with disabilities**: the original spec makes it an exception to "everyone does AYCE"; the restaurant's rule of thumb (below) does not mention it. | One advanced scenario still treats it as an exception. Remove it if there is no such exception. |
 | 8 | **BAR seats**: how many guests per BAR seat? | Not scored: any party may sit at the bar. |
-| 9 | **Joining W tables on the real POS**: Move/Join or Link Table? | Seating 5–8 guests at a W table automatically joins it with its pair (W1&2, W3&4, W5&6) if the pair is free; the tiles show "W4 with W3". |
+| 9 | ~~Joining W tables on the real POS~~ **Answered (video, 11/2026):** Move/Join. Move = check to an empty table (bar → table); Join = combine two checks (7–8 guests on a W pair, joined when they pay; the 18% applies after). Both are in the simulator and in Scenarios/Test. | Link Table is still not simulated. |
 
 Not worried about (intentionally not simulated): PATIO layout, the icon on table W6, card slip layout, physical gift card activation.
 

@@ -43,7 +43,12 @@ export function HelpPanel() {
                 </li>
                 <li>
                   <b>Table sizes:</b> A, B, Y3–Y5 up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&amp;2, W3&amp;4 or W5&amp;6 are used
-                  together (seat the party at one of the pair).
+                  together. A party of 7–8 sits across the pair as two checks (up to 4 at each).
+                </li>
+                <li>
+                  <b>Move/Join</b> (Dine-in): tap Move/Join, the table to move, then where it goes. <b>Move</b> takes a check to an empty table (bar guests
+                  getting a table for AYCE: their drinks come along). <b>Join</b> combines two checks: a party on two W tables is joined into one check when
+                  they are ready to pay, and the 18% for 5+ guests is added after the join.
                 </li>
                 <li>
                   <b>You ring in AND bring out:</b> rice, green salad, rice paper, garlic &amp; jalapeño, sesame oil, ssamjang (bean paste), miso soup, seaweed

@@ -16,6 +16,9 @@ function speaker(st: Stage) {
 /** Generic task line. Never names POS buttons, categories, or item numbers. */
 function task(st: Stage, run: RunState) {
   if (waitingForCheck(run, st)) return 'Print the check and bring it to the table.';
+  if (st.kind === 'seat' && st.twoTables && run.partyTables[st.party] && !run.partyExtra?.[st.party]?.length) return 'Seat the rest of the party at the W table right next to the first one.';
+  if (st.kind === 'move') return "Move their check to a table (their drinks come along).";
+  if (st.kind === 'join') return 'Join their two tables into one check.';
   switch (st.kind) {
     case 'seat':
       return 'Seat the party.';
@@ -34,7 +37,7 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'note';
+type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'move' | 'join' | 'note';
 
 /** Each kind of request has its own color and icon, so it is clear what the guest wants. */
 const KIND: Record<Kind, { label: string; card: string; current: string; badge: string; icon: string }> = {
@@ -46,12 +49,16 @@ const KIND: Record<Kind, { label: string; card: string; current: string; badge: 
   serve: { label: 'Who brings it?', card: 'bg-teal-950/50 ring-1 ring-teal-800/60', current: 'bg-teal-900/70 ring-2 ring-teal-400', badge: 'bg-teal-500', icon: 'M4 15h16M6 15a6 6 0 0 1 12 0M12 7V5M3 18h18' },
   check: { label: 'Check, please', card: 'bg-emerald-950/50 ring-1 ring-emerald-800/60', current: 'bg-emerald-900/70 ring-2 ring-emerald-400', badge: 'bg-emerald-500', icon: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6' },
   pay: { label: 'Paying', card: 'bg-amber-950/40 ring-1 ring-amber-800/60', current: 'bg-amber-900/60 ring-2 ring-amber-400', badge: 'bg-amber-500', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
+  move: { label: 'Move table', card: 'bg-cyan-950/50 ring-1 ring-cyan-800/60', current: 'bg-cyan-900/70 ring-2 ring-cyan-400', badge: 'bg-cyan-500', icon: 'M4 12h14M13 6l6 6-6 6' },
+  join: { label: 'Join tables', card: 'bg-fuchsia-950/40 ring-1 ring-fuchsia-800/60', current: 'bg-fuchsia-900/60 ring-2 ring-fuchsia-400', badge: 'bg-fuchsia-500', icon: 'M9 12h6M8 8H6a4 4 0 0 0 0 8h2M16 8h2a4 4 0 0 1 0 8h-2' },
   note: { label: '', card: '', current: '', badge: '', icon: '' },
 };
 
 function kindOf(st: Stage): Kind {
   if (st.kind === 'seat') return st.takeout ? 'counter' : 'seat';
   if (st.kind === 'pay') return 'pay';
+  if (st.kind === 'move') return 'move';
+  if (st.kind === 'join') return 'join';
   if (st.kind === 'decision') return st.followUp ? 'serve' : 'question';
   return 'order';
 }
@@ -81,6 +88,7 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
   useTraining();
   const t = useNow(1000);
   const tableChecks = usePos((s) => s.tableChecks);
+  const allChecks = usePos((s) => s.checks);
   const st = currentStage(run);
   const sc = run.scenario;
   const scroller = useRef<HTMLDivElement>(null);
@@ -96,7 +104,10 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
   const who = (s: Stage) => {
     if (Object.keys(sc.parties).length < 2) return speaker(s);
     const t = run.partyTables[s.party];
-    const place = t ? (t.startsWith('TO-') ? 'Take out' : tableLabel(t)) : s.kind === 'seat' ? (s.takeout ? 'Counter' : 'New party') : 'Waiting for a table';
+    // A party on two W tables shows both (until they are joined).
+    const extra = run.partyExtra?.[s.party]?.[0];
+    const second = extra ? allChecks[extra]?.tableId : undefined;
+    const place = t ? (t.startsWith('TO-') ? 'Take out' : `${tableLabel(t)}${second ? ` & ${tableLabel(second)}` : ''}`) : s.kind === 'seat' ? (s.takeout ? 'Counter' : 'New party') : 'Waiting for a table';
     return `${speaker(s)} · ${place}`;
   };
   // Counter guests pay up front; there is no check to print. (Not seated yet: assume dine-in unless it is a counter guest.)

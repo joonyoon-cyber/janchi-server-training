@@ -45,6 +45,19 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
           break;
         }
         actions.goto('floor');
+        if (st.bar) {
+          const bar = allTables().find((t) => /^BAR/.test(t.id) && !s.tableChecks[t.id])!;
+          actions.seatTable(bar.id, st.guests);
+          break;
+        }
+        if (st.twoTables) {
+          // Two W tables side by side, about half the party at each.
+          const w = allTables().find((t) => (!st.section || t.section === st.section) && t.joinWith && !s.tableChecks[t.id] && !s.tableChecks[t.joinWith!])!;
+          actions.seatTable(w.id, Math.ceil(st.guests / 2));
+          actions.goto('floor');
+          actions.seatTable(w.joinWith!, Math.floor(st.guests / 2));
+          break;
+        }
         // Smallest free table in the section that fits the party (a W pair for 5-8).
         const fitsAt = (t: ReturnType<typeof allTables>[number]) =>
           (t.capacity ?? 0) >= st.guests || (!!t.joinWith && (t.joinedCapacity ?? 0) >= st.guests && !s.tableChecks[t.joinWith]);
@@ -79,6 +92,21 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         const line = check.lines.find((l) => l.posId === st.item.posId && l.status === 'sent')!;
         actions.voidSent(line.id, st.item.qty);
         actions.leaveOrderScreen();
+        break;
+      }
+      case 'move': {
+        const guests = getState().checks[run.partyChecks[st.party]].guests;
+        const to = allTables()
+          .filter((t) => !/^BAR/.test(t.id) && (!st.section || t.section === st.section) && !getState().tableChecks[t.id] && (t.capacity ?? 0) >= guests)
+          .sort((a, b) => (a.capacity ?? 0) - (b.capacity ?? 0))[0];
+        actions.goto('floor');
+        actions.moveTable(run.partyTables[st.party], to.id);
+        break;
+      }
+      case 'join': {
+        const other = getState().checks[run.partyExtra![st.party][0]];
+        actions.goto('floor');
+        actions.joinTables(other.tableId, run.partyTables[st.party]);
         break;
       }
       case 'decision':

@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 6;
+export const TEST_VERSION = 7;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -20,8 +20,8 @@ const RECIPE: Slot[] = [
   { label: 'AYCE, drinks with the order + another round', level: 'intermediate', opts: { alaCarte: false, drinks: 'with', extraRounds: 1, pay: 'credit', over: false, interrupt: false , serverItems: 'serve' } },
   { label: 'AYCE, over the 4-meat limit (drop the extra)', level: 'advanced', opts: { alaCarte: false, over: true, extraRounds: 1, pay: 'cash', interrupt: false, guests: 3 , serverItems: 'none' } },
   { label: 'AYCE, guest changes the order; part cash, rest card', level: 'intermediate', opts: { alaCarte: false, extraRounds: 1, interrupt: true, pay: 'cash-card', over: false , serverItems: 'none' } },
-  { label: 'AYCE, party of 5+ splits with one cash share', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false , serverItems: 'serve' } },
-  { label: 'AYCE, drinks first, split on cards', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, pay: 'split', over: false, interrupt: false , serverItems: 'none' } },
+  { label: 'AYCE, big party splits with one cash share (M Y W: 7-8 on two W tables, joined to pay)', level: 'advanced', opts: { alaCarte: false, guests: 5, extraRounds: 1, pay: 'split-cash', over: false, interrupt: false , serverItems: 'serve' } },
+  { label: 'AYCE, drinks first, split on cards (A B C BAR: drinks at the bar, then moved to a table)', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, pay: 'split', over: false, interrupt: false , serverItems: 'none' } },
   { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false , serverItems: 'kitchen' } },
   { label: 'À la carte, cash', level: 'intermediate', opts: { alaCarte: true, pay: 'cash' } },
   { label: 'Take-out order at the counter', counter: ['takeout'] },
@@ -45,9 +45,11 @@ export function buildTables(seed: number, section: 'ABC' | 'MYW' = 'ABC'): Scena
       const id = slot.handWritten[Math.floor(rng() * slot.handWritten.length)];
       sc = structuredClone(scenarios.find((s) => s.id === id)!);
     } else {
-      // The big party: up to 6 in A B C BAR (C tables), up to 8 in M Y W (a joined W pair).
-      const guests = slot.opts.guests === 5 ? (section === 'MYW' ? 5 + Math.floor(rng() * 4) : 5 + Math.floor(rng() * 2)) : slot.opts.guests;
-      sc = generateScenario(slot.level, { ...slot.opts, guests, lunch: false, rng });
+      // The big party: 5-6 in A B C BAR (C tables); 7-8 in M Y W, seated across a W pair and joined to pay.
+      const guests = slot.opts.guests === 5 ? (section === 'MYW' ? 7 + Math.floor(rng() * 2) : 5 + Math.floor(rng() * 2)) : slot.opts.guests;
+      // In A B C BAR, the drinks-first party has its drinks at the bar and is moved to a table.
+      const bar = section === 'ABC' && slot.opts.drinks === 'before';
+      sc = generateScenario(slot.level, { ...slot.opts, guests, lunch: false, bar, rng });
     }
     return { ...sc, id: `test-${seed}-${i}` };
   });
@@ -81,7 +83,11 @@ export function buildTest(seed: number): Scenario {
       if (s.kind === 'seat' && !s.takeout) {
         s.section = section;
         delete s.tableId;
-        s.say = `Party of ${s.guests} for you. Please seat them in your section (${sectionName}).`;
+        s.say = s.bar
+          ? `Party of ${s.guests} for you. They'd like a drink at the bar while they wait for a table: please seat them at the bar.`
+          : s.twoTables
+            ? `Party of ${s.guests} for you. Seat them at a W pair in your section: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), up to four at each.`
+            : `Party of ${s.guests} for you. Please seat them in your section (${sectionName}).`;
       }
       if (s.kind === 'order' && s.remainderOf) s.remainderOf = `t${i}-${s.remainderOf}`;
       return s;

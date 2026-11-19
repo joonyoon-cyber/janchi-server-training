@@ -172,7 +172,12 @@ function newCheck(tableId: string, guests: number, orderType: Check['orderType']
 // Training installs a guard: a mistake the guests or host would never allow
 // (a table too small, the check before they ask for it) is refused with their
 // reaction instead of going through.
-export type GuardAction = { type: 'seat'; tableId: string; guests: number } | { type: 'tender'; checkId: string } | { type: 'print'; checkId: string };
+export type GuardAction =
+  | { type: 'seat'; tableId: string; guests: number }
+  | { type: 'tender'; checkId: string }
+  | { type: 'print'; checkId: string }
+  | { type: 'move'; checkId: string; from: string; to: string }
+  | { type: 'join'; fromCheckId: string; toCheckId: string; from: string; to: string };
 export type Pushback = { who: 'Guest' | 'Host'; text: string };
 let guard: ((a: GuardAction) => Pushback | null) | null = null;
 let showPushback: (p: Pushback) => void = () => undefined;
@@ -246,6 +251,65 @@ export const actions = {
       screen: 'order',
     });
     emit({ type: 'seat', tableId, guests, checkId: check.id });
+  },
+
+  /**
+   * Move/Join > Move: the check on `from` moves to the empty table `to`
+   * (e.g. bar guests moving to a table for AYCE). Returns an error message, or null when done.
+   */
+  moveTable(from: string, to: string): string | null {
+    const id = state.tableChecks[from];
+    const c = id ? state.checks[id] : undefined;
+    if (!c) return `Table ${tableLabel(from)} has no open check.`;
+    if (state.tableChecks[to]) return `Table ${tableLabel(to)} already has a check. Choose Join to combine them, or move to an empty table.`;
+    if (blocked({ type: 'move', checkId: c.id, from, to })) return '';
+    const tableChecks = releaseTables(c);
+    tableChecks[to] = c.id;
+    set({ ...state, tableChecks, checks: { ...state.checks, [c.id]: { ...c, tableId: to, joinedTables: undefined } } });
+    emit({ type: 'move-table', checkId: c.id, from, to });
+    return null;
+  },
+
+  /**
+   * Move/Join > Join: the check on `from` is combined into the check on `to`: items, guests
+   * and voids are added to it, and `from` becomes free. The server of `to` keeps the check.
+   * With 5+ guests after the join, the automatic 18% applies to the combined check.
+   */
+  joinTables(from: string, to: string): string | null {
+    const fromId = state.tableChecks[from];
+    const toId = state.tableChecks[to];
+    const src = fromId ? state.checks[fromId] : undefined;
+    const dst = toId ? state.checks[toId] : undefined;
+    if (!src || !dst) return 'Both tables need an open check to join them.';
+    if (src.id === dst.id) return 'These tables are already on one check.';
+    if (src.payments.length || dst.payments.length) return 'A check with payments on it cannot be joined.';
+    if (blocked({ type: 'join', fromCheckId: src.id, toCheckId: dst.id, from, to })) return '';
+    const merged: Check = {
+      ...dst,
+      guests: dst.guests + src.guests,
+      lines: [...dst.lines, ...src.lines],
+      voids: [...dst.voids, ...src.voids],
+      rounds: Math.max(dst.rounds, src.rounds),
+      splits: undefined,
+    };
+    const tableChecks = releaseTables(src);
+    set({
+      ...state,
+      tableChecks,
+      checks: { ...state.checks, [dst.id]: merged, [src.id]: { ...src, status: 'joined', joinedInto: dst.id, closedAt: now() } },
+      activeCheckId: state.activeCheckId === src.id ? dst.id : state.activeCheckId,
+    });
+    emit({ type: 'join-tables', fromCheckId: src.id, toCheckId: dst.id, from, to });
+    return null;
+  },
+
+  /** "This is not your order": Change Server makes the logged-in employee the check's server. */
+  changeServer(checkId: string) {
+    const c = state.checks[checkId];
+    const name = state.currentUser;
+    if (!c || !name || c.server === name) return;
+    set({ ...state, checks: { ...state.checks, [checkId]: { ...c, server: name } } });
+    emit({ type: 'change-server', checkId, server: name });
   },
 
   /** Quick Serve: a takeout order with no table. Paid later through Tender on the main screen. */

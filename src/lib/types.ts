@@ -144,8 +144,10 @@ export interface Check {
   /** Even Amount Split: remaining amount of each guest's share (0 once paid). */
   splits?: number[];
   gratuity: number;
-  status: 'open' | 'closed';
+  /** 'joined': combined into another check with Move/Join (see joinedInto). */
+  status: 'open' | 'closed' | 'joined';
   closedAt?: number;
+  joinedInto?: string;
 }
 
 export type Screen = 'main' | 'floor' | 'order' | 'tender' | 'tenderList' | 'tipAdjust';
@@ -168,7 +170,10 @@ export type PosEvent =
   | { type: 'close-check'; checkId: string; tableId: string }
   | { type: 'leave-tender-unpaid'; checkId: string; tableId: string; balance: number }
   | { type: 'print'; checkId: string }
-  | { type: 'blocked'; action: 'seat' | 'tender' | 'print'; who: 'Guest' | 'Host'; reason: string }
+  | { type: 'blocked'; action: 'seat' | 'tender' | 'print' | 'move' | 'join'; who: 'Guest' | 'Host'; reason: string }
+  | { type: 'move-table'; checkId: string; from: string; to: string }
+  | { type: 'join-tables'; fromCheckId: string; toCheckId: string; from: string; to: string }
+  | { type: 'change-server'; checkId: string; server: string }
   | { type: 'split'; checkId: string; ways: number; amounts: number[] }
   | { type: 'tip-adjust'; checkId: string; tableId: string; paymentId: string; tip: number };
 
