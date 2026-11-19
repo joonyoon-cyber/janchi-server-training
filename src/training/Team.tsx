@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { loadTeam, type TeamData, type TeamMember, type TeamPractice, type TeamRun, type useAuth } from '../lib/supabase';
 import { fmtTime } from './TestMode';
+import { ColumnChart, HBarChart, LineChart, SERIES } from '../ui/charts';
 
 type Auth = ReturnType<typeof useAuth>;
 type Range = '7' | '30' | 'all';
@@ -234,6 +235,75 @@ function Detail({ s }: { s: Stats }) {
   );
 }
 
+/** Monday of the week a date falls in. */
+function weekOf(iso: string) {
+  const d = new Date(iso);
+  const m = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+  return +m;
+}
+
+/** Trends for the whole team, and each person's average score. */
+function TeamCharts({ data, stats, range, onPerson }: { data: TeamData; stats: Stats[]; range: Range; onPerson: (id: string) => void }) {
+  const since = range === 'all' ? 0 : Date.now() - Number(range) * DAY;
+  const runs = data.runs.filter((r) => new Date(r.created_at).getTime() >= since);
+  const practice = data.practice.filter((p) => new Date(p.created_at).getTime() >= since);
+  const weeks = [...new Set([...runs.map((r) => weekOf(r.created_at)), ...practice.map((p) => weekOf(p.created_at))])].sort((a, b) => a - b);
+  if (weeks.length) {
+    // Fill gaps so quiet weeks show as zero.
+    for (let w = weeks[0]; w <= weeks[weeks.length - 1]; w += 7 * DAY) if (!weeks.includes(w)) weeks.push(w);
+    weeks.sort((a, b) => a - b);
+  }
+  const label = (w: number) => new Date(w).toLocaleDateString([], { month: 'numeric', day: 'numeric' });
+  const scored = stats.filter((s) => s.average !== null).sort((a, b) => (b.average ?? 0) - (a.average ?? 0));
+  if (!weeks.length && !scored.length) return null;
+  return (
+    <div className="grid gap-3 lg:grid-cols-2">
+      {weeks.length > 1 && (
+        <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800">
+          <LineChart
+            caption="Team average Test score, by week"
+            points={weeks.map((w) => {
+              const rs = runs.filter((r) => weekOf(r.created_at) === w);
+              return { label: label(w), value: rs.length ? rs.reduce((a, r) => a + r.score, 0) / rs.length : null, sub: `${rs.length} Test${rs.length === 1 ? '' : 's'}` };
+            })}
+          />
+        </div>
+      )}
+      {weeks.length > 0 && (
+        <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800">
+          <ColumnChart
+            caption="Training activity, by week"
+            series={[
+              { name: 'Tests finished', color: SERIES[0] },
+              { name: 'Practice runs', color: SERIES[1] },
+            ]}
+            points={weeks.map((w) => ({
+              label: label(w),
+              values: [runs.filter((r) => weekOf(r.created_at) === w).length, practice.filter((p) => weekOf(p.created_at) === w).length],
+            }))}
+          />
+        </div>
+      )}
+      {scored.length > 0 && (
+        <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800 lg:col-span-2">
+          <HBarChart
+            caption="Average Test score per person (click a name for details)"
+            fmt={(v) => String(Math.round(v))}
+            rows={scored.map((s) => ({
+              key: s.m.id,
+              label: s.m.display_name,
+              value: s.average,
+              sub: `${s.finished} Test${s.finished === 1 ? '' : 's'} · best ${s.best ?? '–'}`,
+              tone: s.average !== null && s.average < 70 ? 'bad' : s.average !== null && s.average < 85 ? 'warn' : undefined,
+              onClick: () => onPerson(s.m.id),
+            }))}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Team({ auth }: { auth: Auth }) {
   const [data, setData] = useState<TeamData | null>(null);
   const [range, setRange] = useState<Range>('30');
@@ -324,6 +394,8 @@ export function Team({ auth }: { auth: Auth }) {
             <Card label="Average Test score" value={allRuns.length ? `${round(avg(allRuns.map((r) => r.score)))}` : '-'} sub={allRuns.length ? `best ${Math.max(...allRuns.map((r) => r.score))}` : undefined} />
             <Card label="Practice runs" value={`${practiceRuns}`} sub="Scenarios finished" />
           </div>
+
+          <TeamCharts data={data} stats={stats} range={range} onPerson={(id) => setOpen(id)} />
 
           {notStarted.length > 0 && (
             <div className="rounded-xl bg-amber-950/30 p-3 text-sm text-amber-200 ring-1 ring-amber-800/50">

@@ -3,6 +3,8 @@ import { CHECKS, overview, robustZ, type Check, type CheckResult, type Finding, 
 import { People } from './people';
 import { FlaggedView, PersonView } from './PersonView';
 import { ZeroTipSheet } from './ZeroTipSheet';
+import { CheckCharts } from './CheckCharts';
+import { HBarChart } from '../ui/charts';
 import { EXTRA_REPORTS, REPORTS, loadReport, type Kind, type LoadedFile, type Parsed } from './reports';
 
 const SEV: Record<Severity, { label: string; chip: string; dot: string }> = {
@@ -209,6 +211,21 @@ function OverviewView({ results, people, onPerson }: { results: Record<string, C
         Each column is a measure where higher (or lower) than the team is a warning sign. The score adds up how far above the team each person is, across the {ran} checks that ran. A high score is a reason
         to look closer, not proof: some people simply work more busy or late shifts.
       </p>
+      <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800">
+        <HBarChart
+          caption="Attention score (higher = further from the team on more measures)"
+          median={false}
+          fmt={(v) => v.toFixed(1)}
+          rows={o.people.map((p) => ({
+            key: p.emp,
+            label: people.name(p.emp),
+            value: p.score,
+            tone: p.score >= 4 ? 'bad' : p.score >= 2 ? 'warn' : undefined,
+            sub: p.reasons.join('\n'),
+            onClick: () => onPerson(p.emp),
+          }))}
+        />
+      </div>
       <div className="overflow-x-auto rounded-2xl bg-slate-900/80 ring-1 ring-slate-800">
         <table data-testid="overview" className="w-full text-sm">
           <thead className="text-xs text-slate-400">
@@ -559,16 +576,19 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
               {/* For time cards the fixes are the point; elsewhere the team comparison comes first. */}
               {cur.id === 'zero-tips' ? (
                 <>
+                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
                   <MetricTable result={curRes} people={people} />
                   <ZeroTipSheet parsed={parsed} people={people} onPerson={openPerson} />
                 </>
               ) : cur.id === 'timecards' ? (
                 <>
                   <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
+                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
                   <MetricTable result={curRes} people={people} />
                 </>
               ) : (
                 <>
+                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
                   <MetricTable result={curRes} people={people} />
                   <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
                 </>

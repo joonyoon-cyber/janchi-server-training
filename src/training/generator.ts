@@ -168,6 +168,11 @@ export const SERVER_ITEMS: Record<string, [string, string]> = {
 const SERVER_ITEMS_TEXT = 'rice, green salad, rice paper, garlic & jalapeño, sesame oil, ssamjang, miso soup, seaweed soup and spicy miso stew';
 
 const SPOKEN = { ...MEATS, ...ULTIMATE_MEATS, ...ULTIMATE_APPS, ...AYCE_APPS, ...SERVER_ITEMS, ...DRINKS, ...DINNER_ENTREES, ...LUNCH_ENTREES, ...APPETIZERS };
+
+/** Every way guests name a menu item (for highlighting them in the request panel). */
+export function spokenItemNames(): string[] {
+  return Object.values(SPOKEN).flatMap(([one, many]) => [one, many]);
+}
 const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 
 /** Random source; Test mode swaps in a seeded one so a run can be rebuilt from its seed. */

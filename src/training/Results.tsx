@@ -5,6 +5,15 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/**
+ * Bold what matters in a result line: POS item names (upper case, e.g. 27. PORK BLG AYCE ×2),
+ * dollar amounts, quantities, percentages and table names.
+ */
+function emphasize(text: string) {
+  const re = /(\$\d[\d,]*(?:\.\d{2})?|×\s?\d+|\b\d+(?:\.\d+)?%|(?:\b\d{1,2}\.\s)?\(?[A-Z][A-Z0-9&'().\/-]*(?:\s+\(?[A-Z0-9&'().\/-]{2,}\)?)+|\b(?:[ABCMWY]\d{1,2}|BAR \d)\b)/g;
+  return text.split(re).map((p, i) => (i % 2 === 1 ? <b key={i} className="font-semibold text-white">{p}</b> : p));
+}
+
 function Section({ title, items, tone }: { title: string; items: string[]; tone: 'good' | 'bad' | 'warn' | 'info' }) {
   if (!items.length) return null;
   const color = { good: 'text-emerald-300', bad: 'text-rose-300', warn: 'text-amber-300', info: 'text-sky-300' }[tone];
@@ -18,7 +27,7 @@ function Section({ title, items, tone }: { title: string; items: string[]; tone:
         {items.map((t, i) => (
           <li key={i} className="flex gap-2">
             <span className={color}>{mark}</span>
-            <span>{t}</span>
+            <span>{emphasize(t)}</span>
           </li>
         ))}
       </ul>

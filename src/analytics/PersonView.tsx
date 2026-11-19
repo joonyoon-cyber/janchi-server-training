@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { CHECKS, robustZ, type CheckResult, type Finding, type Severity } from './checks';
+import { Legend, SERIES } from '../ui/charts';
 import { People } from './people';
 import { dayKey, type Parsed } from './reports';
 
@@ -91,6 +92,77 @@ function Table({ head, rows, limit = 40 }: { head: string[]; rows: { cells: Reac
     </>
   );
 }
+
+/** Scheduled vs clocked, one row per day: shows overstays, early starts and missed clock-outs at a glance. */
+function ShiftTimeline({ rows }: { rows: { day: Date; sched: { start: Date; end: Date; raw: string }[]; punches: { in: Date; out: Date | null }[] }[] }) {
+  const H0 = 9;
+  const H1 = 24;
+  const pos = (d: Date, day: Date) => {
+    const h = (+d - +new Date(day.getFullYear(), day.getMonth(), day.getDate())) / 3600000;
+    return Math.max(0, Math.min(100, ((h - H0) / (H1 - H0)) * 100));
+  };
+  const fmtT = (d: Date) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (!rows.length) return null;
+  return (
+    <div className="space-y-2 rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800" data-testid="shift-timeline">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Scheduled vs clocked</div>
+        <Legend
+          items={[
+            { name: 'Scheduled', color: SERIES[1] },
+            { name: 'Clocked in', color: SERIES[0] },
+          ]}
+        />
+      </div>
+      <div className="flex text-[10px] text-slate-500" style={{ paddingLeft: '5.5rem' }}>
+        {[9, 12, 15, 18, 21, 24].map((h, i, a) => (
+          <div key={h} style={{ width: i < a.length - 1 ? `${(3 / (H1 - H0)) * 100}%` : 0 }}>
+            {h === 12 ? '12p' : h === 24 ? '12a' : h > 12 ? `${h - 12}p` : `${h}a`}
+          </div>
+        ))}
+      </div>
+      <div className="space-y-1">
+        {rows.map((r) => (
+          <div key={+r.day} className="flex items-center gap-2">
+            <div className="w-20 shrink-0 text-right text-[11px] text-slate-300">{r.day.toLocaleDateString([], { weekday: 'short', month: 'numeric', day: 'numeric' })}</div>
+            <div className="relative h-7 flex-1 rounded bg-slate-950/50">
+              {[3, 6, 9, 12].map((h) => (
+                <div key={h} className="absolute inset-y-0 w-px bg-slate-800" style={{ left: `${(h / (H1 - H0)) * 100}%` }} />
+              ))}
+              {r.sched.map((s, i) => (
+                <div
+                  key={i}
+                  title={`Scheduled ${s.raw}: ${fmtT(s.start)}–${fmtT(s.end)}`}
+                  className="absolute top-0.5 h-2.5"
+                  style={{ left: `${pos(s.start, r.day)}%`, width: `${Math.max(0.8, pos(s.end, r.day) - pos(s.start, r.day))}%`, background: SERIES[1], borderRadius: '0 4px 4px 0' }}
+                />
+              ))}
+              {r.punches.map((p, i) => {
+                const over = !p.out || +p.out - +p.in > 15 * 3600000;
+                const end = over ? new Date(new Date(r.day).setHours(H1, 0, 0, 0)) : p.out!;
+                return (
+                  <div
+                    key={i}
+                    title={`Clocked ${fmtT(p.in)}–${p.out ? (over ? `${p.out.toLocaleString()} (missed clock-out?)` : fmtT(p.out)) : 'no clock-out'}`}
+                    className="absolute bottom-0.5 h-2.5"
+                    style={{
+                      left: `${pos(p.in, r.day)}%`,
+                      width: `${Math.max(0.8, pos(end, r.day) - pos(p.in, r.day))}%`,
+                      background: over ? STATUS_BAD : SERIES[0],
+                      borderRadius: '0 4px 4px 0',
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] text-slate-500">C (until close) is drawn to closing time. Red: no clock-out or a shift over 15 hours.</p>
+    </div>
+  );
+}
+const STATUS_BAD = '#e66767';
 
 /** Every entry for one person across the loaded files, with anything flagged highlighted. */
 export function PersonView({ emp, parsed, people, results }: { emp: string; parsed: Parsed; people: People; results: Record<string, CheckResult> }) {
@@ -192,6 +264,27 @@ export function PersonView({ emp, parsed, people, results }: { emp: string; pars
         />
       </Section>
 
+      {(punches.length > 0 || shifts.length > 0) && (
+        <ShiftTimeline
+          rows={(() => {
+            const days = new Map<string, { day: Date; sched: { start: Date; end: Date; raw: string }[]; punches: { in: Date; out: Date | null }[] }>();
+            const get = (d: Date) => {
+              const k = dayKey(d);
+              if (!days.has(k)) days.set(k, { day: new Date(d.getFullYear(), d.getMonth(), d.getDate()), sched: [], punches: [] });
+              return days.get(k)!;
+            };
+            punches.forEach((x) => get(x.in).punches.push({ in: x.in, out: x.out }));
+            // Scheduled shifts only inside the time card's dates (the schedule runs weeks ahead).
+            const span = punches.length ? [Math.min(...punches.map((x) => +x.in)) - 86400000, Math.max(...punches.map((x) => +x.in)) + 86400000] : null;
+            shifts.forEach((s) => {
+              if (span && (+s.day < span[0] || +s.day > span[1])) return;
+              if (!span) return;
+              get(s.day).sched.push({ start: s.start, end: People.endOf(s), raw: s.raw });
+            });
+            return [...days.values()].sort((a, b) => +a.day - +b.day);
+          })()}
+        />
+      )}
       {(punches.length > 0 || shifts.length > 0) && (
         <Section title="Shifts: scheduled vs clocked" count={punches.length}>
           <Table

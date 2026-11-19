@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ColumnChart } from '../ui/charts';
 import { People } from './people';
 import { dayKey, type Parsed, type Receipt } from './reports';
 
@@ -74,6 +75,27 @@ export function ZeroTipSheet({ parsed, people, onPerson }: { parsed: Parsed; peo
           Download CSV
         </button>
       </div>
+      {days.size > 1 && (
+        <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800">
+          <ColumnChart
+            caption="Card payments with $0 tip, by day"
+            series={[{ name: 'Payments', color: '#3987e5' }]}
+            points={[...days.entries()].map(([, xs]) => {
+              const by = new Map<string, number>();
+              xs.forEach((x) => by.set(x.emp, (by.get(x.emp) ?? 0) + 1));
+              const d = xs[0].r.dt;
+              return {
+                label: d.toLocaleDateString([], { month: 'numeric', day: 'numeric' }),
+                values: [xs.length],
+                title: `${d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}: ${xs.length} payment${xs.length > 1 ? 's' : ''}\n${[...by.entries()]
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([e, n]) => `${people.name(e)} ${n}`)
+                  .join('\n')}`,
+              };
+            })}
+          />
+        </div>
+      )}
       {[...days.entries()].map(([k, xs]) => {
         const d = xs[0].r.dt;
         const perServer = new Map<string, number>();

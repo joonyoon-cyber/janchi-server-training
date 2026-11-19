@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { tableLabel } from '../lib/menu';
+import { mappings, tableLabel } from '../lib/menu';
+import { spokenItemNames } from './generator';
 import { usePos } from '../lib/store';
 import { formatClock, useNow } from '../pos/common';
 import { answerChange, answerDecision, currentStage, DEFAULT_ASK, endScenario, nextStage, useTraining, waitingForCheck } from './engine';
@@ -65,6 +66,35 @@ function kindOf(st: Stage): Kind {
   return 'order';
 }
 
+// Menu items, numbers and dollar amounts in guest requests are bold, so what to ring stands out.
+const NUMBER_WORDS = 'one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|half|both|all|everyone|everything|each';
+let pattern: RegExp | null = null;
+function itemPattern(): RegExp {
+  if (pattern) return pattern;
+  const names = new Set<string>();
+  spokenItemNames().forEach((n) => n.length >= 3 && names.add(n.toLowerCase()));
+  mappings.forEach((m) => {
+    const n = m.customerName.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase();
+    if (n.length >= 4) names.add(n);
+  });
+  ['premium all you can eat', 'ultimate all you can eat', 'all you can eat', 'premium ayce', 'ultimate ayce', 'ayce', 'premium', 'ultimate'].forEach((n) => names.add(n));
+  const esc = [...names].sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  pattern = new RegExp(`(\\$\\d+(?:\\.\\d{2})?|\\b\\d+(?:\\.\\d+)?%?|\\b(?:${NUMBER_WORDS})\\b|\\b(?:${esc.join('|')})\\b)`, 'gi');
+  return pattern;
+}
+function highlight(text: string, current?: boolean) {
+  const parts = text.split(itemPattern());
+  return parts.map((p, i) =>
+    i % 2 === 1 ? (
+      <b key={i} className={current ? 'font-bold text-white' : 'font-semibold text-slate-100'}>
+        {p}
+      </b>
+    ) : (
+      p
+    ),
+  );
+}
+
 function Line({ who, text, current, kind = 'order' }: { who?: string; text: string; current?: boolean; kind?: Kind }) {
   if (kind === 'note') return <div className="px-1 text-xs italic text-slate-400">{text}</div>;
   const k = KIND[kind];
@@ -80,7 +110,7 @@ function Line({ who, text, current, kind = 'order' }: { who?: string; text: stri
         {who && <span className="truncate text-[11px] text-slate-400">· {who}</span>}
         {current && <span className="ml-auto rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Now</span>}
       </div>
-      <div className={current ? 'text-white' : 'text-slate-300'}>{text}</div>
+      <div className={current ? 'text-white' : 'text-slate-300'}>{highlight(text, current)}</div>
     </div>
   );
 }
