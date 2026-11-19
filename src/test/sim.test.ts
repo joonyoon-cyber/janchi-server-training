@@ -583,6 +583,24 @@ describe('move and join tables', () => {
   });
 });
 
+describe('even amount split shares', () => {
+  it('keeps each share amount for the tiles after it is paid', () => {
+    actions.reset({ persist: false });
+    actions.goto('floor');
+    actions.seatTable('B2', 3);
+    actions.addItem('premium-ayce-dinner', 3);
+    actions.submitOrder();
+    actions.openTender(getState().tableChecks.B2);
+    actions.splitEvenly(3);
+    const c = () => getState().checks[getState().tableChecks.B2];
+    const shares = c().splitShares!;
+    expect(shares).toEqual(c().splits);
+    actions.pay('credit', 100000);
+    expect(c().splits![0]).toBe(0);
+    expect(c().splitShares).toEqual(shares);
+  });
+});
+
 describe('Void / Edit', () => {
   const setup = () => {
     actions.reset({ persist: false });

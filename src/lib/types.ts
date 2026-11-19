@@ -147,6 +147,8 @@ export interface Check {
   payments: Payment[];
   /** Even Amount Split: remaining amount of each guest's share (0 once paid). */
   splits?: number[];
+  /** Even Amount Split: each share as first split (for the share tiles after paying). */
+  splitShares?: number[];
   gratuity: number;
   /** 'joined': combined into another check with Move/Join (see joinedInto). */
   status: 'open' | 'closed' | 'joined';

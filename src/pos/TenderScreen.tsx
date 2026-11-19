@@ -29,33 +29,37 @@ function splitNote(): string {
   return c?.splits && i >= 0 ? ` (Split ${i + 1} of ${c.splits.length})` : '';
 }
 
+/** "Even Amount Split" result window, as on the POS: one line per share, Print & Apply / Close / Apply. */
 function SplitAmounts({ close, ways }: { close: () => void; ways: number }) {
   const amounts = evenSplit(balanceOf(), ways);
+  const apply = (print: boolean) => {
+    close();
+    actions.splitEvenly(ways);
+    if (print) actions.print();
+  };
+  const b = (label: string, bg: string, onClick: () => void) => (
+    <button
+      data-testid={`split-${label}`}
+      className="pos-btn"
+      style={{ position: 'static', width: 108, height: 40, fontSize: 12.5, fontWeight: 'bold', color: '#fff', border: 'none', background: bg }}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
   return (
-    <Modal w={420} title={`Even Amount Split - ${ways} customers`}>
-      <div data-testid="split-amounts" style={{ padding: '12px 18px', fontSize: 16 }}>
+    <Modal w={540} title="Even Amount Split">
+      <div data-testid="split-amounts" style={{ padding: '46px 18px 36px', fontSize: 19, fontWeight: 'bold', textAlign: 'center', lineHeight: 1.35, color: '#222', maxHeight: 360, overflowY: 'auto' }}>
         {amounts.map((a, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 4px', borderBottom: '1px solid #cfd5da' }}>
-            <span>Customer {i + 1}</span>
-            <b>{fmt(a)}</b>
+          <div key={i}>
+            Split Amount {i + 1}: {fmt(a)}
           </div>
         ))}
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 4px', color: '#555', fontSize: 14 }}>
-          <span>Balance</span>
-          <span>{fmt(balanceOf())}</span>
-        </div>
       </div>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: '0 14px 14px' }}>
-        <DlgButton onClick={close}>Cancel</DlgButton>
-        <DlgButton
-          blue
-          onClick={() => {
-            close();
-            actions.splitEvenly(ways);
-          }}
-        >
-          Apply
-        </DlgButton>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', padding: '0 14px 16px' }}>
+        {b('Print & Apply', '#3b5ec0', () => apply(true))}
+        {b('Close', '#8ea6ec', close)}
+        {b('Apply', '#9aa0aa', () => apply(false))}
       </div>
     </Modal>
   );
@@ -359,21 +363,38 @@ export function TenderScreen() {
       {payBtn('Gift Card', 12, 216, <IconCash size={44} />, () => dialogs.notInSimulator('Gift Card payment'))}
 
       {check.splits && (
-        <div className="pos-abs" data-testid="tender-splits" style={{ left: 196, top: 236, width: 300, fontSize: 13, color: '#333' }}>
-          <div style={{ fontWeight: 'bold', color: '#2f5a9c', paddingBottom: 4 }}>Even Amount Split</div>
+        // After Apply, the shares sit as tiles at the bottom left (as on the POS). Payments take them in order;
+        // a paid share is greyed out (our guess: the video doesn't show a paid share).
+        <div className="pos-abs" data-testid="tender-splits" style={{ left: 41, top: check.splits.length > 8 ? 548 : 606, width: 640, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {check.splits.map((x, i) => {
             const next = i === check.splits!.findIndex((y) => y > 0);
+            const paid = x <= 0;
             return (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 6px', background: next ? '#dbe6fa' : 'transparent', fontWeight: next ? 'bold' : 'normal' }}>
-                <span>Customer {i + 1}</span>
-                <span style={{ color: x > 0 ? '#d0303a' : '#2a8a3a' }}>{x > 0 ? fmt(x) : 'Paid'}</span>
+              <div
+                key={i}
+                data-testid={`split-tile-${i + 1}`}
+                title={paid ? `Split ${i + 1}: paid` : `Split ${i + 1}`}
+                style={{
+                  width: 74,
+                  height: 58,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: `1px solid ${next ? '#7d9ad8' : '#d4d8e0'}`,
+                  background: paid ? '#eceef2' : '#f7f8fa',
+                  color: paid ? '#a7adb8' : '#6a87c4',
+                  fontSize: 16,
+                  textDecoration: paid ? 'line-through' : 'none',
+                }}
+              >
+                {fmt(paid ? (check.splitShares?.[i] ?? 0) : x)}
               </div>
             );
           })}
         </div>
       )}
       {check.payments.length > 0 && (
-        <div className="pos-abs" data-testid="tender-payments" style={{ left: 196, top: check.splits ? 270 + check.splits.length * 27 : 236, width: 300, fontSize: 13, color: '#333' }}>
+        <div className="pos-abs" data-testid="tender-payments" style={{ left: 196, top: 236, width: 300, fontSize: 13, color: '#333' }}>
           {check.payments.map((p) => (
             <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 2px' }}>
               <span>{p.method === 'cash' ? `Cash ${fmt(p.tendered ?? p.amount)}` : 'Credit Card'}</span>

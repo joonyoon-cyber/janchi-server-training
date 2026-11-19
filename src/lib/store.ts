@@ -291,6 +291,7 @@ export const actions = {
       voids: [...dst.voids, ...src.voids],
       rounds: Math.max(dst.rounds, src.rounds),
       splits: undefined,
+      splitShares: undefined,
     };
     const tableChecks = releaseTables(src);
     set({
@@ -508,7 +509,7 @@ export const actions = {
     const c = activeCheck();
     if (!c || ways < 1) return;
     const amounts = evenSplit(checkTotals(c, state.settings.taxRate).balance, ways);
-    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined })));
+    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined, splitShares: ways > 1 ? amounts : undefined })));
     emit({ type: 'split', checkId: c.id, ways, amounts });
   },
 
