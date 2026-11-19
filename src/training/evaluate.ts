@@ -345,11 +345,12 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (st.split) {
       possible += 1;
       const split = later.find((e) => e.type === 'split' && e.ways === st.split);
-      if (split && mine.length === st.split) {
+      const wantPays = st.split + (st.shareCashPart ? 1 : 0);
+      if (split && mine.length === wantPays) {
         ok += 1;
         ev.correct.push(`Split the check ${st.split} ways and took ${st.split} payments`);
       } else if (!split) ev.paymentMistakes.push(`The guests wanted to split the check ${st.split} ways: use Even Amount Split`);
-      else ev.paymentMistakes.push(`Took ${mine.length} payments; the check was split ${st.split} ways`);
+      else ev.paymentMistakes.push(`Took ${mine.length} payments; the check was split ${st.split} ways${st.shareCashPart ? ' (one share paid in two parts)' : ''}`);
     }
     elsewhere.forEach((e) => {
       if (e.type === 'payment') ev.paymentMistakes.push(`Took a ${e.method} payment of ${fmt(e.amount)} on ${tableLabel(e.tableId)} instead of ${tableLabel(table)}`);
@@ -368,6 +369,9 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (st.cashPart) {
       methodOk = cashPays.length === 1 && Math.abs(cashPays[0] - st.cashPart) < 0.005 && cardPays.length >= 1;
       want = `${fmt(st.cashPart)} in cash, then the rest by credit card`;
+    } else if (st.split && st.shareCashPart) {
+      methodOk = cashPays.length === 1 && Math.abs(cashPays[0] - st.shareCashPart) < 0.005 && cardPays.length === st.split;
+      want = `${fmt(st.shareCashPart)} cash toward one share, the rest of that share and the other ${st.split - 1} share${st.split > 2 ? 's' : ''} by credit card`;
     } else if (st.split && st.cashShares) {
       methodOk = cashPays.length === st.cashShares && cardPays.length === st.split - st.cashShares;
       want = `${st.cashShares} share in cash and ${st.split - st.cashShares} by credit card`;
@@ -381,7 +385,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
       ok = 0;
     } else if (mine.length) ev.correct.push(`Took payment: ${want}`);
 
-    if (st.cashGiven && (st.method === 'cash' || st.cashShares || st.cashPart)) {
+    if (st.cashGiven && (st.method === 'cash' || st.cashShares || st.cashPart || st.shareCashPart)) {
       possible += 1;
       const first = mine.find((e) => e.type === 'payment' && e.method === 'cash');
       if (first && first.type === 'payment' && Math.abs((first.tendered ?? 0) - st.cashGiven) < 0.005) {

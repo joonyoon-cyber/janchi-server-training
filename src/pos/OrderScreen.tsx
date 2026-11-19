@@ -80,15 +80,6 @@ function chooseModifier(lineId: string, posId: string) {
   dialogs.custom((close) => <ModifierPicker lineId={lineId} posId={posId} close={close} />);
 }
 
-function requireManager(then: () => void) {
-  const { settings } = getState();
-  if (!settings.requireManagerForVoid) return then();
-  dialogs.keypad({
-    title: 'Manager Authorization',
-    subtitle: 'Enter manager PIN to void an ordered item',
-    onEnter: (pin) => (pin === settings.managerPin ? then() : dialogs.message('Invalid manager PIN.')),
-  });
-}
 
 function voidLineFlow(line: OrderLine) {
   if (line.status === 'new') return actions.removeLine(line.id);
@@ -466,7 +457,7 @@ export function OrderScreen() {
       <button data-testid="order-Order" className="pos-btn pos-btn-navy" style={{ left: 917, top: 654, width: 89, height: 97, fontSize: 15 }} onClick={() => actions.submitOrder()}>
         Order
       </button>
-      {voidEdit && check && <VoidEditScreen check={check} onClose={() => setVoidEdit(false)} requireManager={requireManager} />}
+      {voidEdit && check && <VoidEditScreen check={check} onClose={() => setVoidEdit(false)} />}
     </div>
   );
 }

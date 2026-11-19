@@ -45,8 +45,6 @@ function writePref(key: string, v: string) {
 function SettingsDialog({ onClose }: { onClose: () => void }) {
   const settings = usePos((s) => s.settings);
   const [tax, setTax] = useState(String(settings.taxRate));
-  const [mgr, setMgr] = useState(settings.requireManagerForVoid);
-  const [pin, setPin] = useState(settings.managerPin);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <form
@@ -56,8 +54,6 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
           const rate = parseFloat(tax);
           actions.updateSettings({
             taxRate: Number.isFinite(rate) && rate >= 0 && rate < 20 ? rate : settings.taxRate,
-            requireManagerForVoid: mgr,
-            managerPin: pin || '1234',
           });
           onClose();
         }}
@@ -69,17 +65,6 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
           <input value={tax} inputMode="decimal" onChange={(e) => setTax(e.target.value)} className="mt-1 w-32 rounded bg-white px-2 py-1.5 text-slate-900" />
           <span className="mt-1 block text-xs text-slate-400">7.25% matches the tax on the reference receipts. Change it if the rate changes.</span>
         </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={mgr} onChange={(e) => setMgr(e.target.checked)} />
-          Require a manager PIN to void items that were already ordered
-        </label>
-        {mgr && (
-          <label className="block text-sm">
-            Manager PIN for the simulator
-            <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1 w-32 rounded bg-white px-2 py-1.5 text-slate-900" />
-          </label>
-        )}
-        <p className="text-xs text-slate-400">Whether the real BLUU POS asks for manager approval on voids has not been confirmed, so this is off by default.</p>
         <div className="flex justify-end gap-2">
           <button type="button" className="rounded-md border border-slate-500 px-4 py-1.5" onClick={onClose}>
             Cancel

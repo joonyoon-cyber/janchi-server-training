@@ -601,6 +601,43 @@ describe('even amount split shares', () => {
   });
 });
 
+describe('a share paid part cash, rest card', () => {
+  it('the share takes two payments and its part of the 18% only once', () => {
+    actions.reset({ persist: false });
+    actions.goto('floor');
+    actions.seatTable('C1', 6);
+    actions.addItem('premium-ayce-dinner', 6);
+    actions.submitOrder();
+    actions.openTender(getState().tableChecks.C1);
+    actions.splitEvenly(2);
+    const c = () => getState().checks[getState().tableChecks.C1];
+    const gratuity = checkTotals(c(), getState().settings.taxRate).gratuity;
+    actions.pay('cash', 20, 20);
+    actions.pay('credit', 100000); // rest of share 1
+    expect(c().splits![0]).toBe(0);
+    expect(c().splits![1]).toBeGreaterThan(0);
+    actions.pay('credit', 100000); // share 2
+    const pre = c().payments.reduce((s, p) => s + Math.round((p.preGratuity ?? 0) * 100), 0) / 100;
+    expect(pre).toBeCloseTo(gratuity, 2);
+    expect(c().payments.map((p) => p.share)).toEqual([0, 0, 1]);
+  });
+
+  it('generated tables sometimes ask for it, and perfect play scores 100', () => {
+    let found = false;
+    for (let seed = 1; seed < 200 && !found; seed++) {
+      const sc = generateScenario('advanced', { alaCarte: false, guests: 4, pay: 'split-cash', rng: seededRng(seed) });
+      const pay = sc.stages.find((x) => x.kind === 'pay');
+      if (pay?.kind !== 'pay' || !pay.shareCashPart) continue;
+      found = true;
+      startScenario(sc);
+      playPerfect(sc);
+      const r = getRun().result!;
+      if (r.score !== 100) throw new Error(JSON.stringify(r.paymentMistakes));
+    }
+    expect(found).toBe(true);
+  });
+});
+
 describe('Void / Edit', () => {
   const setup = () => {
     actions.reset({ persist: false });

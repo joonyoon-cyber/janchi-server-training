@@ -11,8 +11,6 @@ export interface Settings {
   /** Employee ID typed on the Log-in keypad. */
   loginId: string;
   /** Not verified on the real POS; off by default. */
-  requireManagerForVoid: boolean;
-  managerPin: string;
 }
 
 export interface PosState {
@@ -36,8 +34,6 @@ export const defaultSettings: Settings = {
   taxRate: 7.25,
   serverName: 'Trainee',
   loginId: '1234',
-  requireManagerForVoid: false,
-  managerPin: '1234',
 };
 
 export function initialState(settings: Settings = defaultSettings): PosState {
@@ -526,9 +522,14 @@ export const actions = {
     // The party tip rides along with the payments; on a split it is divided equally.
     const tipLeft = toCents(gratuity) - c.payments.reduce((s, p) => s + toCents(p.preGratuity ?? 0), 0);
     const share = c.splits ? c.splits.findIndex((x) => x > 0) : -1;
-    const tipShare = share >= 0 ? toCents(evenSplit(gratuity, c.splits!.length)[share]) : tipLeft;
+    // A share paid in two parts (cash, then card) carries its part of the tip only once.
+    const tipShare =
+      share >= 0
+        ? toCents(evenSplit(gratuity, c.splits!.length)[share]) - c.payments.filter((p) => p.share === share).reduce((s, p) => s + toCents(p.preGratuity ?? 0), 0)
+        : tipLeft;
     const pre = Math.max(0, Math.min(tipShare, tipLeft, toCents(applied)));
     if (pre > 0) payment.preGratuity = fromCents(pre);
+    if (share >= 0) payment.share = share;
     if (method === 'credit') {
       payment.approvalNo = digits(5) + 'ABCDEF'[Math.floor(Math.random() * 6)];
       payment.troutD = digits(7);

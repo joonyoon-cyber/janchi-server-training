@@ -124,6 +124,8 @@ export interface Payment {
   cardLast4?: string;
   /** Part of `amount` that is the automatic party tip ("Pre Gratuity" on Tip Adjustments). */
   preGratuity?: number;
+  /** Even Amount Split: which share (0-based) this payment went to. A share can take several payments (part cash, rest card). */
+  share?: number;
   /** Tip written on the signed merchant copy, entered later via Tip Adjustments. */
   tip?: number;
 }

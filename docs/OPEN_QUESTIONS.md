@@ -11,7 +11,6 @@ are not asked again.
 |---|----------|-----------------------------|
 | 1 | **Modifier for ULTIMATE W/ BEER**: what choices appear? | A one-tap list of the 8 drafts (guess). Soon tofu and bibimbap modifiers are confirmed (below). |
 | 2 | **Even Amount Split** (layout answered by video, 11/2026): number-of-customers pad → "Even Amount Split" window with "Split Amount 1: 2.42 / Split Amount 2: 2.41" and **Print & Apply / Close / Apply** → the shares appear as tiles at the bottom left of the tender screen → Credit Card charges the first share ($2.42 on the reader). **Still to confirm:** (a) Can you tap a share tile to choose which share to pay next, or do payments always take the shares in order? (b) What does a share tile look like once it is paid: does it disappear, turn grey, or show "Paid"? (c) Does **Print & Apply** print one check per share, or the whole check once? (d) Paying a share in cash: does the cash pad start with that share's amount? | Matches the video. **Guesses:** payments take the shares in order (tiles are not tappable); a paid share stays as a greyed, struck-through tile; Print & Apply prints the whole check once, then applies the split; the cash pad starts empty (type the cash handed over). |
-| 3 | ~~Voiding an item already sent~~ **Answered (video, 11/2026):** Void / Edit → select the item → − → type the reason → OK → Apply → Order sends the void. **Still to confirm:** does the real POS ever ask for a manager PIN for voids? | Matches the video. No PIN by default (an option in Settings). Void Line on an ordered item points to Void / Edit. |
 | 4 | **Unlabeled 3rd and 5th section tabs** on the Dine-in screen. | Shown blank; selecting one shows an empty floor. |
 | 5 | **Tender list Edit button**: opens the order screen? | Opens the order screen. |
 | 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
@@ -52,6 +51,8 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 * Manual **Gratuity** button on the tender screen: usually never used; disabled in the simulator.
 * **18% tip**: added automatically on the pre-tax subtotal for dine-in parties of 5+, AYCE or à la carte, not takeout (128.40 → 23.11). Split payments divide it equally (Pre Gratuity in Tip Adjustments).
 * **Even Amount Split**: number of customers → amounts → Apply → pay each share by card or cash; leftover cents go to the first shares. Each guest's tip is entered later in Tip Adjustments.
+* **A split share can be paid part cash, rest card** (e.g. $20 cash toward a share, the rest of that share on a card). Training asks for it now and then, including in the Test.
+* **Voids**: Void / Edit → select the item → − → type the reason → OK → Apply → Order sends the void. **No manager PIN** (the simulator's PIN option was removed).
 * **Tip Adjustments**: list stays empty until a search; Search With Receipt Number → row → Credit Gratuity → tip (cents) → Print Receipt? → back to results. Entering a tip again replaces it. Split card payments share a receipt number but show different last-4 digits.
 * **Printer icon** on Dine-in: tap (red → green check), tap a table, its check prints, the badge turns red again.
 * Floor-plan table amount: balance including tax.

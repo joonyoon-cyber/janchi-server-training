@@ -527,9 +527,18 @@ function build(level: Level, opts: GenOptions): Scenario {
       pay.say = pick([`Can you split this ${NUM[ways]} ways? Everyone's paying by card.`, `We'll split it evenly, ${NUM[ways]} ways, all on cards.`]);
       if (payKind === 'split-cash') {
         const share = evenSplit(total, ways)[0];
-        pay.cashShares = 1;
-        pay.cashGiven = cashFor(share);
-        pay.say = `Can we split it evenly, ${NUM[ways]} ways? I'll pay my share in cash. Here's $${pay.cashGiven}. ${ways === 2 ? 'The other share goes on a card.' : 'The rest go on cards.'}`;
+        if (share > 25 && chance(0.5)) {
+          // Part of one share in cash, the rest of that share on a card.
+          const part = share > 45 ? 20 : 10;
+          pay.shareCashPart = part;
+          pay.cashGiven = part;
+          pay.askChange = false;
+          pay.say = `Can we split it evenly, ${NUM[ways]} ways? For my share, here's $${part} in cash, and put the rest of my share on this card. ${ways === 2 ? 'The other share goes on a card.' : 'The others are paying by card.'}`;
+        } else {
+          pay.cashShares = 1;
+          pay.cashGiven = cashFor(share);
+          pay.say = `Can we split it evenly, ${NUM[ways]} ways? I'll pay my share in cash. Here's $${pay.cashGiven}. ${ways === 2 ? 'The other share goes on a card.' : 'The rest go on cards.'}`;
+        }
       }
     }
     if (payKind === 'cash-card') {

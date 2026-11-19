@@ -10,7 +10,7 @@ import { dialogs } from './common';
  * press −, type the reason, and a "-1" line appears. Apply puts the void lines on the check
  * (unsent, already off the total); Order sends them to the kitchen.
  */
-export function VoidEditScreen({ check, onClose, requireManager }: { check: Check; onClose: () => void; requireManager: (then: () => void) => void }) {
+export function VoidEditScreen({ check, onClose }: { check: Check; onClose: () => void }) {
   const [sel, setSel] = useState<string | null>(null);
   // Voids typed in on this screen, not applied yet: line id -> qty and reason.
   const [drafts, setDrafts] = useState<Record<string, { qty: number; reason: string }>>({});
@@ -65,13 +65,12 @@ export function VoidEditScreen({ check, onClose, requireManager }: { check: Chec
   const apply = () => {
     const list = Object.entries(drafts);
     if (!list.length) return onClose();
-    requireManager(() => {
-      for (const [lineId, d] of list) {
-        const err = actions.addVoid(lineId, d.qty, d.reason);
-        if (err) dialogs.message(err, 'Void / Edit');
-      }
-      onClose();
-    });
+    // No manager PIN for voids (confirmed by the restaurant).
+    for (const [lineId, d] of list) {
+      const err = actions.addVoid(lineId, d.qty, d.reason);
+      if (err) dialogs.message(err, 'Void / Edit');
+    }
+    onClose();
   };
 
   const side = (label: string, y: number, h: number, onClick: () => void, opts: { blue?: boolean; icon?: string } = {}) => (

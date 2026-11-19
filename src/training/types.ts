@@ -101,6 +101,8 @@ export interface PayStage extends StageBase {
   cashShares?: number;
   /** One check paid partly in cash (this exact amount) and the rest by card. */
   cashPart?: number;
+  /** With `split`: the first share is paid with this much cash and the rest of that share by card; the other shares by card. */
+  shareCashPart?: number;
 }
 
 export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage | MoveStage | JoinStage;

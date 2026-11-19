@@ -120,6 +120,7 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         const method = opts.payMethodOverride ?? st.method;
         if (st.split && !opts.noSplit) {
           actions.splitEvenly(st.split);
+          if (st.shareCashPart && !opts.ignoreCashPart) actions.pay('cash', st.shareCashPart, st.shareCashPart);
           for (let i = 0; i < st.split; i++) {
             if (i < (st.cashShares ?? 0) && !opts.ignoreCashPart) actions.pay('cash', st.cashGiven!, st.cashGiven!);
             else actions.pay('credit', 100000);
