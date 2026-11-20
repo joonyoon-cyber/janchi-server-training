@@ -101,7 +101,7 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
             <span className="tracking-[0.2em]">잔치 아카데미</span> · Server training
           </p>
           <h1 className="rise-in text-[clamp(40px,6vw,84px)] font-normal leading-[1.04]" style={{ animationDelay: '0.25s' }}>
-            Janchi Korean <em>BBQ &amp; Bar</em>
+            Janchi Service <em>Academy</em>
           </h1>
           <p className="rise-in mt-6 max-w-2xl text-[clamp(17px,1.5vw,20px)] text-cream/70" style={{ animationDelay: '0.45s' }}>
             Learn our POS with a simulator, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
