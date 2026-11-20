@@ -104,7 +104,7 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
             Janchi Korean <em>BBQ &amp; Bar</em>
           </h1>
           <p className="rise-in mt-6 max-w-2xl text-[clamp(17px,1.5vw,20px)] text-cream/70" style={{ animationDelay: '0.45s' }}>
-            Learn our POS on a faithful copy of it, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
+            Learn our POS with a simulator, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
           </p>
           <div className="rise-in mt-8 flex flex-wrap justify-center gap-3" style={{ animationDelay: '0.65s' }}>
             <button data-testid="cta-scenarios" className={`${btn} bg-janchi text-white hover:bg-[#d02535]`} onClick={() => onGo('scenarios')}>
@@ -132,7 +132,7 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
               </p>
             )
           )}
-          <p className="mt-10 text-[11px] uppercase tracking-[0.22em] text-cream/45">A training copy of our BLUU POS · never connected to the live POS</p>
+          <p className="mt-10 text-[11px] uppercase tracking-[0.22em] text-cream/45">POS simulation · not live</p>
         </div>
       </section>
 
