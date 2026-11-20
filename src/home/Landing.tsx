@@ -25,15 +25,6 @@ function HeroVideo() {
   );
 }
 
-/** Korean window-lattice corner, as on janchibbq.com. */
-function Lattice({ className = '' }: { className?: string }) {
-  return (
-    <svg className={`lattice ${className}`} viewBox="0 0 42 42" aria-hidden>
-      <path d="M1 41V1h40M7 41V7h34M13 30V13h17M1 20h12M20 1v12M7 30h6M30 7v6" />
-    </svg>
-  );
-}
-
 // ---- Custom line icons (gold hairlines) ------------------------------------------------
 const Ico = ({ children }: { children: ReactNode }) => (
   <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -104,19 +95,15 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(10,9,8,0.35),rgba(10,9,8,0.88)_70%)]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-transparent to-ink" />
         <div className="pointer-events-none absolute inset-4 border border-gold-line sm:inset-6" />
-        <Lattice className="absolute left-2 top-2 sm:left-4 sm:top-4" />
-        <Lattice className="absolute right-2 top-2 -scale-x-100 sm:right-4 sm:top-4" />
         <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-16 pt-24 text-center sm:pt-32">
           <p className="rise-in font-display text-2xl tracking-[0.6em] text-gold" style={{ animationDelay: '0.1s' }}>
             잔치 아카데미
           </p>
-          <h1 className="rise-in mt-3 font-display text-[clamp(48px,8vw,104px)] font-normal leading-[1.02]" style={{ animationDelay: '0.25s' }}>
-            Every shift, <em>a feast.</em>
-          </h1>
-          <p className="rise-in mt-5 text-[12px] font-semibold uppercase tracking-[0.3em] text-cream/80" style={{ animationDelay: '0.4s' }}>
+          {/* A styled label rather than a heading, so the page heading font doesn't apply. */}
+          <p role="heading" aria-level={1} className="rise-in mt-5 text-[clamp(15px,1.8vw,22px)] font-semibold uppercase leading-snug tracking-[0.3em] text-cream" style={{ animationDelay: '0.25s' }}>
             Server training · Janchi Korean BBQ &amp; Bar
           </p>
-          <p className="rise-in mt-5 max-w-2xl text-lg text-cream/75" style={{ animationDelay: '0.5s' }}>
+          <p className="rise-in mt-6 max-w-3xl font-display text-[clamp(26px,3.2vw,40px)] leading-snug text-cream/90" style={{ animationDelay: '0.45s' }}>
             Learn our POS on a faithful copy of it, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
           </p>
           <div className="rise-in mt-8 flex flex-wrap justify-center gap-3" style={{ animationDelay: '0.65s' }}>
@@ -156,9 +143,6 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
           <h2 className="font-display text-[clamp(36px,5vw,60px)]">
             Learn it here, <em>serve it there.</em>
           </h2>
-          <div className="relative mt-10 overflow-hidden rounded-t-[200px] border border-gold-line">
-            <img src="img/spread-wide.webp" alt="A Janchi table: marbled beef, brisket and galbi around the grill, with banchan" className="h-[320px] w-full object-cover sm:h-[380px]" />
-          </div>
           <div className="mt-12 grid gap-10 md:grid-cols-3">
             {[
               { n: '01', t: 'Get to know the POS', d: 'Free Play is a copy of our BLUU screens: seat tables, ring AYCE rounds, void, split, tip-adjust. Search any dish to find its button.', go: 'practice' as Go, cta: 'Free Play' },
@@ -277,39 +261,8 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
         </div>
       </section>
 
-      {/* ---- Know the menu ---- */}
-      <section className="bg-ink-2 py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <p className="eyebrow">From the grill</p>
-          <h2 className="font-display text-[clamp(36px,5vw,60px)]">
-            Know every cut <em>by heart.</em>
-          </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
-            {[
-              { img: 'img/brisket.webp', ko: '차돌박이', en: 'Prime brisket', pos: '15. BRISKET AYCE' },
-              { img: 'img/pork-belly.webp', ko: '삼겹살', en: 'Pork belly', pos: '18. PORK BELLY AYCE' },
-              { img: 'img/galbi.webp', ko: '갈비', en: 'Galbi', pos: '25. GALBI ONLY 1PC' },
-            ].map((c) => (
-              <figure key={c.ko} className="group overflow-hidden rounded-2xl border border-gold-line">
-                <div className="overflow-hidden">
-                  <img src={c.img} alt={c.en} loading="lazy" className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                </div>
-                <figcaption className="bg-ink px-5 py-4">
-                  <div className="font-display text-2xl leading-tight">
-                    <span className="text-gold">{c.ko}</span> <span className="ml-1">{c.en}</span>
-                  </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-[0.18em] text-cream/45">On the POS: {c.pos}</div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ---- Closing call ---- */}
-      <section className="relative isolate overflow-hidden py-24 text-center">
-        <img src="img/galbi-grill.webp" alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-60" />
-        <div className="absolute inset-0 -z-10 bg-ink/75" />
+      <section className="relative isolate overflow-hidden border-t border-gold-line bg-ink py-24 text-center">
         <p className="font-display text-xl tracking-[0.5em] text-gold">준비 완료</p>
         <h2 className="mt-2 font-display text-[clamp(40px,6vw,76px)]">
           Ready for <em>the floor?</em>
