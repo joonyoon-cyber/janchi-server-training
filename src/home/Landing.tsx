@@ -95,14 +95,15 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(10,9,8,0.35),rgba(10,9,8,0.88)_70%)]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-transparent to-ink" />
         <div className="pointer-events-none absolute inset-4 border border-gold-line sm:inset-6" />
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-16 pt-24 text-center sm:pt-32">
-          <p className="rise-in font-display text-2xl tracking-[0.6em] text-gold" style={{ animationDelay: '0.1s' }}>
-            잔치 아카데미
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-center px-6 py-20 text-center" style={{ minHeight: 'min(82vh, 760px)' }}>
+          {/* Same pattern as the sections below: gold label, one display heading, plain lede. */}
+          <p className="eyebrow rise-in" style={{ animationDelay: '0.1s' }}>
+            <span className="tracking-[0.2em]">잔치 아카데미</span> · Server training
           </p>
-          <h1 className="rise-in mt-5 text-[clamp(18px,2.2vw,28px)] uppercase text-cream" style={{ animationDelay: '0.25s' }}>
-            Server training · Janchi Korean BBQ &amp; Bar
+          <h1 className="rise-in text-[clamp(40px,6vw,84px)] font-normal leading-[1.04]" style={{ animationDelay: '0.25s' }}>
+            Janchi Korean <em>BBQ &amp; Bar</em>
           </h1>
-          <p className="rise-in mt-6 max-w-3xl font-display text-[clamp(26px,3.2vw,40px)] leading-snug text-cream/90" style={{ animationDelay: '0.45s' }}>
+          <p className="rise-in mt-6 max-w-2xl text-[clamp(17px,1.5vw,20px)] text-cream/70" style={{ animationDelay: '0.45s' }}>
             Learn our POS on a faithful copy of it, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
           </p>
           <div className="rise-in mt-8 flex flex-wrap justify-center gap-3" style={{ animationDelay: '0.65s' }}>
