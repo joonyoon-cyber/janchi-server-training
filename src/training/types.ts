@@ -57,6 +57,11 @@ export interface JoinStage extends StageBase {
 export interface OrderStage extends StageBase {
   kind: 'order';
   expect: ItemReq[];
+  /**
+   * A party on two W tables orders table by table: 1 = the lower-numbered W of the pair
+   * (W1, W3 or W5), 2 = the other one. The order must be sent on that table's check.
+   */
+  table?: 1 | 2;
   /** A mid-order change revealed after the trainee has rung in N items. */
   interrupt?: { afterAdds: number; say: string; cancelled?: ItemReq[] };
   /**

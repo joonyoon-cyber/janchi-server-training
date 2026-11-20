@@ -284,6 +284,12 @@ function capFirst(s: string) {
 
 let genSeq = 0;
 
+/** Where a party of 7-8 sits: a W pair, four at the lower-numbered table and the rest at the other. */
+export function twoTableSeatSay(guests: number, lead: string) {
+  const split = guests === 8 ? 'four at each' : `four at the lower-numbered table (W1, W3 or W5) and ${NUM[guests - 4] ?? guests - 4} at the other`;
+  return `${lead} Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), ${split}. Each table orders for itself.`;
+}
+
 export function generateScenario(level: Level, opts: GenOptions = {}): Scenario {
   const prev = rand;
   rand = opts.rng ?? Math.random;
@@ -332,7 +338,7 @@ function build(level: Level, opts: GenOptions): Scenario {
       guests,
       section,
       twoTables: true,
-      say: `Party of ${guests} in M Y W. Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), up to four at each.`,
+      say: twoTableSeatSay(guests, `Party of ${guests} in M Y W.`),
     });
   else stages.push({ id: id(), kind: 'seat', party: p, speaker: 'host', guests, section, say: `Party of ${guests}. Please seat them in ${sectionName}.` });
 
@@ -343,10 +349,83 @@ function build(level: Level, opts: GenOptions): Scenario {
     allItems.push(...o.expect);
     return o;
   };
+  /** "Who brings out the ...?" right after an order with server items (or a kitchen app, to check the difference). */
+  const serverQuestion = (srvMode: 'serve' | 'kitchen', about: ItemReq[]) => {
+    const names = about.map((i) => SPOKEN[i.posId][0].replace(/^(bowl|plate|side|order) of /, '')).join(' and the ');
+    const serve = srvMode === 'serve';
+    stages.push({
+      id: id(),
+      kind: 'decision',
+      party: p,
+      followUp: true,
+      say: `(You just sent the order with the ${names}.)`,
+      question: `Who brings out the ${names}?`,
+      options: [
+        {
+          text: 'I ring it in and bring it out myself',
+          correct: serve,
+          feedback: serve
+            ? `Right. Servers ring in and bring out: ${SERVER_ITEMS_TEXT}.`
+            : `The ${names} comes from the kitchen. Servers only bring out: ${SERVER_ITEMS_TEXT}.`,
+        },
+        {
+          text: 'The kitchen sends it out',
+          correct: !serve,
+          feedback: serve ? `No: you bring it out yourself. Server items: ${SERVER_ITEMS_TEXT}.` : 'Right. That one comes from the kitchen.',
+        },
+      ],
+    });
+  };
   let title: string;
   let summary: string;
 
-  if (!alaCarte) {
+  if (twoTables) {
+    // A party of 7-8 across a W pair: each table orders for itself, on its own check
+    // (table 1 = the lower-numbered W, seated with four).
+    const ultimate = opts.ultimate ?? chance(0.2);
+    const pkgId = ultimate ? 'ultimate-ayce' : isWeekdayLunch ? 'premium-ayce-lunch' : 'premium-ayce-dinner';
+    const pkgName = ultimate ? 'Ultimate AYCE' : 'Premium AYCE';
+    const pool = ultimate ? [...Object.keys(MEATS), ...Object.keys(ULTIMATE_MEATS)] : undefined;
+    const seats = [4, guests - 4];
+    const wantDrinks = opts.drinks ? opts.drinks !== 'none' : chance(0.8);
+    const srvMode = opts.serverItems ?? (level === 'beginner' ? 'none' : chance(0.3) ? 'serve' : chance(0.15) ? 'kitchen' : 'none');
+    ([1, 2] as const).forEach((table) => {
+      const n = seats[table - 1];
+      const drinks = wantDrinks ? drinkOrder(n) : [];
+      const meats = meatRound(2 + rnd(3), pool);
+      const intro =
+        table === 1
+          ? pick([`${capFirst(NUM[n])} ${pkgName} at this table.`, `We're doing ${pkgName}, all ${NUM[n]} of us at this table.`])
+          : pick([`${pkgName} for the ${NUM[n]} of us over here too.`, `Same at our table: ${NUM[n]} ${pkgName}.`]);
+      // The first table may also ask for server items (ring in AND bring out yourself).
+      const extras =
+        table === 1 && srvMode === 'serve'
+          ? sample(Object.keys(SERVER_ITEMS), 1 + rnd(2)).map((posId) => ({ posId, qty: 1 + rnd(2) }))
+          : table === 1 && srvMode === 'kitchen'
+            ? sample(Object.keys(AYCE_APPS), 1).map((posId) => ({ posId, qty: 1 }))
+            : [];
+      order({
+        table,
+        expect: [{ posId: pkgId, qty: n }, ...drinks, ...meats, ...extras],
+        say: `${intro} ${drinks.length ? `${capFirst(list(drinks))} to drink. ` : ''}To start: ${list(meats)}.${extras.length ? ` And ${list(extras)}, please.` : ''}`,
+      });
+      if (extras.length && srvMode !== 'none') serverQuestion(srvMode, srvMode === 'serve' ? extras : extras.slice(0, 1));
+    });
+    const extraRounds = opts.extraRounds ?? 1 + rnd(2);
+    for (let r = 0; r < extraRounds; r++) {
+      const who: (1 | 2)[] = chance(0.5) ? [1, 2] : [chance(0.5) ? 1 : 2];
+      who.forEach((table) => {
+        const more = meatRound(1 + rnd(4), pool);
+        order({
+          table,
+          expect: more,
+          say: table === 1 ? pick([`Another round for our table: ${list(more)}, please.`, `Can we get ${list(more)} at this table?`]) : pick([`Over here, can we get ${list(more)}?`, `For our table: ${list(more)}, please.`]),
+        });
+      });
+    }
+    title = `${pkgName}, party of ${guests} on two W tables`;
+    summary = `Randomized ${level} AYCE party across a W pair: each table orders on its own check, then the two tables are joined to pay.`;
+  } else if (!alaCarte) {
     const ultimate = opts.ultimate ?? (level !== 'beginner' && chance(0.2));
     const pkgId = ultimate ? 'ultimate-ayce' : isWeekdayLunch ? 'premium-ayce-lunch' : 'premium-ayce-dinner';
     const pkgSay = ultimate ? pick(['the Ultimate all you can eat', 'Ultimate AYCE']) : pick(['Premium all you can eat', 'the Premium AYCE', 'all you can eat']);
@@ -418,33 +497,7 @@ function build(level: Level, opts: GenOptions): Scenario {
         expect: [...pkg, ...(seq === 'with' ? drinks : []), ...first, ...asked],
         say: `${intro} ${seq === 'with' ? drinkSay(drinks) + ' ' : ''}${meatSay(first)}${asked.length ? ` And ${list(asked)}, please.` : ''}`,
       });
-      if (srvMode !== 'none' && asked.length) {
-        const about = srvMode === 'serve' ? extras : asked.slice(0, 1);
-        const names = about.map((i) => SPOKEN[i.posId][0].replace(/^(bowl|plate|side|order) of /, '')).join(' and the ');
-        const serve = srvMode === 'serve';
-        stages.push({
-          id: id(),
-          kind: 'decision',
-          party: p,
-          followUp: true,
-          say: `(You just sent the order with the ${names}.)`,
-          question: `Who brings out the ${names}?`,
-          options: [
-            {
-              text: 'I ring it in and bring it out myself',
-              correct: serve,
-              feedback: serve
-                ? `Right. Servers ring in and bring out: ${SERVER_ITEMS_TEXT}.`
-                : `The ${names} comes from the kitchen. Servers only bring out: ${SERVER_ITEMS_TEXT}.`,
-            },
-            {
-              text: 'The kitchen sends it out',
-              correct: !serve,
-              feedback: serve ? `No: you bring it out yourself. Server items: ${SERVER_ITEMS_TEXT}.` : 'Right. That one comes from the kitchen.',
-            },
-          ],
-        });
-      }
+      if (srvMode !== 'none' && asked.length) serverQuestion(srvMode, srvMode === 'serve' ? extras : asked.slice(0, 1));
     }
 
     // modification before sending a follow-up round (intermediate+)

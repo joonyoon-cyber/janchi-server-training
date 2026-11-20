@@ -4,7 +4,7 @@ import { allTables, isMeat } from '../lib/menu';
 import { checkTotals, fromCents, toCents } from '../lib/money';
 import { actions, getState } from '../lib/store';
 import { answerChange, answerDecision, currentStage, getRun } from '../training/engine';
-import { expectedForStage } from '../training/evaluate';
+import { expectedForStage, orderTableOf } from '../training/evaluate';
 import type { ItemReq, Scenario } from '../training/types';
 
 export interface BotOptions {
@@ -22,6 +22,8 @@ export interface BotOptions {
   wrongDecisions?: boolean;
   /** Ignore the guests' request to split the check. */
   noSplit?: boolean;
+  /** A party on two W tables: ring every order on the first table's check. */
+  oneTableOnly?: boolean;
 }
 
 export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
@@ -70,7 +72,9 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         break;
       }
       case 'order': {
-        actions.openCheck(run.partyChecks[st.party]);
+        // A party across two W tables: ring each table's order on that table's own check.
+        const t = opts.oneTableOnly ? undefined : orderTableOf(run, st);
+        actions.openCheck(t ? getState().tableChecks[t] : run.partyChecks[st.party]);
         let items = expectedForStage(sc, st, run.records);
         if (st.overLimit) {
           let room = 4;

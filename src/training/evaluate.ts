@@ -94,6 +94,19 @@ export function expectedForStage(sc: Scenario, st: OrderStage, records: StageRec
   return items;
 }
 
+/**
+ * The W table an order request is for, when the party sits across a W pair
+ * (table 1 = the lower-numbered table). Undefined until both tables are seated.
+ */
+export function orderTableOf(r: RunState, st: Stage): string | undefined {
+  if (st.kind !== 'order' || !st.table) return undefined;
+  const seat = r.scenario.stages.find((x) => x.kind === 'seat' && x.party === st.party && x.twoTables);
+  const ts = seat ? r.records.find((x) => x.stageId === seat.id)?.seatedTables : undefined;
+  if (!ts || ts.length < 2) return undefined;
+  const sorted = [...ts].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return sorted[st.table - 1];
+}
+
 /** Everything a party should end up paying for, after voids. */
 export function expectedPartyItems(sc: Scenario, party: string): ItemReq[] {
   const m = new Map<string, number>();
@@ -169,6 +182,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     return t;
   };
   const stageIdx = (st: Stage) => sc.stages.indexOf(st);
+  let wrongTableOrders = 0;
   // Orders sent after Next was pressed still count: each request takes the first
   // later Order on its table that no other request has claimed.
   const claimed = new Set(run.records.filter((x) => x.submitRound !== undefined && x.submitTable).map((x) => `${x.submitTable}#${x.submitRound}`));
@@ -284,6 +298,19 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         score('submit', 1);
         ev.correct.push(`Sent the order with Order${where}`);
         if (rec.submitTable && !tablesOf(st.party).has(rec.submitTable)) ev.incorrect.push('Order sent on the wrong table');
+        // A party across two W tables: each table's order goes on that table's own check.
+        const want = orderTableOf(run, st);
+        if (st.table && want) {
+          const sent = new Map<string, number>();
+          (rec.submitted ?? []).forEach((i) => sent.set(i.posId, (sent.get(i.posId) ?? 0) + i.qty));
+          const short = st.expect.filter((i) => (sent.get(i.posId) ?? 0) < i.qty);
+          const rightTable = rec.submitTable === want;
+          score('table', rightTable && !short.length ? 1 : 0);
+          if (!rightTable || short.length) wrongTableOrders++;
+          if (!rightTable) ev.incorrect.push(`The order from the guests at ${tableLabel(want)} was sent on ${rec.submitTable ? tableLabel(rec.submitTable) : 'another check'}; ring each table's order on its own check`);
+          else if (short.length) ev.incorrect.push(`${tableLabel(want)}'s order was missing ${short.map(fmtReq).join(', ')} (rung on the other table, or not at all)`);
+          else ev.correct.push(`Rang ${tableLabel(want)}'s order on ${tableLabel(want)}`);
+        }
         if (st.kitchenPrint !== undefined && rec.kitchenPrint !== undefined) {
           const ok = rec.kitchenPrint === st.kitchenPrint;
           score('submit', ok ? 1 : 0);
@@ -541,7 +568,8 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (e.type === 'blocked') ev.incorrect.push(`${e.who} pushed back: ${e.reason}`);
   });
   const stray = run.events.filter((e) => e.type === 'discard-unsent' || e.type === 'blocked').length;
-  ev.rawScore = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2) : 0;
+  // An order rung on the other W table leaves both checks wrong until they are joined: 3 points each.
+  ev.rawScore = possible ? Math.max(0, Math.round((earned / possible) * 100) - stray * 2 - wrongTableOrders * 3) : 0;
   // Round up to the next 5 (96 -> 100, 94 -> 95): small slips and grey areas are not punished.
   ev.score = Math.min(100, Math.ceil(ev.rawScore / 5) * 5);
 

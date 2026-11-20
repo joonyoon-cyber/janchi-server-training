@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { mappings, tableLabel } from '../lib/menu';
 import { spokenItemNames } from './generator';
+import { orderTableOf } from './evaluate';
 import { usePos } from '../lib/store';
 import { formatClock, useNow } from '../pos/common';
 import { answerChange, answerDecision, currentStage, DEFAULT_ASK, endScenario, nextStage, useTraining, waitingForCheck } from './engine';
@@ -23,8 +24,10 @@ function task(st: Stage, run: RunState) {
   switch (st.kind) {
     case 'seat':
       return 'Seat the party.';
-    case 'order':
-      return 'Ring in the request and send it.';
+    case 'order': {
+      const t = orderTableOf(run, st);
+      return t ? `Ring in this table's order on ${tableLabel(t)}'s check and send it.` : 'Ring in the request and send it.';
+    }
     case 'void':
       return 'Take it off the check (Void / Edit), then press Order to send the void.';
     case 'decision':
@@ -140,6 +143,12 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
 
   // Several tables at once: label each line with its table.
   const who = (s: Stage) => {
+    // A party across two W tables orders table by table: say which one is talking.
+    if (s.kind === 'order' && s.table) {
+      const t = orderTableOf(run, s);
+      const at = `Guests at ${t ? tableLabel(t) : s.table === 1 ? 'the first W table' : 'the second W table'}`;
+      return at;
+    }
     if (Object.keys(sc.parties).length < 2) return speaker(s);
     const t = run.partyTables[s.party];
     // A party on two W tables shows both (until they are joined).

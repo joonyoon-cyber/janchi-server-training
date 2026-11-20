@@ -573,6 +573,37 @@ describe('move and join tables', () => {
     expect(r.incorrect.filter((x) => x.includes('pushed back'))).toHaveLength(3);
   });
 
+  it('a party across two W tables orders table by table, and each order must go on its own table', () => {
+    const sc = scenarios.find((x) => x.id === 'party-of-eight')!;
+    const orders = sc.stages.filter((s): s is OrderStage => s.kind === 'order');
+    expect(orders.map((o) => o.table)).toEqual([1, 2, 1, 2]);
+    // Ringing everything on one table's check is flagged, even though the joined check adds up.
+    startScenario(sc);
+    playPerfect(sc, { oneTableOnly: true });
+    const r = getRun().result!;
+    expect(r.incorrect.some((x) => /order from the guests at W\d was sent on W\d/.test(x))).toBe(true);
+    expect(r.score).toBeLessThan(100);
+    // Done right, each table's order is credited by name.
+    startScenario(sc);
+    playPerfect(sc);
+    const ok = getRun().result!;
+    expect(ok.score).toBe(100);
+    expect(ok.correct.filter((x) => x.startsWith('Rang W'))).toHaveLength(4);
+  });
+
+  it('generated parties of 7-8 on two W tables order per table: four at the first, the rest at the second', () => {
+    for (let i = 0; i < 40; i++) {
+      const sc = generateScenario('advanced', { guests: 7 + (i % 2), rng: seededRng(900 + i) });
+      const orders = sc.stages.filter((s): s is OrderStage => s.kind === 'order');
+      expect(orders.every((o) => o.table === 1 || o.table === 2)).toBe(true);
+      const pkg = (t: 1 | 2) => orders.filter((o) => o.table === t).flatMap((o) => o.expect).filter((x) => /ayce-(dinner|lunch)$|^ultimate-ayce$/.test(x.posId)).reduce((n, x) => n + x.qty, 0);
+      expect([pkg(1), pkg(2)]).toEqual([4, sc.parties.p1 - 4]);
+      startScenario(sc);
+      playPerfect(sc);
+      expect(getRun().result!.score).toBe(100);
+    }
+  });
+
   it('every Test shift has a bar move (A B C BAR) or a W-pair join (M Y W)', () => {
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const sc = buildTest(seed);

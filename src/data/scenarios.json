@@ -1188,7 +1188,7 @@
       "id": "party-of-eight",
       "title": "Party of Eight on Two W Tables (Join)",
       "level": "advanced",
-      "summary": "Eight guests sit across a W pair as two checks (four at each). When they are ready to pay, join the two tables into one check with Move/Join; the 18% tip is added automatically after the join.",
+      "summary": "Eight guests sit across a W pair as two checks, four at each. Each table orders for itself, so ring every order on that table's own check. When they are ready to pay, join the two tables into one check with Move/Join; the 18% tip is added automatically after the join.",
       "time": {
         "weekday": 6,
         "hour": 18,
@@ -1197,7 +1197,7 @@
       "parties": {
         "p1": 8
       },
-      "targetSeconds": 330,
+      "targetSeconds": 420,
       "stages": [
         {
           "id": "seat",
@@ -1207,25 +1207,26 @@
           "guests": 8,
           "section": "MYW",
           "twoTables": true,
-          "say": "Party of eight in M Y W. Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), four at each."
+          "say": "Party of eight in M Y W. Seat them at a W pair: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), four at each. Each table will order for itself."
         },
         {
-          "id": "r1",
+          "id": "r1a",
           "kind": "order",
           "party": "p1",
-          "say": "All eight of us want Premium AYCE. Two pitchers of Coors Light and two Sprites. First round: two briskets, a top sirloin and a pork jowl.",
+          "table": 1,
+          "say": "Four Premium AYCE at this table. A pitcher of Coors Light and a Sprite. To start: two briskets and a top sirloin.",
           "expect": [
             {
               "posId": "premium-ayce-dinner",
-              "qty": 8
+              "qty": 4
             },
             {
               "posId": "pitchers-coors-light",
-              "qty": 2
+              "qty": 1
             },
             {
               "posId": "sprite",
-              "qty": 2
+              "qty": 1
             },
             {
               "posId": "15-brisket-ayce",
@@ -1233,6 +1234,27 @@
             },
             {
               "posId": "35-top-sirlon-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "r1b",
+          "kind": "order",
+          "party": "p1",
+          "table": 2,
+          "say": "Premium AYCE for the four of us too. A pitcher of Coors Light and a Sprite, and a pork jowl to start.",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 4
+            },
+            {
+              "posId": "pitchers-coors-light",
+              "qty": 1
+            },
+            {
+              "posId": "sprite",
               "qty": 1
             },
             {
@@ -1242,15 +1264,25 @@
           ]
         },
         {
-          "id": "r2",
+          "id": "r2a",
           "kind": "order",
           "party": "p1",
-          "say": "Next round: two spicy pork bulgogis, a shrimp and a chicken breast.",
+          "table": 1,
+          "say": "Next round for our table: two spicy pork bulgogis.",
           "expect": [
             {
               "posId": "34-spicy-pork-blg-ayce",
               "qty": 2
-            },
+            }
+          ]
+        },
+        {
+          "id": "r2b",
+          "kind": "order",
+          "party": "p1",
+          "table": 2,
+          "say": "Can we get a shrimp and a chicken breast over here?",
+          "expect": [
             {
               "posId": "31-shrimp-ayce",
               "qty": 1

@@ -1,4 +1,4 @@
-import { generateCounter, generateScenario, seededRng, trackVariety, type GenOptions } from './generator';
+import { generateCounter, generateScenario, seededRng, trackVariety, twoTableSeatSay, type GenOptions } from './generator';
 import { scenarios } from './scenarios';
 import type { Level, Scenario, Stage } from './types';
 
@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 8;
+export const TEST_VERSION = 9;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -86,7 +86,7 @@ export function buildTest(seed: number): Scenario {
         s.say = s.bar
           ? `Party of ${s.guests} for you. They'd like a drink at the bar while they wait for a table: please seat them at the bar.`
           : s.twoTables
-            ? `Party of ${s.guests} for you. Seat them at a W pair in your section: two tables side by side (W1 and W2, W3 and W4, or W5 and W6), up to four at each.`
+            ? twoTableSeatSay(s.guests, `Party of ${s.guests} for you.`)
             : `Party of ${s.guests} for you. Please seat them in your section (${sectionName}).`;
       }
       if (s.kind === 'order' && s.remainderOf) s.remainderOf = `t${i}-${s.remainderOf}`;
