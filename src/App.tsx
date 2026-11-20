@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
 import { actions, usePos } from './lib/store';
 import { PosFrame, ZOOMS, type Zoom } from './pos/PosFrame';
 import { quitScenario, startScenario, useTraining } from './training/engine';
@@ -10,7 +10,64 @@ import { Leaderboard } from './training/Leaderboard';
 import { Team } from './training/Team';
 
 // Loaded only when the owner opens it (keeps the spreadsheet code out of everyone else's download).
-const AnalyticsPage = lazy(() => import('./analytics/AnalyticsPage'));
+// After the site is updated, a page opened earlier asks for the old file name, which no longer
+// exists: reload once to get the new version (the Analytics tab is remembered and reopens).
+const RELOADED = 'janchi-pos-sim:reloaded-for-update';
+const AnalyticsPage = lazy(() =>
+  import('./analytics/AnalyticsPage')
+    .then((m) => {
+      try {
+        sessionStorage.removeItem(RELOADED);
+      } catch {
+        // ignore
+      }
+      return m;
+    })
+    .catch((err) => {
+      let tried = true;
+      try {
+        tried = !!sessionStorage.getItem(RELOADED);
+        if (!tried) sessionStorage.setItem(RELOADED, '1');
+      } catch {
+        // ignore
+      }
+      if (!tried) {
+        window.location.reload();
+        return new Promise<never>(() => {});
+      }
+      throw err;
+    }),
+);
+
+/** Shows a message instead of a blank site if a page fails to load (e.g. offline). */
+class LoadGuard extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="mx-auto max-w-md space-y-3 p-8 text-center text-slate-200" data-testid="load-failed">
+        <div className="text-lg font-semibold">This page couldn't load.</div>
+        <p className="text-sm text-slate-400">The site may have just been updated, or the connection dropped. Reloading usually fixes it.</p>
+        <button
+          className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-500"
+          onClick={() => {
+            try {
+              sessionStorage.removeItem(RELOADED);
+            } catch {
+              // ignore
+            }
+            window.location.reload();
+          }}
+        >
+          Reload
+        </button>
+      </div>
+    );
+  }
+}
 import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
 import { openSignIn, signOut, useAuth } from './lib/supabase';
@@ -209,9 +266,11 @@ export default function App() {
           ) : mode === 'team' ? (
             <Team auth={auth} />
           ) : mode === 'analytics' ? (
-            <Suspense fallback={<div className="p-6 text-slate-400">Loading…</div>}>
-              <AnalyticsPage isOwner={!!auth.profile?.is_owner} />
-            </Suspense>
+            <LoadGuard>
+              <Suspense fallback={<div className="p-6 text-slate-400">Loading…</div>}>
+                <AnalyticsPage isOwner={!!auth.profile?.is_owner} />
+              </Suspense>
+            </LoadGuard>
           ) : mode === 'test' ? (
             <TestScreens auth={auth} onLeaderboard={() => setMode('leaderboard')} />
           ) : result && run ? (
