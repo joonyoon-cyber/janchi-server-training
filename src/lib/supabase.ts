@@ -232,6 +232,8 @@ export interface TeamPractice {
 }
 export interface TeamData {
   members: TeamMember[];
+  /** Profile pictures by person (empty until supabase/profile.sql has been run). */
+  avatars: Record<string, string | null>;
   runs: TeamRun[];
   starts: TeamStart[];
   practice: TeamPractice[];
@@ -247,7 +249,12 @@ export async function loadTeam(): Promise<TeamData> {
     supabase.from('practice_results').select('user_id, scenario_id, title, level, generated, score, duration_sec, mistakes, created_at').order('created_at').limit(10000),
   ]);
   const error = m.error?.message ?? r.error?.message ?? s.error?.message ?? p.error?.message ?? null;
+  // Pictures are optional: missing before profile.sql has been run.
+  const av = await supabase.from('profiles').select('id, avatar_url');
+  const avatars: Record<string, string | null> = {};
+  if (!av.error && Array.isArray(av.data)) (av.data as { id: string; avatar_url: string | null }[]).forEach((x) => (avatars[x.id] = x.avatar_url));
   return {
+    avatars,
     members: (m.data as TeamMember[]) ?? [],
     runs: (r.data as TeamRun[]) ?? [],
     starts: (s.data as TeamStart[]) ?? [],

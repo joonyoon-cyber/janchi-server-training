@@ -2,6 +2,8 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { loadTeam, type TeamData, type TeamMember, type TeamPractice, type TeamRun, type useAuth } from '../lib/supabase';
 import { fmtTime } from './TestMode';
 import { ColumnChart, HBarChart, LineChart, SERIES } from '../ui/charts';
+import { Avatar } from '../ui/Avatar';
+import { TeamAchievements } from './TeamAchievements';
 
 type Auth = ReturnType<typeof useAuth>;
 type Range = '7' | '30' | 'all';
@@ -426,7 +428,7 @@ export function Team({ auth }: { auth: Auth }) {
                     <tr className={`cursor-pointer border-t border-slate-800 hover:bg-slate-800/60 ${open === s.m.id ? 'bg-slate-800/60' : ''}`} onClick={() => setOpen(open === s.m.id ? null : s.m.id)}>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-2">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-800 text-xs font-bold">{(s.m.display_name[0] ?? '?').toUpperCase()}</span>
+                          <Avatar name={s.m.display_name} url={data.avatars?.[s.m.id]} size="h-8 w-8 text-xs" />
                           <div className="min-w-0">
                             <div className="truncate font-semibold">
                               {s.m.display_name}
@@ -474,6 +476,7 @@ export function Team({ auth }: { auth: Auth }) {
             Tests started counts every Test opened, including ones quit partway. Practice counts Scenarios finished while signed in (tracking began with this
             page; earlier practice was kept only on each person's own device). Trend compares the latest Test with the average of the three before it.
           </p>
+          <TeamAchievements data={data} onlyIds={q.trim() ? new Set(rows.map((r) => r.m.id)) : undefined} />
         </>
       )}
     </div>

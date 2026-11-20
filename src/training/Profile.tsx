@@ -83,15 +83,16 @@ function BadgeCard({ b }: { b: BadgeState }) {
   );
 }
 
-function Passport({ ach, onStart }: { ach: Achievements; onStart: (id: string) => void }) {
+/** Stamps for every built-in scenario. Without onStart it is view-only (the owner's Team page). */
+export function Passport({ ach, onStart, compact = false }: { ach: Achievements; onStart?: (id: string) => void; compact?: boolean }) {
   const best = ach.stats.best;
   const done = BUILT_IN.filter((s) => best.has(s.id)).length;
   return (
-    <section className="space-y-3 rounded-3xl bg-slate-900/70 p-5 ring-1 ring-slate-800" data-testid="passport">
+    <section className={compact ? 'space-y-3' : 'space-y-3 rounded-3xl bg-slate-900/70 p-5 ring-1 ring-slate-800'} data-testid="passport">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h3 className="text-lg font-black">Scenario passport</h3>
-          <p className="text-sm text-slate-400">A stamp for every scenario you finish; gold for 90+. Tap an empty one to play it.</p>
+          <p className="text-sm text-slate-400">A stamp for every scenario finished; gold for 90+.{onStart ? ' Tap an empty one to play it.' : ''}</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-black tabular-nums">
@@ -109,7 +110,7 @@ function Passport({ ach, onStart }: { ach: Achievements; onStart: (id: string) =
           <div className={`mb-1.5 text-xs font-bold uppercase tracking-wider ${l.tone}`}>
             {l.label} · {BUILT_IN.filter((s) => s.level === l.id && best.has(s.id)).length}/{BUILT_IN.filter((s) => s.level === l.id).length}
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          <div className={`grid grid-cols-2 gap-2 ${compact ? 'xl:grid-cols-3' : 'sm:grid-cols-3 lg:grid-cols-4'}`}>
             {BUILT_IN.filter((s) => s.level === l.id).map((s) => {
               const sc = best.get(s.id);
               const gold = sc !== undefined && sc >= 90;
@@ -117,8 +118,9 @@ function Passport({ ach, onStart }: { ach: Achievements; onStart: (id: string) =
                 <button
                   key={s.id}
                   data-testid={`stamp-${s.id}`}
-                  title={sc === undefined ? 'Not played yet: tap to play' : `Best score ${sc}. Tap to play again.`}
-                  onClick={() => onStart(s.id)}
+                  title={sc === undefined ? `Not played yet${onStart ? ': tap to play' : ''}` : `Best score ${sc}${onStart ? '. Tap to play again.' : ''}`}
+                  disabled={!onStart}
+                  onClick={() => onStart?.(s.id)}
                   className={`group flex items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs ring-1 transition ${
                     sc === undefined ? 'border border-dashed border-slate-700 text-slate-400 ring-transparent hover:border-sky-600 hover:text-slate-200' : gold ? 'bg-amber-400/10 text-amber-100 ring-amber-400/40' : 'bg-sky-600/10 text-slate-100 ring-sky-600/40'
                   }`}
