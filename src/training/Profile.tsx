@@ -364,7 +364,7 @@ export function Profile({ auth, ach, history, loading, onStart }: { auth: Auth; 
     <div className="mx-auto max-w-5xl space-y-5 p-4 text-slate-100 sm:p-6" data-testid="profile-page">
       {!signedIn && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-amber-500/10 p-4 text-sm text-amber-100 ring-1 ring-amber-500/30">
-          <span>You're not signed in: these badges come from this browser only, and Tests aren't counted. Sign in to keep them on every device and set a picture and nickname.</span>
+          <span>You're not signed in, so nothing you play is saved and no badges are earned. Sign in to save your results, earn badges, and set a picture and nickname.</span>
           <button className="rounded-full bg-sky-600 px-4 py-1.5 font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
             Sign in
           </button>

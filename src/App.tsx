@@ -215,9 +215,9 @@ export default function App() {
           ) : mode === 'test' ? (
             <TestScreens auth={auth} onLeaderboard={() => setMode('leaderboard')} />
           ) : result && run ? (
-            <Results scenario={run.scenario} ev={result} onRetry={() => startScenario(run.scenario)} onExit={() => quitScenario()} />
+            <Results scenario={run.scenario} ev={result} notSaved={auth.ready && !auth.session} onRetry={() => startScenario(run.scenario)} onExit={() => quitScenario()} />
           ) : (
-            <ScenarioPicker onStart={(s) => startScenario(s)} ach={achievements.a} onProfile={() => setMode('profile')} />
+            <ScenarioPicker onStart={(s) => startScenario(s)} ach={achievements.a} history={achievements.history} signedIn={!!auth.session} onProfile={() => setMode('profile')} />
           )}
         </main>
       ) : (

@@ -11,11 +11,7 @@ export interface ProgressEntry {
   durationSec: number;
   mistakes: number;
   at: number;
-  /**
-   * Account that played it (signed-in user id), or 'guest' when played signed out.
-   * Missing on results saved before results were kept per account: those are ignored,
-   * because we can't tell whose they were (signed-in ones are on the account anyway).
-   */
+  /** Account that played it (signed-in user id). Results are only kept for signed-in accounts. */
   owner?: string;
 }
 
@@ -28,25 +24,40 @@ const KEY = 'janchi-pos-sim:progress:v1';
 let currentOwner: string | null = null;
 export function setProgressOwner(userId: string | null) {
   currentOwner = userId;
+  // On app start, remove anything older versions saved while signed out.
+  if (!cleaned) loadAll();
 }
 
+/** Signed-out play (and results from before they were kept per account) is never kept. */
+const keep = (p: ProgressEntry) => !!p.owner && p.owner !== 'guest';
+
+let cleaned = false;
 function loadAll(): ProgressEntry[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]') as ProgressEntry[];
+    const all = JSON.parse(localStorage.getItem(KEY) ?? '[]') as ProgressEntry[];
+    // Remove anything saved by older versions while signed out, once.
+    if (!cleaned) {
+      cleaned = true;
+      if (!all.every(keep)) localStorage.setItem(KEY, JSON.stringify(all.filter(keep)));
+    }
+    return all.filter(keep);
   } catch {
     return [];
   }
 }
 
-const GUEST = 'guest';
-
-/** Results saved in this browser for one account (default: whoever is signed in; null = signed out). */
+/**
+ * The signed-in account's results kept in this browser (a copy of what is saved to the account,
+ * so they show at once). Signed out: nothing is kept, so this is empty.
+ */
 export function loadProgress(owner: string | null = currentOwner): ProgressEntry[] {
-  const who = owner ?? GUEST;
-  return loadAll().filter((p) => p.owner === who);
+  if (!owner) return [];
+  return loadAll().filter((p) => p.owner === owner);
 }
 
+/** Saves a finished scenario for the signed-in account. Signed out: the score is shown but not kept anywhere. */
 export function saveResult(sc: Scenario, ev: Evaluation) {
+  if (!currentOwner) return;
   const entry: ProgressEntry = {
     scenarioId: sc.id,
     title: sc.title,
@@ -56,7 +67,7 @@ export function saveResult(sc: Scenario, ev: Evaluation) {
     durationSec: ev.durationSec,
     mistakes: ev.incorrect.length + ev.missing.length + ev.wrongQty.length + ev.ayceViolations.length + ev.paymentMistakes.length,
     at: Date.now(),
-    owner: currentOwner ?? GUEST,
+    owner: currentOwner,
   };
   // Scenario practice also goes to the owner's Team page when signed in (Tests are saved separately).
   if (!sc.id.startsWith('test-')) {
@@ -85,17 +96,10 @@ function announce() {
 
 /** Clears this account's results in this browser (other accounts' stay). */
 export function clearProgress() {
+  if (!currentOwner) return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(loadAll().filter((p) => p.owner !== (currentOwner ?? GUEST))));
+    localStorage.setItem(KEY, JSON.stringify(loadAll().filter((p) => p.owner !== currentOwner)));
   } catch {
     // ignore
   }
-}
-
-export function bestScores(): Record<string, number> {
-  const best: Record<string, number> = {};
-  loadProgress().forEach((p) => {
-    best[p.scenarioId] = Math.max(best[p.scenarioId] ?? 0, p.score);
-  });
-  return best;
 }

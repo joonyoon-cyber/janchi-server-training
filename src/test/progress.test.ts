@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadProgress, setProgressOwner, clearProgress } from '../training/progress';
+import { clearProgress, loadProgress, saveResult, setProgressOwner } from '../training/progress';
+import type { Evaluation } from '../training/evaluate';
+import type { Scenario } from '../training/types';
 
 // A tiny in-memory localStorage for Node.
 const mem = new Map<string, string>();
@@ -15,17 +17,19 @@ const mem = new Map<string, string>();
 const KEY = 'janchi-pos-sim:progress:v1';
 const entry = (scenarioId: string, owner?: string) => ({ scenarioId, title: scenarioId, level: 'beginner', generated: false, score: 90, durationSec: 60, mistakes: 0, at: 1, ...(owner ? { owner } : {}) });
 
-describe('scenario history saved in the browser is per account', () => {
-  // 'old' was saved before results were kept per account: nobody sees it.
+describe('scenario results are kept only for signed-in accounts, per account', () => {
+  // 'c' (signed out) and 'old' (before results were kept per account) are dropped.
   beforeEach(() => mem.set(KEY, JSON.stringify([entry('a', 'user-1'), entry('b', 'user-2'), entry('c', 'guest'), entry('old')])));
 
-  it('each account (and signed out) sees only its own results', () => {
+  it('each account sees only its own results; signed out sees nothing', () => {
     setProgressOwner('user-1');
     expect(loadProgress().map((p) => p.scenarioId)).toEqual(['a']);
     setProgressOwner('user-2');
     expect(loadProgress().map((p) => p.scenarioId)).toEqual(['b']);
     setProgressOwner(null);
-    expect(loadProgress().map((p) => p.scenarioId)).toEqual(['c']);
+    expect(loadProgress()).toEqual([]);
+    // The signed-out leftovers are removed from the browser too.
+    expect(JSON.parse(mem.get(KEY)!).map((p: { scenarioId: string }) => p.scenarioId)).toEqual(['a', 'b']);
     expect(loadProgress('user-1').map((p) => p.scenarioId)).toEqual(['a']);
   });
 
@@ -34,6 +38,14 @@ describe('scenario history saved in the browser is per account', () => {
     clearProgress();
     expect(loadProgress()).toEqual([]);
     expect(loadProgress('user-1')).toHaveLength(1);
-    expect(loadProgress(null)).toHaveLength(1);
+    expect(loadProgress(null)).toEqual([]);
+  });
+
+  it('playing signed out saves nothing', () => {
+    setProgressOwner(null);
+    const before = mem.get(KEY);
+    const ev = { score: 80, durationSec: 30, incorrect: [], missing: [], wrongQty: [], ayceViolations: [], paymentMistakes: [] } as unknown as Evaluation;
+    saveResult({ id: 'weekday-lunch', title: 'x', level: 'beginner' } as Scenario, ev);
+    expect(mem.get(KEY)).toBe(before);
   });
 });

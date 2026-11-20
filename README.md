@@ -47,7 +47,7 @@ Scenarios cover:
 At the end you get a 0–100 score broken down by table, guest count, AYCE package, items and
 quantities, AYCE compliance, order submission, modifications, payment, check closure, guest
 interaction and time. It lists missing items, wrong quantities, AYCE violations and payment
-mistakes, and gives suggestions. You can retry any scenario. Results are kept per browser.
+mistakes, and gives suggestions. You can retry any scenario. Results are saved only when signed in (to that account); signed out, you still get the score but nothing is kept.
 
 The MVP scenario from the spec is **Beginner → "Premium AYCE Dinner (full table)"**.
 

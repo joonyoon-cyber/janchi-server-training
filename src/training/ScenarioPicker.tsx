@@ -1,9 +1,9 @@
+import { openSignIn } from '../lib/supabase';
 import { useState } from 'react';
 import { generateScenario } from './generator';
-import { clearProgress, loadProgress } from './progress';
 import { scenarios } from './scenarios';
 import type { Level, Scenario } from './types';
-import { BUILT_IN, goalText, type Achievements } from './achievements';
+import { BUILT_IN, goalText, type Achievements, type Activity } from './achievements';
 
 
 const LEVELS: { id: Level; label: string; focus: string }[] = [
@@ -22,7 +22,7 @@ export function rememberLevel(l: Level) {
   }
 }
 
-export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scenario) => void; ach: Achievements; onProfile: () => void }) {
+export function ScenarioPicker({ onStart, ach, history: all, signedIn, onProfile }: { onStart: (s: Scenario) => void; ach: Achievements; history: Activity[]; signedIn: boolean; onProfile: () => void }) {
   // Stay on the level last chosen (e.g. after finishing an Advanced scenario), not back to Beginner.
   const [level, setLevelState] = useState<Level>(() => {
     try {
@@ -36,16 +36,16 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
     setLevelState(l);
     rememberLevel(l);
   };
-  const [, force] = useState(0);
-  // Best scores from the account (all devices) and this browser.
   // Best scores of whoever is signed in (their account on any device, plus this browser).
   const best: Record<string, number> = {};
   ach.stats.best.forEach((v, k) => (best[k] = v));
   const done = BUILT_IN.filter((s) => best[s.id] !== undefined).length;
   const levelDone = (l: Level) => [BUILT_IN.filter((s) => s.level === l && best[s.id] !== undefined).length, BUILT_IN.filter((s) => s.level === l).length];
   const nextBadge = ach.badges.find((b) => b.def.group === 'Scenarios' && b.next !== null && b.value > 0) ?? ach.badges.find((b) => b.def.id === 'first-table');
-  const history = loadProgress();
+  // Signed in: everything the account has finished (any device). Signed out: nothing is kept.
+  const history = all.filter((h) => h.kind === 'practice').sort((a, b) => a.at - b.at);
   const recent = history.slice(-8).reverse();
+  const titleOf = (h: Activity) => BUILT_IN.find((x) => x.id === h.scenarioId)?.title ?? `Random ${h.level ?? ''} table`.replace('  ', ' ');
   const avg = history.length ? Math.round(history.reduce((s, p) => s + p.score, 0) / history.length) : null;
   const lv = LEVELS.find((l) => l.id === level)!;
 
@@ -124,24 +124,21 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
       </div>
 
       <div className="rounded-lg bg-slate-800/60 p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="font-semibold">Your progress</div>
-          {history.length > 0 && (
-            <button
-              className="text-xs text-slate-400 underline hover:text-slate-200"
-              onClick={() => {
-                if (confirm('Clear your training history saved in this browser? (Results saved to your account stay.)')) {
-                  clearProgress();
-                  force((x) => x + 1);
-                }
-              }}
-            >
-              Clear history
-            </button>
-          )}
-        </div>
+        <div className="mb-2 font-semibold">Your progress</div>
         {history.length === 0 ? (
-          <div className="text-sm text-slate-400">No scenarios completed yet. Sign in to keep your results on every device.</div>
+          <div className="text-sm text-slate-400">
+            {signedIn ? (
+              'No scenarios completed yet.'
+            ) : (
+              <>
+                You're not signed in: you can play every scenario and see your score, but nothing is saved.{' '}
+                <button className="text-sky-300 underline" onClick={() => openSignIn()}>
+                  Sign in
+                </button>{' '}
+                to save your results, fill your passport and earn badges.
+              </>
+            )}
+          </div>
         ) : (
           <>
             <div className="mb-2 text-sm text-slate-300">
@@ -151,10 +148,10 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
               <tbody>
                 {recent.map((p, i) => (
                   <tr key={i} className="border-t border-slate-700">
-                    <td className="py-1 pr-2">{p.title}</td>
+                    <td className="py-1 pr-2">{titleOf(p)}</td>
                     <td className="py-1 pr-2 text-slate-400">{p.level}</td>
                     <td className="py-1 pr-2 text-slate-400 tabular-nums">
-                      {Math.floor(p.durationSec / 60)}:{String(p.durationSec % 60).padStart(2, '0')}
+                      {Math.floor(p.durationSec / 60)}:{String(Math.round(p.durationSec) % 60).padStart(2, '0')}
                     </td>
                     <td className="py-1 pr-2 text-slate-400">{p.mistakes} mistakes</td>
                     <td className="py-1 text-right font-semibold tabular-nums">{p.score}</td>

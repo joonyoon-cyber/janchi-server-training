@@ -1,3 +1,4 @@
+import { openSignIn } from '../lib/supabase';
 import type { Evaluation } from './evaluate';
 import type { Scenario } from './types';
 
@@ -42,6 +43,7 @@ export function Results({
   onExit,
   retryLabel = 'Retry this scenario',
   exitLabel = 'Back to scenarios',
+  notSaved = false,
 }: {
   scenario: Scenario;
   ev: Evaluation;
@@ -49,6 +51,8 @@ export function Results({
   onExit: () => void;
   retryLabel?: string;
   exitLabel?: string;
+  /** Played signed out: the score is shown but not kept. */
+  notSaved?: boolean;
 }) {
   const grade = ev.score >= 90 ? 'text-emerald-300' : ev.score >= 70 ? 'text-amber-300' : 'text-rose-300';
   return (
@@ -68,6 +72,14 @@ export function Results({
         </div>
       </div>
 
+      {notSaved && (
+        <div data-testid="not-saved" className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-100 ring-1 ring-amber-500/30">
+          <span>Not saved: you're not signed in. Sign in to save your results and earn badges.</span>
+          <button className="rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
+            Sign in
+          </button>
+        </div>
+      )}
       <div className="grid gap-2 sm:grid-cols-2">
         {ev.categories.map((c) => (
           <div key={c.name} className="rounded-md bg-slate-800 px-3 py-2">
