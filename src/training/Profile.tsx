@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { deleteMyAccount, openSignIn, setNewPassword, signOut, type useAuth } from '../lib/supabase';
 import { PasswordInput } from '../ui/PasswordInput';
 import { Avatar, AVATAR_COLORS, AVATAR_EMOJI, emojiAvatar, parseAvatar, photoToAvatar } from '../ui/Avatar';
-import { badgeHelp, BUILT_IN, nextText, RANKS, RUN_XP, TIER_NAMES, tierXp, type Achievements, type BadgeState, type Group } from './achievements';
+import { badgeHelp, BUILT_IN, nextText, rankFor, RANKS, RUN_XP, TIER_NAMES, tierXp, type Achievements, type BadgeState, type Group } from './achievements';
 import type { Activity } from './achievements';
 import type { Level } from './types';
 
@@ -351,6 +351,65 @@ function Account({ auth, earned }: { auth: Auth; earned: BadgeState[] }) {
   );
 }
 
+/**
+ * XP progress, labeled so the bar is read right: the bar runs from where this rank starts to
+ * where the next one starts (e.g. Server 650 -> Senior Server 1,100), and a row of steps shows
+ * where that rank sits among all seven.
+ */
+function RankProgress({ xp }: { xp: number }) {
+  const r = rankFor(xp);
+  const next = RANKS[r.level];
+  const span = r.to === null ? 1 : r.to - r.from;
+  const into = xp - r.from;
+  const pct = r.to === null ? 100 : (into / span) * 100;
+  return (
+    <div className="mt-2 max-w-md" data-testid="rank-progress">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-xs text-slate-400">
+        <span>
+          <b className="text-base text-slate-100">{xp.toLocaleString()} XP</b>
+        </span>
+        <span>
+          {next ? (
+            <>
+              <b className="text-slate-200">{(r.to! - xp).toLocaleString()} XP</b> to {next.icon} {next.title}
+            </>
+          ) : (
+            'Top rank reached!'
+          )}
+        </span>
+      </div>
+      <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-slate-800" title={next ? `${into.toLocaleString()} of ${span.toLocaleString()} XP through ${r.title}` : undefined}>
+        <div className="xp-fill h-full rounded-full bg-gradient-to-r from-sky-700 via-sky-500 to-amber-300" style={{ width: `${Math.max(pct, 1.5)}%` }} />
+      </div>
+      <div className="mt-1 flex justify-between text-[11px] tabular-nums text-slate-500">
+        <span>
+          {r.icon} {r.title} · {r.from.toLocaleString()}
+        </span>
+        {next && <span className="text-slate-400">{Math.round(pct)}% of the way</span>}
+        {next && (
+          <span>
+            {next.icon} {next.title} · {next.xp.toLocaleString()}
+          </span>
+        )}
+      </div>
+      {/* All seven ranks: done, current (partly filled) and still to come. */}
+      <div className="mt-2 flex gap-1" aria-label={`Rank ${r.level} of ${RANKS.length}`}>
+        {RANKS.map((x, i) => {
+          const fill = i < r.level - 1 ? 100 : i === r.level - 1 ? pct : 0;
+          return (
+            <div key={x.title} className="flex-1" title={`${x.icon} ${x.title}: from ${x.xp.toLocaleString()} XP`}>
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                <div className="h-full rounded-full bg-amber-300/80" style={{ width: `${fill}%` }} />
+              </div>
+              <div className={`mt-0.5 text-center text-[11px] leading-none ${i === r.level - 1 ? '' : 'opacity-40'}`}>{x.icon}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Bottom of the Profile: delete the account and everything saved for it, after typing DELETE. */
 function DeleteAccount({ isOwner }: { isOwner: boolean }) {
   const [open, setOpen] = useState(false);
@@ -468,7 +527,6 @@ export function Profile({ auth, ach, history, loading, onStart }: { auth: Auth; 
   const tiersTotal = ach.badges.reduce((t, b) => t + b.def.tiers.length, 0);
   const featured = auth.profile?.featured_badge ? ach.badges.find((b) => b.def.id === auth.profile?.featured_badge && b.tier > 0) : undefined;
   const r = ach.rank;
-  const rankPct = r.to === null ? 100 : ((ach.xp - r.from) / (r.to - r.from)) * 100;
   const s = ach.stats;
   const tests = history.filter((h) => h.kind === 'test');
   const bestTest = tests.length ? Math.max(...tests.map((t) => t.score)) : null;
@@ -525,17 +583,7 @@ export function Profile({ auth, ach, history, loading, onStart }: { auth: Auth; 
                 </span>
               )}
             </h2>
-            <div className="mt-2 max-w-md">
-              <div className="flex flex-wrap justify-between gap-x-3 text-xs text-slate-400">
-                <span>
-                  {r.icon} <b className="text-slate-100">{ach.xp.toLocaleString()} XP</b>
-                </span>
-                <span>{r.to === null ? 'Top rank!' : `${(r.to - ach.xp).toLocaleString()} XP to the next rank`}</span>
-              </div>
-              <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-slate-800">
-                <div className="xp-fill h-full rounded-full bg-gradient-to-r from-sky-700 via-sky-500 to-amber-300" style={{ width: `${rankPct}%` }} />
-              </div>
-            </div>
+            <RankProgress xp={ach.xp} />
           </div>
         </div>
         <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">

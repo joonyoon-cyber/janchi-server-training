@@ -157,8 +157,11 @@ export function TeamAchievements({ data, onlyIds }: { data: TeamData; onlyIds?: 
                       <div className="text-xs">
                         {rk.icon} <b>{rk.title}</b> <span className="text-slate-500">· Lv {rk.level} · {r.a.xp.toLocaleString()} XP</span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800">
-                        <div className="h-full rounded-full bg-gradient-to-r from-sky-700 to-amber-300" style={{ width: `${pct}%` }} />
+                      <div
+                        className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800"
+                        title={rk.to === null ? 'Top rank' : `${Math.round(pct)}% of the way from ${rk.title} (${rk.from.toLocaleString()} XP) to the next rank (${rk.to.toLocaleString()} XP)`}
+                      >
+                        <div className="h-full rounded-full bg-gradient-to-r from-sky-700 to-amber-300" style={{ width: `${Math.max(pct, 1.5)}%` }} />
                       </div>
                     </td>
                     <td className="px-2">
