@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { actions, usePos } from './lib/store';
 import { PosFrame, ZOOMS, type Zoom } from './pos/PosFrame';
 import { quitScenario, startScenario, useTraining } from './training/engine';
@@ -70,7 +70,8 @@ class LoadGuard extends Component<{ children: ReactNode }, { failed: boolean }> 
 }
 import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
-import { openSignIn, signOut, useAuth } from './lib/supabase';
+import { openSignIn, saveBadgeSummary, signOut, useAuth } from './lib/supabase';
+import { badgeSummary } from './training/achievements';
 import { SignInDialog } from './auth/SignInDialog';
 import { Profile } from './training/Profile';
 import { BadgeToaster } from './training/BadgeToaster';
@@ -150,6 +151,17 @@ export default function App() {
   // Scenario results saved in this browser belong to the account that played them.
   setProgressOwner(userId);
   const achievements = useAchievements(userId);
+  // Keep the public leaderboard's level and badges up to date (saved only when they change).
+  const savedSummary = useRef('');
+  useEffect(() => {
+    if (!userId || achievements.loading || auth.profile?.id !== userId) return;
+    const badges = badgeSummary(achievements.a);
+    const xp = achievements.a.xp;
+    const key = `${userId}|${xp}|${badges}`;
+    if (savedSummary.current === key || (auth.profile.xp === xp && (auth.profile.badges ?? '') === badges)) return;
+    savedSummary.current = key;
+    void saveBadgeSummary(userId, xp, badges);
+  }, [userId, achievements.loading, achievements.a, auth.profile]);
   // The Profile (and badges) exist only for signed-in people: leave it on sign-out.
   useEffect(() => {
     if (auth.ready && !auth.session && mode === 'profile') setModeState('scenarios');

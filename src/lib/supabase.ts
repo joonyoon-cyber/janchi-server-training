@@ -27,6 +27,9 @@ export interface Profile {
   avatar_url?: string | null;
   /** The badge shown next to the name on the leaderboard. */
   featured_badge?: string | null;
+  /** Summary for the public leaderboard, saved by the person's own browser (supabase/levels.sql). */
+  xp?: number | null;
+  badges?: string | null;
 }
 
 export interface LeaderRow {
@@ -38,6 +41,9 @@ export interface LeaderRow {
   attempts: number;
   avatar_url?: string | null;
   featured_badge?: string | null;
+  xp?: number | null;
+  /** Earned badges, "id:level,id:level". */
+  badges?: string | null;
 }
 
 export interface RunRow {
@@ -175,8 +181,9 @@ export function useAuth() {
     if (!session) return setProfile(null);
     void (async () => {
       const q = (cols: string) => supabase.from('profiles').select(cols).eq('id', session.user.id).maybeSingle();
-      let r = await q('id, display_name, is_owner, avatar_url, featured_badge');
-      // Before supabase/profile.sql has been run the new columns do not exist yet.
+      let r = await q('id, display_name, is_owner, avatar_url, featured_badge, xp, badges');
+      // Columns added by later setup steps (profile.sql, levels.sql) may not exist yet.
+      if (r.error) r = await q('id, display_name, is_owner, avatar_url, featured_badge');
       if (r.error) r = await q('id, display_name, is_owner');
       setProfile(r.data as unknown as Profile | null);
     })();
@@ -225,6 +232,14 @@ export async function loadMyActivity(userId: string) {
     tests: (r.data as { score: number; clear_time_sec: number; created_at: string }[]) ?? [],
     error: p.error?.message ?? r.error?.message ?? null,
   };
+}
+
+/**
+ * Saves the person's XP and earned badges to their profile so the public leaderboard can show
+ * them (best effort: does nothing before supabase/levels.sql has been run).
+ */
+export async function saveBadgeSummary(userId: string, xp: number, badges: string) {
+  await supabase.from('profiles').update({ xp, badges }).eq('id', userId);
 }
 
 export async function loadMyRuns(userId: string): Promise<RunRow[]> {

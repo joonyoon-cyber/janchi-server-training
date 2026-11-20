@@ -92,6 +92,14 @@ Run `supabase/accounts.sql` once (SQL Editor → paste → Run; safe to re-run; 
 Until it is run, the website still checks nicknames when people change them, but account
 deletion shows a "needs one setup step" message.
 
+## Levels and badges on the leaderboard
+
+Run `supabase/levels.sql` once (also part of `schema.sql`). Badges and XP are worked out in the
+website from each person's own history, which other people can't read, so each person's browser
+saves a short summary (their XP and earned badges) to their profile after they train. The
+leaderboard table then shows everyone's rank title, level and badges. Someone appears without a
+level until they next open the site signed in.
+
 ## Profiles and badges
 
 Run `supabase/profile.sql` once (SQL Editor → paste → Run; safe to re-run; also part of

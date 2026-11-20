@@ -10,7 +10,7 @@ import {
 } from "../lib/supabase";
 import { fmtTime } from "./TestMode";
 import { Avatar } from "../ui/Avatar";
-import { BADGE } from "./achievements";
+import { BADGE, badgeHelp, levelName, parseBadgeSummary, rankFor } from "./achievements";
 
 type Auth = ReturnType<typeof useAuth>;
 
@@ -66,6 +66,36 @@ function Crown() {
         </linearGradient>
       </defs>
     </svg>
+  );
+}
+
+/** Rank title, level and XP, e.g. "🎖️ Captain · Lv 6 · 2,315 XP" (once the person's browser has saved it). */
+function LevelLine({ row }: { row: LeaderRow }) {
+  if (row.xp === undefined || row.xp === null) return null;
+  const rk = rankFor(row.xp);
+  return (
+    <div className="mt-0.5 truncate text-[11px] text-slate-400" data-testid="lb-level">
+      {rk.icon} <b className="font-semibold text-slate-200">{rk.title}</b> · Lv {rk.level} · {row.xp.toLocaleString()} XP
+    </div>
+  );
+}
+
+/** Earned badges, best first: a few icons plus how many in all. Hover an icon for what it is. */
+function BadgeIcons({ summary }: { summary?: string | null }) {
+  const list = parseBadgeSummary(summary);
+  if (!list.length) return <div className="hidden w-40 md:block" />;
+  const shown = list.slice(0, 5);
+  return (
+    <div className="hidden w-40 shrink-0 items-center justify-end gap-0.5 md:flex" data-testid="lb-badges">
+      {shown.map(({ def, tier }) => (
+        <span key={def.id} className="cursor-help text-base leading-none" title={`${badgeHelp(def)}\n${levelName(def, tier - 1)} earned`}>
+          {def.icon}
+        </span>
+      ))}
+      <span className="ml-1 whitespace-nowrap rounded-full bg-slate-800 px-1.5 text-[10px] font-bold tabular-nums text-slate-300" title={`${list.length} badges earned`}>
+        🏅{list.length}
+      </span>
+    </div>
   );
 }
 
@@ -202,7 +232,8 @@ export function Leaderboard({ auth }: { auth: Auth }) {
   const myRank = rows ? rows.findIndex((r) => r.user_id === me) + 1 : 0;
   const myBest = rows?.find((r) => r.user_id === me);
   const top = rows?.slice(0, 3) ?? [];
-  const rest = rows?.slice(3) ?? [];
+  // Everyone, #1 first: the podium shows the top three, and the table repeats them with their level and badges.
+  const rest = rows ?? [];
   const myName = auth.profile?.display_name ?? "…";
 
   return (
@@ -339,8 +370,8 @@ export function Leaderboard({ auth }: { auth: Auth }) {
                       animationDelay: `${0.6 + Math.min(i, 12) * 0.05}s`,
                     }}
                   >
-                    <span className="w-7 text-center text-sm font-bold tabular-nums text-slate-400">
-                      {i + 4}
+                    <span className="w-7 text-center text-sm font-bold tabular-nums text-slate-400" data-testid={`rank-${i + 1}`}>
+                      {i < 3 ? <span className="text-xl">{["🥇", "🥈", "🥉"][i]}</span> : i + 1}
                     </span>
                     <Avatar name={r.display_name} url={r.avatar_url} size="h-9 w-9 text-sm" />
                     <div className="min-w-0 flex-1">
@@ -352,6 +383,7 @@ export function Leaderboard({ auth }: { auth: Auth }) {
                           </span>
                         )}
                       </div>
+                      <LevelLine row={r} />
                       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-sky-700 to-amber-400"
@@ -359,6 +391,7 @@ export function Leaderboard({ auth }: { auth: Auth }) {
                         />
                       </div>
                     </div>
+                    <BadgeIcons summary={r.badges} />
                     <div className="text-right">
                       <div className="text-lg font-black tabular-nums">
                         {r.score}

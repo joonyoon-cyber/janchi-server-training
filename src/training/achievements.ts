@@ -288,6 +288,28 @@ export function badgeHelp(b: BadgeState | BadgeDef) {
   return `${def.icon} ${def.name}: ${def.desc} ${def.tiers.length === 1 ? `(${levels})` : `Levels, counting ${def.unit}: ${levels}.`}`;
 }
 
+/** Earned badges as "id:level,id:level" (saved to the profile for the public leaderboard). */
+export function badgeSummary(a: Achievements): string {
+  return a.badges
+    .filter((b) => b.tier > 0)
+    .map((b) => `${b.def.id}:${b.tier}`)
+    .join(',');
+}
+
+/** Reads a saved summary back: earned badges with their level, best first (gold before bronze). */
+export function parseBadgeSummary(s: string | null | undefined): { def: BadgeDef; tier: number }[] {
+  if (!s) return [];
+  return s
+    .split(',')
+    .map((x) => {
+      const [id, t] = x.split(':');
+      const def = BADGE.get(id);
+      return def ? { def, tier: Math.min(Number(t) || 0, def.tiers.length) } : null;
+    })
+    .filter((x): x is { def: BadgeDef; tier: number } => !!x && x.tier > 0)
+    .sort((a, b) => tierXp(b.def, b.tier - 1) - tierXp(a.def, a.tier - 1));
+}
+
 /** Key for one earned tier, used to announce new badges once. */
 export const tierKey = (id: string, tier: number) => `${id}:${tier}`;
 
