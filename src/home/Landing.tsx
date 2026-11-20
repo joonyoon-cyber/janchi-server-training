@@ -99,10 +99,9 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
           <p className="rise-in font-display text-2xl tracking-[0.6em] text-gold" style={{ animationDelay: '0.1s' }}>
             잔치 아카데미
           </p>
-          {/* A styled label rather than a heading, so the page heading font doesn't apply. */}
-          <p role="heading" aria-level={1} className="rise-in mt-5 text-[clamp(15px,1.8vw,22px)] font-semibold uppercase leading-snug tracking-[0.3em] text-cream" style={{ animationDelay: '0.25s' }}>
+          <h1 className="rise-in mt-5 text-[clamp(18px,2.2vw,28px)] uppercase text-cream" style={{ animationDelay: '0.25s' }}>
             Server training · Janchi Korean BBQ &amp; Bar
-          </p>
+          </h1>
           <p className="rise-in mt-6 max-w-3xl font-display text-[clamp(26px,3.2vw,40px)] leading-snug text-cream/90" style={{ animationDelay: '0.45s' }}>
             Learn our POS on a faithful copy of it, serve guests who talk like real guests, and run a full Friday dinner shift before your first one on the floor.
           </p>
