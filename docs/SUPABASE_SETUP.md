@@ -69,33 +69,10 @@ name in the header. Take a Test; the result appears under **Leaderboard**.
 5. Sign in as the owner and open **Leaderboard**: an **Owner tools** box lets you clear the
    leaderboard (type CLEAR to confirm).
 
-Forgotten passwords: see **5. Password reset emails** below. Without it, the owner can still help:
-in Supabase, **Authentication → Users**, find the person's email and delete the user (their saved
-runs go with it); they can then create the account again.
-
-## 5. Password reset emails ("Forgot your password?")
-
-The sign-in window has a **Forgot your password?** link. It asks Supabase to email a one-time link
-back to the website; opening it signs the person in and the site asks for a new password. Signed-in
-people can also change (or, for Google accounts, add) a password on their **Profile** page.
-
-For the emails to reach employees:
-
-1. **Set up your own email sender (SMTP).** Supabase's built-in sender is for testing only: it
-   delivers just to the email addresses of your Supabase organization's members, a few per hour.
-   In Supabase, **Authentication → Emails → SMTP Settings**, turn on custom SMTP and enter a sender,
-   for example:
-   - Gmail: host `smtp.gmail.com`, port `465`, your Gmail address as user name, and an
-     **App Password** (Google Account → Security → 2-Step Verification → App passwords) as password.
-   - Or a mail service such as Resend, SendGrid or Postmark (they give you the host, port and key).
-   Use a sender name like "Janchi Server Training".
-2. **Authentication → Rate Limits**: check "emails sent per hour" (about 30 is plenty).
-3. **Authentication → URL Configuration**: the website address must be in **Redirect URLs** (it
-   already is if you followed step 2 for Google sign-in). The link in the email returns there.
-4. Optional: **Authentication → Emails → Templates → Reset Password** to reword the email.
-
-Tell staff to open the link **in the same browser** where they asked for it (for security the link
-only works there), and to check their spam folder.
+Forgotten passwords: no emails are sent, so there is no self-service reset. In Supabase,
+**Authentication → Users**, find the person's email and delete the user (their saved runs go with
+it); they can then create the account again. Signed-in people can change their password (or, for
+Google accounts, add one) on their **Profile** page.
 
 ## Profiles and badges
 

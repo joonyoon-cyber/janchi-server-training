@@ -101,17 +101,7 @@ export async function clearLeaderboard(): Promise<string | null> {
   return error?.message ?? null;
 }
 
-// ---- Password recovery ----------------------------------------------------------
-// Supabase emails a one-time link back to this page; opening it signs the person in and
-// fires PASSWORD_RECOVERY, and the app then asks for a new password.
-export async function sendPasswordReset(email: string): Promise<string | null> {
-  const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
-  if (!error) return null;
-  if (/rate|too many|seconds/i.test(error.message)) return 'Too many reset emails were sent. Please wait a few minutes and try again.';
-  return error.message;
-}
-
+/** Change (or, for Google accounts, add) the signed-in person's password. */
 export async function setNewPassword(password: string): Promise<string | null> {
   const { error } = await supabase.auth.updateUser({ password });
   if (!error) return null;
@@ -127,15 +117,12 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ready, setReady] = useState(false);
-  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     // INITIAL_SESSION fires once the saved session (if any) has been restored.
-    const { data } = supabase.auth.onAuthStateChange((e, s) => {
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setReady(true);
-      // Opened the link from a "forgot your password" email: ask for a new password.
-      if (e === 'PASSWORD_RECOVERY') setRecovering(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -160,7 +147,7 @@ export function useAuth() {
   };
   const rename = (name: string) => updateProfile({ display_name: name });
 
-  return { session, profile, ready, rename, updateProfile, recovering, endRecovery: () => setRecovering(false) };
+  return { session, profile, ready, rename, updateProfile };
 }
 
 export async function saveRun(run: { version: number; seed: number; score: number; clear_time_sec: number; tables: unknown; events: unknown }) {

@@ -15,7 +15,6 @@ import { TestScreens } from './training/TestMode';
 import { testActions, useTest } from './training/testRun';
 import { openSignIn, signOut, useAuth } from './lib/supabase';
 import { SignInDialog } from './auth/SignInDialog';
-import { NewPasswordDialog } from './auth/NewPasswordDialog';
 import { Profile } from './training/Profile';
 import { BadgeToaster } from './training/BadgeToaster';
 import { useAchievements } from './training/activity';
@@ -276,7 +275,6 @@ export default function App() {
       </footer>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
       <SignInDialog />
-      {auth.recovering && <NewPasswordDialog onDone={auth.endRecovery} />}
       {auth.ready && <BadgeToaster ach={achievements.a} loading={achievements.loading} who={userId ?? 'guest'} onOpen={() => setMode('profile')} />}
     </div>
   );
