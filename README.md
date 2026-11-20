@@ -61,7 +61,7 @@ macaron or gift card sale, and a policy / family / combo table. **Next ▸** mov
 anything up: doing it later on the POS still counts. One score (0–100, accuracy only) at the end;
 clear time is the whole shift. See `src/training/testRecipe.ts`.
 
-**Leaderboard.** Sign in with Google to save Test results. Ranking: highest score, then fastest
+**Leaderboard.** Sign in (Google, or email and password) to take the Test; every result is saved. Ranking: highest score, then fastest
 clear time; each person's best run counts. Backed by Supabase (database schema in
 `supabase/schema.sql`; setup steps in `docs/SUPABASE_SETUP.md`).
 

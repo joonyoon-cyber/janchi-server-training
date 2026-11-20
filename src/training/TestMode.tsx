@@ -44,19 +44,26 @@ function Intro({ auth }: { auth: Auth }) {
           </li>
         </ul>
       </div>
-      {auth.session ? (
-        <p className="text-sm text-emerald-300">Signed in as {auth.profile?.display_name ?? auth.session.user.email}. Your result will be saved to the leaderboard.</p>
+      {!auth.ready ? (
+        <p className="text-sm text-slate-400">Checking your sign-in…</p>
+      ) : auth.session ? (
+        <>
+          <p className="text-sm text-emerald-300">Signed in as {auth.profile?.display_name ?? auth.session.user.email}. Your result will be saved to the leaderboard.</p>
+          <button data-testid="test-start" className="rounded-full bg-sky-600 px-7 py-3 text-lg font-semibold text-white shadow-lg shadow-sky-900/40 hover:bg-sky-500" onClick={() => testActions.start()}>
+            Start the shift
+          </button>
+        </>
       ) : (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-600/50 bg-amber-950/30 p-3 text-sm text-amber-200">
-          Sign in to save your result to the leaderboard. You can still take the Test without signing in.
-          <button className="rounded-full bg-sky-600 px-4 py-1.5 font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
-            Sign in
+        // The Test counts toward the leaderboard and the owner's Team page, so it needs an account.
+        <div data-testid="test-sign-in" className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-600/50 bg-amber-950/30 p-4 text-sm text-amber-100">
+          <span className="flex-1">
+            <b className="text-white">Sign in to take the Test.</b> Every Test is saved to your account and the leaderboard. Want to practice first? Scenarios work without signing in.
+          </span>
+          <button className="rounded-full bg-sky-600 px-5 py-2 font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
+            Sign in to start
           </button>
         </div>
       )}
-      <button data-testid="test-start" className="rounded-full bg-sky-600 px-7 py-3 text-lg font-semibold text-white shadow-lg shadow-sky-900/40 hover:bg-sky-500" onClick={() => testActions.start()}>
-        Start the shift
-      </button>
     </div>
   );
 }
