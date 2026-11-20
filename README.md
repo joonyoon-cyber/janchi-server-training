@@ -1,4 +1,4 @@
-# Janchi POS Trainer
+# Janchi Service Academy (server training)
 
 A browser-based training simulator for **Janchi Korean BBQ & Bar** (Thousand Oaks, CA).
 It reproduces the restaurant's **BLUU Restaurant Pro 3.0** POS screens, so servers can practice

@@ -39,6 +39,34 @@ const AnalyticsPage = lazy(() =>
     }),
 );
 
+/** Small line icons in the header (gold hairline style). */
+function IconTeam() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 19c.8-3.4 3.2-5 6-5s5.2 1.6 6 5" />
+      <circle cx="17" cy="9" r="2.5" />
+      <path d="M16 14.2c2.4.2 4.2 1.7 5 4.8" />
+    </svg>
+  );
+}
+function IconChart() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <path d="M4 20h16" />
+      <path d="M7 16v-5M12 16V6M17 16v-8" />
+    </svg>
+  );
+}
+function IconGearLine() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" />
+    </svg>
+  );
+}
+
 /** Shows a message instead of a blank site if a page fails to load (e.g. offline). */
 class LoadGuard extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -79,8 +107,9 @@ import { useAchievements } from './training/activity';
 import { setProgressOwner } from './training/progress';
 import { scenarios } from './training/scenarios';
 import { Avatar } from './ui/Avatar';
+import { Landing } from './home/Landing';
 
-type Mode = 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team' | 'analytics' | 'profile';
+type Mode = 'home' | 'practice' | 'scenarios' | 'test' | 'leaderboard' | 'team' | 'analytics' | 'profile';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'practice', label: 'Free Play' },
@@ -142,15 +171,21 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
 
 export default function App() {
   const [mode, setModeState] = useState<Mode>(() => {
-    const m = readPref<string>('janchi-pos-sim:mode', 'practice');
-    // A Test in progress is not kept across reloads; 'training' was the old name of Scenarios.
-    return m === 'training' ? 'scenarios' : m === 'test' ? 'practice' : m === 'profile' || MODES.some((x) => x.id === m) ? (m as Mode) : 'practice';
+    // First visit: the landing page. A Test in progress is not kept across reloads; 'training' was the old name of Scenarios.
+    const m = readPref<string>('janchi-pos-sim:mode', 'home');
+    return m === 'training' ? 'scenarios' : m === 'test' ? 'practice' : m === 'profile' || m === 'home' || MODES.some((x) => x.id === m) ? (m as Mode) : 'home';
   });
   const auth = useAuth();
   const userId = auth.ready ? auth.session?.user.id ?? null : null;
   // Scenario results saved in this browser belong to the account that played them.
   setProgressOwner(userId);
   const achievements = useAchievements(userId);
+  // Each page opens at its top (the page area keeps its scroll position otherwise).
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [mode]);
+
   // Keep the public leaderboard's level and badges up to date (saved only when they change).
   const savedSummary = useRef('');
   useEffect(() => {
@@ -182,7 +217,7 @@ export default function App() {
     if (mode === 'test' && test.phase === 'shift' && !confirm('Quit the Test? This run will not be saved.')) return;
     if (mode === 'test') testActions.quit();
     if (m !== 'practice' && mode === 'practice') quitScenario();
-    if (m === 'practice' || m === 'leaderboard' || m === 'team' || m === 'analytics' || m === 'profile') {
+    if (m === 'home' || m === 'practice' || m === 'leaderboard' || m === 'team' || m === 'analytics' || m === 'profile') {
       quitScenario();
       actions.loadPractice();
     }
@@ -201,77 +236,92 @@ export default function App() {
   const showPos = mode === 'practice' || inScenario;
 
   return (
-    <div className="flex h-full flex-col bg-slate-950">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-slate-800 bg-slate-950 px-3 py-1.5 text-slate-100 shadow-[0_1px_0_rgba(190,30,45,0.35)]">
+    <div className="flex h-full flex-col bg-ink">
+      <header data-testid="site-header" className="relative flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-line bg-ink px-3 py-2 text-cream sm:px-5">
         <div className="mr-auto flex items-center gap-3">
-          <img src="brand/janchi-mark-white.png" alt="Janchi Korean BBQ & Bar" className="h-10 w-auto" />
-          <div className="border-l border-slate-700 pl-3 leading-tight">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100">Server Training</div>
-            <div className="text-[10px] tracking-wide text-slate-400">POS simulator · not connected to the live POS</div>
-          </div>
+          {/* Brand: the gold-ringed emblem from janchibbq.com; goes to the landing page. */}
+          <button data-testid="brand-home" className="group flex items-center gap-3 text-left" onClick={() => setMode('home')} title="Janchi Service Academy: home">
+            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold bg-ink transition-shadow group-hover:shadow-[inset_0_0_12px_rgba(184,149,95,0.45)]">
+              <span className="absolute inset-[3px] rounded-full border border-gold-line" />
+              <img src="brand/janchi-mark-cream.png" alt="" className="relative h-5 w-auto" />
+            </span>
+            <span className="leading-none">
+              <span className="hidden whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.32em] text-ember sm:block">Janchi Korean BBQ</span>
+              <span className="block whitespace-nowrap font-display text-[20px] font-medium tracking-wide text-cream sm:mt-1 sm:text-[22px]">
+                Service <em className="text-ember">Academy</em>
+              </span>
+            </span>
+          </button>
           {/* Owner-only tools sit on the left, apart from the training tabs, so everyone's menu stays the same. */}
           {auth.profile?.is_owner && (
-            <nav data-testid="owner-nav" className="ml-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/15 to-amber-300/5 p-1 pl-2.5 text-xs font-semibold ring-1 ring-amber-400/40">
-              <span className="mr-1 text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">👑 Owner</span>
+            <nav data-testid="owner-nav" className="ml-1 flex items-center gap-0.5 rounded-full border border-gold-line bg-gold-soft p-1 pl-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+              <span className="mr-1.5 hidden text-[9px] font-bold tracking-[0.28em] text-ember sm:inline">Owner</span>
               {MODES.filter((m) => m.id === 'team' || m.id === 'analytics').map((m) => (
                 <button
                   key={m.id}
                   data-testid={`mode-${m.id}`}
-                  className={`rounded-full px-3.5 py-1.5 transition-colors ${mode === m.id ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-slate-950 shadow shadow-amber-900/50' : 'text-amber-100 hover:bg-amber-400/15 hover:text-white'}`}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 uppercase tracking-[0.14em] transition-colors ${mode === m.id ? 'bg-gradient-to-b from-[#e2c48e] to-gold text-ink shadow shadow-black/50' : 'text-cream/80 hover:bg-gold/15 hover:text-cream'}`}
                   onClick={() => setMode(m.id)}
                 >
-                  {m.id === 'team' ? '👥 ' : '📊 '}
-                  {m.label}
+                  {m.id === 'team' ? <IconTeam /> : <IconChart />}
+                  <span className="hidden md:inline">{m.label}</span>
                 </button>
               ))}
             </nav>
           )}
         </div>
-        <nav className="flex rounded-full bg-slate-900 p-1 text-xs font-semibold ring-1 ring-slate-800">
+        <nav className="-mx-1 flex max-w-full items-center gap-1 overflow-x-auto text-[11.5px] font-semibold uppercase tracking-[0.16em]">
           {MODES.filter((m) => m.id !== 'team' && m.id !== 'analytics').map((m) => (
             <button
               key={m.id}
               data-testid={`mode-${m.id}`}
-              className={`rounded-full px-3.5 py-1.5 transition-colors ${mode === m.id ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
+              className={`whitespace-nowrap border-b px-2.5 py-1.5 uppercase tracking-[0.16em] transition-colors sm:px-3 ${mode === m.id ? 'border-gold text-cream' : 'border-transparent text-cream/60 hover:border-gold-line hover:text-cream'}`}
               onClick={() => setMode(m.id)}
             >
               {m.label}
             </button>
           ))}
         </nav>
-        <button className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800" onClick={() => setSettingsOpen(true)}>
-          Settings
+        <button
+          className="grid h-8 w-8 place-items-center rounded-full border border-gold-line text-cream/70 transition-colors hover:border-gold hover:text-cream"
+          onClick={() => setSettingsOpen(true)}
+          title="Simulator settings"
+          aria-label="Simulator settings"
+        >
+          <IconGearLine />
         </button>
         {auth.session ? (
           <span className="flex items-center gap-2 text-xs text-slate-300">
             <button
               data-testid="open-profile"
               title="Your profile and badges"
-              className={`flex items-center gap-2 rounded-full py-0.5 pl-3 pr-0.5 transition-colors ${mode === 'profile' ? 'bg-sky-600/25 ring-1 ring-sky-600' : 'hover:bg-slate-800'}`}
+              className={`flex items-center gap-2 rounded-full border py-0.5 pl-3 pr-0.5 transition-colors ${mode === 'profile' ? 'border-gold bg-gold-soft' : 'border-transparent hover:border-gold-line'}`}
               onClick={() => setMode('profile')}
             >
-              <span className="text-right leading-tight">
-                <span className="block font-semibold text-slate-100">{auth.profile?.display_name ?? auth.session.user.email}</span>
-                <span className="block text-[10px] text-slate-400">
+              <span className="hidden text-right leading-tight sm:block">
+                <span className="block font-semibold text-cream">{auth.profile?.display_name ?? auth.session.user.email}</span>
+                <span className="block text-[10px] text-cream/50">
                   {achievements.a.rank.icon} {achievements.a.rank.title} · 🏅 {achievements.a.badges.reduce((t, b) => t + b.tier, 0)}
                 </span>
               </span>
               <Avatar name={auth.profile?.display_name ?? auth.session.user.email ?? '?'} url={auth.profile?.avatar_url} size="h-8 w-8 text-xs" />
             </button>
-            <button className="rounded-full border border-slate-700 px-3 py-1 hover:bg-slate-800" onClick={() => signOut()}>
+            <button className="rounded-full border border-gold-line px-3 py-1 text-[11px] uppercase tracking-[0.12em] text-cream/80 hover:border-gold hover:text-cream" onClick={() => signOut()}>
               Sign out
             </button>
           </span>
         ) : (
-          <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
+          <button data-testid="sign-in" className="rounded-full bg-janchi px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white shadow hover:bg-[#d02535]" onClick={() => openSignIn()}>
             Sign in
           </button>
         )}
       </header>
 
       {!showPos ? (
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          {mode === 'profile' && auth.session ? (
+        <main ref={mainRef} className={`app-page min-h-0 flex-1 overflow-y-auto ${mode === 'home' ? 'bg-ink' : ''}`}>
+          {mode === 'home' ? (
+            <Landing auth={auth} rank={auth.session ? achievements.a.rank : null} onGo={(m) => setMode(m)} />
+          ) : mode === 'profile' && auth.session ? (
             <Profile
               auth={auth}
               ach={achievements.a}
@@ -307,7 +357,10 @@ export default function App() {
         <main className="flex min-h-0 flex-1 flex-col landscape:flex-row">
           <div className="flex min-h-0 min-w-0 flex-1 flex-col portrait:flex-none">
             {/* POS toolbar: controls for the POS screen only, so the header stays the same on every tab. */}
-            <div data-testid="pos-toolbar" className="flex shrink-0 items-center justify-end gap-2 bg-slate-950 px-2 pt-1 text-xs text-slate-200">
+            <div data-testid="pos-toolbar" className="flex shrink-0 items-center justify-end gap-2 bg-ink px-2 pt-1 text-xs text-slate-200">
+              <span className="mr-auto hidden items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-cream/40 sm:flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-ember/70" /> Training POS · not connected to the live POS
+              </span>
               <label className="flex items-center gap-1" title="Fit the POS to the window, or pick a size and scroll">
                 Zoom
                 <select
@@ -351,8 +404,8 @@ export default function App() {
           )}
         </main>
       )}
-      <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-slate-800 bg-slate-950 px-3 py-1 text-[11px] tracking-wide text-slate-500">
-        <span>© 2026 Janchi Korean BBQ &amp; Bar · 165 N. Moorpark Rd., Thousand Oaks</span>
+      <footer data-testid="site-footer" className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 border-t border-gold-line bg-ink px-3 py-1 text-[11px] tracking-wide text-cream/45">
+        <span>© 2026 Janchi Korean BBQ &amp; Bar · Service Academy · 165 N. Moorpark Rd., Thousand Oaks</span>
         <a className="hover:text-slate-300 hover:underline" href="privacy.html" target="_blank" rel="noreferrer">
           Privacy Policy
         </a>

@@ -172,7 +172,7 @@ function Hero({ children }: { children?: React.ReactNode }) {
       <div className="lb-sparkles pointer-events-none absolute inset-0" />
       <div className="relative">
         <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-200/90">
-          Janchi server training
+          Janchi Service Academy
         </div>
         <h2 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
           Leaderboard <span className="inline-block animate-bounce">🏆</span>

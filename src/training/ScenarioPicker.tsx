@@ -52,7 +52,10 @@ export function ScenarioPicker({ onStart, ach, history: all, signedIn, onProfile
   return (
     <div className="mx-auto max-w-4xl space-y-5 p-4 text-slate-100 sm:p-6">
       <div>
-        <h2 className="text-xl font-semibold">Training scenarios</h2>
+        <p className="eyebrow">Practice</p>
+        <h2 className="text-3xl">
+          Training <em>scenarios</em>
+        </h2>
         <p className="text-sm text-slate-400">
           Guests speak in menu language. Find the right buttons yourself; there is no help in Training Mode. Mistakes are allowed and scored afterwards.
         </p>

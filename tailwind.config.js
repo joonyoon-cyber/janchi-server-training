@@ -33,6 +33,17 @@ export default {
           950: '#3d070d',
         },
         janchi: '#be1e2d',
+        // From janchibbq.com: gold hairlines and ember accents on ink.
+        gold: { DEFAULT: '#b8955f', line: 'rgba(184,149,95,0.55)', soft: 'rgba(184,149,95,0.18)' },
+        ember: '#d6a467',
+        cream: '#f4ece1',
+        ink: { DEFAULT: '#0a0908', 2: '#12100e', 3: '#1c1815', 4: '#27211d' },
+        forest: { DEFAULT: '#12201a', 2: '#1a2d24' },
+      },
+      fontFamily: {
+        // Same type as the restaurant website: Cormorant Garamond for display, Barlow for text.
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Barlow', 'system-ui', 'sans-serif'],
       },
     },
   },

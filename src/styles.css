@@ -30,9 +30,64 @@ body,
 
 body {
   margin: 0;
-  background: #141312;
+  background: #0a0908;
   color: #111;
+  font-family: Barlow, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- Janchi brand (from janchibbq.com) around the POS ------------------------
+   Page headings in Cormorant Garamond, gold hairlines, letter-spaced labels.
+   The POS screen keeps its own look (.pos-screen sets the POS font). */
+.app-page :is(h1, h2, h3) {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+/* Cormorant reads smaller than Barlow: lift the common heading sizes a step. */
+.app-page h2.text-xl { font-size: 1.85rem; }
+.app-page h2.text-2xl { font-size: 2.1rem; }
+.app-page h2.text-3xl { font-size: 2.5rem; }
+.app-page h3.text-lg { font-size: 1.45rem; }
+.app-page h3.text-xl { font-size: 1.65rem; }
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #d6a467;
+}
+.font-display em,
+.app-page h1 em,
+.app-page h2 em {
+  font-style: italic;
+  color: #d6a467;
+}
+/* Korean window-lattice corners (as on the restaurant site). */
+.lattice {
+  width: 34px;
+  height: 34px;
+  stroke: #b8955f;
+  fill: none;
+  stroke-width: 1.2;
+}
+.gold-frame {
+  border: 1px solid rgba(184, 149, 95, 0.55);
+}
+@keyframes ken-burns {
+  from { transform: scale(1.06); }
+  to { transform: scale(1.16) translate(-1.5%, -1%); }
+}
+.ken-burns { animation: ken-burns 22s ease-in-out infinite alternate; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.rise-in { animation: rise-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .ken-burns, .rise-in { animation: none; }
 }
 
 .pos-screen {
