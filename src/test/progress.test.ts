@@ -16,7 +16,8 @@ const KEY = 'janchi-pos-sim:progress:v1';
 const entry = (scenarioId: string, owner?: string) => ({ scenarioId, title: scenarioId, level: 'beginner', generated: false, score: 90, durationSec: 60, mistakes: 0, at: 1, ...(owner ? { owner } : {}) });
 
 describe('scenario history saved in the browser is per account', () => {
-  beforeEach(() => mem.set(KEY, JSON.stringify([entry('a', 'user-1'), entry('b', 'user-2'), entry('c')])));
+  // 'old' was saved before results were kept per account: nobody sees it.
+  beforeEach(() => mem.set(KEY, JSON.stringify([entry('a', 'user-1'), entry('b', 'user-2'), entry('c', 'guest'), entry('old')])));
 
   it('each account (and signed out) sees only its own results', () => {
     setProgressOwner('user-1');

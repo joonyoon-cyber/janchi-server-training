@@ -11,7 +11,11 @@ export interface ProgressEntry {
   durationSec: number;
   mistakes: number;
   at: number;
-  /** Account that played it (signed-in user id); missing = played signed out. */
+  /**
+   * Account that played it (signed-in user id), or 'guest' when played signed out.
+   * Missing on results saved before results were kept per account: those are ignored,
+   * because we can't tell whose they were (signed-in ones are on the account anyway).
+   */
   owner?: string;
 }
 
@@ -34,9 +38,12 @@ function loadAll(): ProgressEntry[] {
   }
 }
 
+const GUEST = 'guest';
+
 /** Results saved in this browser for one account (default: whoever is signed in; null = signed out). */
 export function loadProgress(owner: string | null = currentOwner): ProgressEntry[] {
-  return loadAll().filter((p) => (p.owner ?? null) === owner);
+  const who = owner ?? GUEST;
+  return loadAll().filter((p) => p.owner === who);
 }
 
 export function saveResult(sc: Scenario, ev: Evaluation) {
@@ -49,7 +56,7 @@ export function saveResult(sc: Scenario, ev: Evaluation) {
     durationSec: ev.durationSec,
     mistakes: ev.incorrect.length + ev.missing.length + ev.wrongQty.length + ev.ayceViolations.length + ev.paymentMistakes.length,
     at: Date.now(),
-    ...(currentOwner ? { owner: currentOwner } : {}),
+    owner: currentOwner ?? GUEST,
   };
   // Scenario practice also goes to the owner's Team page when signed in (Tests are saved separately).
   if (!sc.id.startsWith('test-')) {
@@ -79,7 +86,7 @@ function announce() {
 /** Clears this account's results in this browser (other accounts' stay). */
 export function clearProgress() {
   try {
-    localStorage.setItem(KEY, JSON.stringify(loadAll().filter((p) => (p.owner ?? null) !== currentOwner)));
+    localStorage.setItem(KEY, JSON.stringify(loadAll().filter((p) => p.owner !== (currentOwner ?? GUEST))));
   } catch {
     // ignore
   }
