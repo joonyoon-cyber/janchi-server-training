@@ -49,3 +49,15 @@ describe('scenario results are kept only for signed-in accounts, per account', (
     expect(mem.get(KEY)).toBe(before);
   });
 });
+
+import { nicknameProblem } from '../lib/supabase';
+describe('nicknames', () => {
+  it('allow letters and numbers only, 2 to 20 long', () => {
+    expect(nicknameProblem('Joon')).toBeNull();
+    expect(nicknameProblem('Server12')).toBeNull();
+    expect(nicknameProblem('Joon Yoon')).toMatch(/letters and numbers/);
+    expect(nicknameProblem('Minji K.')).toMatch(/letters and numbers/);
+    expect(nicknameProblem('J')).toMatch(/2 to 20/);
+    expect(nicknameProblem('a'.repeat(21))).toMatch(/2 to 20/);
+  });
+});

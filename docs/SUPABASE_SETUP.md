@@ -74,6 +74,24 @@ Forgotten passwords: no emails are sent, so there is no self-service reset. In S
 it); they can then create the account again. Signed-in people can change their password (or, for
 Google accounts, add one) on their **Profile** page.
 
+## Nicknames and account deletion
+
+Run `supabase/accounts.sql` once (SQL Editor → paste → Run; safe to re-run; also part of
+`schema.sql`). It:
+
+- makes nicknames letters and numbers only (2–20 characters) and unique, ignoring capitals;
+- **renames existing nicknames that break the rule**: spaces and symbols are removed
+  ("Minji K." → MinjiK), and a number is added to duplicates (the oldest account keeps the
+  plain name). People can change theirs on their Profile page;
+- gives new accounts a valid starting nickname from their Google name or email, adding a
+  number if it is taken;
+- adds `delete_my_account()`, used by **Delete account** at the bottom of the Profile page.
+  It deletes only the signed-in person's own account and everything saved for it. The owner
+  account is protected.
+
+Until it is run, the website still checks nicknames when people change them, but account
+deletion shows a "needs one setup step" message.
+
 ## Profiles and badges
 
 Run `supabase/profile.sql` once (SQL Editor → paste → Run; safe to re-run; also part of

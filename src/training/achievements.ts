@@ -25,11 +25,15 @@ export interface BadgeDef {
   id: string;
   icon: string;
   name: string;
-  /** What to do, with {n} for the next target. */
-  goal: string;
+  /** What earns it, in plain words (no numbers for badges with levels: the ladder shows them). */
+  desc: string;
+  /** What is counted, for the ladder and progress ("Tests finished"). */
+  unit: string;
   group: Group;
-  /** Targets for each tier, lowest first. One target = a single badge, three = bronze/silver/gold. */
+  /** Targets for each level, lowest first. One target = a single badge, three = bronze/silver/gold. */
   tiers: number[];
+  /** XP for each level (default 50 / 100 / 200). */
+  xp?: number[];
   value: (s: Stats) => number;
   /** Not shown until earned (a surprise). */
   secret?: boolean;
@@ -61,7 +65,8 @@ export interface Stats {
   clean: number;
   perfect: number;
   fast: number;
-  comeback: number;
+  /** Runs of a built-in scenario already finished before. */
+  replays: number;
   tests: number;
   test80: number;
   test90: number;
@@ -90,41 +95,41 @@ const prevDayKey = (t: number) => dayKey(new Date(new Date(t).setHours(12) - 864
 
 export const BADGES: BadgeDef[] = [
   // ---- Finishing the scenarios: the main goal is to play every one at least once.
-  { id: 'first-table', icon: '🍽️', name: 'First Table', goal: 'Finish your first scenario', group: 'Scenarios', tiers: [1], value: (s) => s.best.size },
-  { id: 'beginner', icon: '🌱', name: 'Beginner Graduate', goal: 'Finish every Beginner scenario', group: 'Scenarios', tiers: [LEVEL_IDS('beginner').length], value: (s) => finished(s, LEVEL_IDS('beginner')) },
-  { id: 'intermediate', icon: '🔥', name: 'Intermediate Graduate', goal: 'Finish every Intermediate scenario', group: 'Scenarios', tiers: [LEVEL_IDS('intermediate').length], value: (s) => finished(s, LEVEL_IDS('intermediate')) },
-  { id: 'advanced', icon: '🎓', name: 'Advanced Graduate', goal: 'Finish every Advanced scenario', group: 'Scenarios', tiers: [LEVEL_IDS('advanced').length], value: (s) => finished(s, LEVEL_IDS('advanced')) },
-  { id: 'passport', icon: '🛂', name: 'Full Passport', goal: 'Finish all {n} scenarios at least once', group: 'Scenarios', tiers: [BUILT_IN.length], value: (s) => finished(s, BUILT_IN.map((x) => x.id)) },
-  { id: 'mastery', icon: '⭐', name: 'Scenario Master', goal: 'Score 90+ on {n} different scenarios', group: 'Scenarios', tiers: [5, 15, BUILT_IN.length], value: (s) => mastered(s, BUILT_IN.map((x) => x.id)) },
-  { id: 'regular', icon: '🔁', name: 'Practice Makes Perfect', goal: 'Finish {n} scenario runs', group: 'Scenarios', tiers: [10, 50, 150], value: (s) => s.runs },
-  { id: 'wild-card', icon: '🎲', name: 'Wild Card', goal: 'Finish {n} random tables', group: 'Scenarios', tiers: [5, 20, 50], value: (s) => s.random },
+  { id: 'first-table', icon: '🍽️', name: 'First Table', desc: 'Finish your first scenario.', unit: 'scenarios finished', group: 'Scenarios', tiers: [1], value: (s) => s.best.size },
+  { id: 'beginner', icon: '🌱', name: 'Beginner Graduate', desc: 'Finish every Beginner scenario at least once.', unit: 'Beginner scenarios finished', group: 'Scenarios', tiers: [LEVEL_IDS('beginner').length], xp: [100], value: (s) => finished(s, LEVEL_IDS('beginner')) },
+  { id: 'intermediate', icon: '🔥', name: 'Intermediate Graduate', desc: 'Finish every Intermediate scenario at least once.', unit: 'Intermediate scenarios finished', group: 'Scenarios', tiers: [LEVEL_IDS('intermediate').length], xp: [150], value: (s) => finished(s, LEVEL_IDS('intermediate')) },
+  { id: 'advanced', icon: '🎓', name: 'Advanced Graduate', desc: 'Finish every Advanced scenario at least once.', unit: 'Advanced scenarios finished', group: 'Scenarios', tiers: [LEVEL_IDS('advanced').length], xp: [200], value: (s) => finished(s, LEVEL_IDS('advanced')) },
+  { id: 'passport', icon: '🛂', name: 'Full Passport', desc: `Finish all ${BUILT_IN.length} scenarios at least once.`, unit: 'scenarios finished', group: 'Scenarios', tiers: [BUILT_IN.length], xp: [300], value: (s) => finished(s, BUILT_IN.map((x) => x.id)) },
+  { id: 'mastery', icon: '⭐', name: 'Scenario Master', desc: 'Score 90 or higher on different scenarios (each scenario counts once).', unit: 'scenarios at 90+', group: 'Scenarios', tiers: [5, 15, BUILT_IN.length], value: (s) => mastered(s, BUILT_IN.map((x) => x.id)) },
+  { id: 'regular', icon: '🔁', name: 'Practice Makes Perfect', desc: 'Finish scenario runs. Every run counts, replays too.', unit: 'scenario runs', group: 'Scenarios', tiers: [10, 50, 150], value: (s) => s.runs },
+  { id: 'wild-card', icon: '🎲', name: 'Wild Card', desc: 'Finish random tables (the 🎲 Random scenario).', unit: 'random tables', group: 'Scenarios', tiers: [5, 20, 50], value: (s) => s.random },
 
   // ---- Skills: groups of scenarios that teach one thing, done well (90+).
-  { id: 'void', icon: '✂️', name: 'Clean Cut', goal: 'Score 90+ on both cancel and void scenarios', group: 'Skills', tiers: [2], value: (s) => mastered(s, ['cancel-before-send', 'void-missing-drink']) },
-  { id: 'split', icon: '💳', name: 'Split Decision', goal: 'Score 90+ on both split-payment scenarios', group: 'Skills', tiers: [2], value: (s) => mastered(s, ['part-cash-part-card', 'split-one-cash']) },
-  { id: 'party', icon: '🎉', name: 'Big Party Pro', goal: 'Score 90+ on the parties of 6 and 8 (18% gratuity)', group: 'Skills', tiers: [2], value: (s) => mastered(s, ['party-of-six', 'party-of-eight']) },
-  { id: 'ayce', icon: '🥩', name: 'AYCE Rules Guru', goal: 'Score 90+ on all three AYCE rules scenarios', group: 'Skills', tiers: [3], value: (s) => mastered(s, ['e-meat-limit', 'ayce-same-choice', 'ayce-disability-exception']) },
-  { id: 'floor', icon: '🧭', name: 'Floor Manager', goal: 'Score 90+ on moving and joining tables', group: 'Skills', tiers: [2], value: (s) => mastered(s, ['bar-to-table', 'two-tables']) },
-  { id: 'counter', icon: '🛍️', name: 'Counter Crew', goal: 'Score 90+ on the take-out, macaron and gift card scenarios', group: 'Skills', tiers: [3], value: (s) => mastered(s, ['counter-takeout', 'counter-macaron', 'counter-gift-card']) },
-  { id: 'clean', icon: '🧼', name: 'Spotless', goal: 'Finish {n} scenarios with zero mistakes', group: 'Skills', tiers: [1, 10, 30], value: (s) => s.clean },
-  { id: 'fast', icon: '⚡', name: 'Quick Hands', goal: 'Score 90+ faster than the target time, {n} times', group: 'Skills', tiers: [1, 10, 25], value: (s) => s.fast },
-  { id: 'perfect', icon: '💯', name: 'Perfectionist', goal: 'Score 100 on a scenario', group: 'Skills', tiers: [1, 5, 15], value: (s) => s.perfect },
-  { id: 'comeback', icon: '📈', name: 'Comeback', goal: 'Beat your first score on a scenario by 30+ points', group: 'Skills', tiers: [1], value: (s) => s.comeback },
+  { id: 'void', icon: '✂️', name: 'Clean Cut', desc: 'Score 90 or higher on both the cancel and the void scenarios.', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [2], xp: [100], value: (s) => mastered(s, ['cancel-before-send', 'void-missing-drink']) },
+  { id: 'split', icon: '💳', name: 'Split Decision', desc: 'Score 90 or higher on both split-payment scenarios.', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [2], xp: [100], value: (s) => mastered(s, ['part-cash-part-card', 'split-one-cash']) },
+  { id: 'party', icon: '🎉', name: 'Big Party Pro', desc: 'Score 90 or higher on the parties of six and eight (18% gratuity).', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [2], xp: [100], value: (s) => mastered(s, ['party-of-six', 'party-of-eight']) },
+  { id: 'ayce', icon: '🥩', name: 'AYCE Rules Guru', desc: 'Score 90 or higher on all three AYCE rules scenarios.', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [3], xp: [100], value: (s) => mastered(s, ['e-meat-limit', 'ayce-same-choice', 'ayce-disability-exception']) },
+  { id: 'floor', icon: '🧭', name: 'Floor Manager', desc: 'Score 90 or higher on moving a bar party and on two tables at once.', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [2], xp: [100], value: (s) => mastered(s, ['bar-to-table', 'two-tables']) },
+  { id: 'counter', icon: '🛍️', name: 'Counter Crew', desc: 'Score 90 or higher on the take-out, macaron and gift card scenarios.', unit: 'of these scenarios at 90+', group: 'Skills', tiers: [3], xp: [100], value: (s) => mastered(s, ['counter-takeout', 'counter-macaron', 'counter-gift-card']) },
+  { id: 'clean', icon: '🧼', name: 'Spotless', desc: 'Finish a scenario with zero mistakes. Every such run counts.', unit: 'mistake-free runs', group: 'Skills', tiers: [1, 10, 30], value: (s) => s.clean },
+  { id: 'fast', icon: '⚡', name: 'Quick Hands', desc: "Score 90 or higher in less than the scenario's target time.", unit: 'fast 90+ runs', group: 'Skills', tiers: [1, 10, 25], value: (s) => s.fast },
+  { id: 'perfect', icon: '💯', name: 'Perfectionist', desc: 'Score 100 on a scenario. Every 100 counts, replays too.', unit: 'runs scored 100', group: 'Skills', tiers: [1, 5, 15], value: (s) => s.perfect },
+  { id: 'replay', icon: '📈', name: 'Back for More', desc: 'Play a scenario again after you have finished it once.', unit: 'replays', group: 'Skills', tiers: [3, 10, 30], value: (s) => s.replays },
 
   // ---- Tests
-  { id: 'clocked-in', icon: '⏱️', name: 'Clocked In', goal: 'Finish {n} Tests', group: 'Tests', tiers: [1, 5, 15], value: (s) => s.tests },
-  { id: 'test80', icon: '🥉', name: 'Solid Service', goal: 'Score 80+ on the Test {n} times', group: 'Tests', tiers: [1, 3, 10], value: (s) => s.test80 },
-  { id: 'test90', icon: '🥈', name: 'Excellent Service', goal: 'Score 90+ on the Test {n} times', group: 'Tests', tiers: [1, 3, 10], value: (s) => s.test90 },
-  { id: 'test100', icon: '🏆', name: 'Flawless Shift', goal: 'Score 100 on the Test', group: 'Tests', tiers: [1, 3], value: (s) => s.test100 },
-  { id: 'pb', icon: '🚀', name: 'Personal Best', goal: 'Beat your best Test score {n} times', group: 'Tests', tiers: [1, 3, 5], value: (s) => s.testImproved },
-  { id: 'rush', icon: '🏃', name: 'Dinner Rush', goal: 'Score 90+ on the Test in under 20 minutes', group: 'Tests', tiers: [1], value: (s) => s.quickTest },
+  { id: 'clocked-in', icon: '⏱️', name: 'Clocked In', desc: 'Finish the Test (all 10 tables).', unit: 'Tests finished', group: 'Tests', tiers: [1, 5, 15], value: (s) => s.tests },
+  { id: 'test80', icon: '🥉', name: 'Solid Service', desc: 'Finish the Test with 80 or higher (90s and 100s count too).', unit: 'Tests at 80+', group: 'Tests', tiers: [1, 3, 10], value: (s) => s.test80 },
+  { id: 'test90', icon: '🥈', name: 'Excellent Service', desc: 'Finish the Test with 90 or higher (100s count too).', unit: 'Tests at 90+', group: 'Tests', tiers: [1, 3, 10], value: (s) => s.test90 },
+  { id: 'test100', icon: '🏆', name: 'Flawless Shift', desc: 'Finish the Test with a perfect 100.', unit: 'Tests at 100', group: 'Tests', tiers: [1, 3], xp: [150, 300], value: (s) => s.test100 },
+  { id: 'pb', icon: '🚀', name: 'Personal Best', desc: 'Match or beat your best Test score so far. Your first Test sets the bar; a 100 again counts.', unit: 'Tests at or above your best', group: 'Tests', tiers: [1, 3, 5], value: (s) => s.testImproved },
+  { id: 'rush', icon: '🏃', name: 'Dinner Rush', desc: 'Finish the Test with 90 or higher in under 20 minutes.', unit: 'fast 90+ Tests', group: 'Tests', tiers: [1], xp: [100], value: (s) => s.quickTest },
 
   // ---- Habits
-  { id: 'streak', icon: '📅', name: 'On a Roll', goal: 'Train {n} days in a row', group: 'Habits', tiers: [3, 7, 14], value: (s) => s.bestStreak },
-  { id: 'days', icon: '🗓️', name: 'Dedicated', goal: 'Train on {n} different days', group: 'Habits', tiers: [5, 15, 40], value: (s) => s.days.size },
-  { id: 'double-shift', icon: '💪', name: 'Double Shift', goal: 'Finish {n} runs in one day', group: 'Habits', tiers: [10], value: (s) => s.maxDay },
-  { id: 'early', icon: '🌅', name: 'Early Bird', goal: 'Train before 9 AM', group: 'Habits', tiers: [1], value: (s) => s.early, secret: true },
-  { id: 'night', icon: '🌙', name: 'Night Owl', goal: 'Train after 11 PM', group: 'Habits', tiers: [1], value: (s) => s.late, secret: true },
+  { id: 'streak', icon: '📅', name: 'On a Roll', desc: 'Train on days in a row (any scenario or Test counts for the day).', unit: 'days in a row', group: 'Habits', tiers: [3, 7, 14], value: (s) => s.bestStreak },
+  { id: 'days', icon: '🗓️', name: 'Dedicated', desc: 'Train on different days.', unit: 'days trained', group: 'Habits', tiers: [5, 15, 40], value: (s) => s.days.size },
+  { id: 'double-shift', icon: '💪', name: 'Double Shift', desc: 'Finish 10 runs (scenarios or Tests) in one day.', unit: 'runs in one day', group: 'Habits', tiers: [10], value: (s) => s.maxDay },
+  { id: 'early', icon: '🌅', name: 'Early Bird', desc: 'Train before 9 AM.', unit: 'early runs', group: 'Habits', tiers: [1], value: (s) => s.early, secret: true },
+  { id: 'night', icon: '🌙', name: 'Night Owl', desc: 'Train after 11 PM.', unit: 'late runs', group: 'Habits', tiers: [1], value: (s) => s.late, secret: true },
 ];
 
 export const BADGE = new Map(BADGES.map((b) => [b.id, b]));
@@ -138,7 +143,7 @@ function emptyStats(): Stats {
     clean: 0,
     perfect: 0,
     fast: 0,
-    comeback: 0,
+    replays: 0,
     tests: 0,
     test80: 0,
     test90: 0,
@@ -178,7 +183,8 @@ function add(s: Stats, a: Activity) {
     if (a.score >= 90) s.test90++;
     if (a.score >= 100) s.test100++;
     if (a.score >= 90 && a.durationSec < 20 * 60) s.quickTest++;
-    if (s.testBest >= 0 && a.score > s.testBest) s.testImproved++;
+    // Personal Best: match or beat the best so far (the first Test only sets the bar).
+    if (s.testBest >= 0 && a.score >= s.testBest) s.testImproved++;
     s.testBest = Math.max(s.testBest, a.score);
     return;
   }
@@ -192,7 +198,7 @@ function add(s: Stats, a: Activity) {
   if (a.score >= 100) s.perfect++;
   if (a.score >= 90 && a.durationSec <= (TARGET.get(id) ?? 0)) s.fast++;
   if (!s.first.has(id)) s.first.set(id, a.score);
-  else if (a.score - (s.first.get(id) ?? 100) >= 30 && (s.best.get(id) ?? 0) - (s.first.get(id) ?? 100) < 30) s.comeback++;
+  else s.replays++;
   s.best.set(id, Math.max(s.best.get(id) ?? 0, a.score));
 }
 
@@ -213,7 +219,7 @@ export interface Rank {
   to: number | null;
 }
 
-const RANKS = [
+export const RANKS = [
   { title: 'Trainee', icon: '🥚', xp: 0 },
   { title: 'Busser', icon: '🧽', xp: 100 },
   { title: 'Host', icon: '👋', xp: 300 },
@@ -230,6 +236,10 @@ export function rankFor(xp: number): Rank {
 }
 
 const TIER_XP = [50, 100, 200];
+/** XP for reaching a badge's level i (0 = first level). */
+export const tierXp = (def: BadgeDef, i: number) => def.xp?.[i] ?? TIER_XP[Math.min(i, 2)];
+/** XP for one scenario run and for one finished Test. */
+export const RUN_XP = { scenario: 10, test: 25 };
 
 /** Replays the history in time order and works out every badge. */
 export function computeAchievements(history: Activity[]): Achievements {
@@ -239,7 +249,7 @@ export function computeAchievements(history: Activity[]): Achievements {
   let xp = 0;
   for (const a of list) {
     add(s, a);
-    xp += a.kind === 'test' ? 25 : 10;
+    xp += a.kind === 'test' ? RUN_XP.test : RUN_XP.scenario;
     for (const b of BADGES) {
       const got = earnedAt.get(b.id)!;
       const v = b.value(s);
@@ -248,15 +258,34 @@ export function computeAchievements(history: Activity[]): Achievements {
   }
   const badges = BADGES.map((def) => {
     const got = earnedAt.get(def.id)!;
-    xp += got.reduce((t, _, i) => t + TIER_XP[Math.min(i, 2)], 0);
+    xp += got.reduce((t, _, i) => t + tierXp(def, i), 0);
     return { def, value: def.value(s), tier: got.length, earnedAt: got, next: def.tiers[got.length] ?? null };
   });
   return { badges, stats: s, xp, rank: rankFor(xp) };
 }
 
-/** "Finish all 28 scenarios at least once" with the target filled in. */
-export function goalText(b: BadgeState) {
-  return b.def.goal.replace('{n}', String(b.next ?? b.def.tiers[b.def.tiers.length - 1]));
+/** Level name: Bronze / Silver / Gold, or Earned for a single badge. */
+export const levelName = (def: BadgeDef, i: number) => (def.tiers.length === 1 ? 'Earned' : TIER_NAMES[i] ?? `Level ${i + 1}`);
+
+/** "Bronze 1 · Silver 5 · Gold 15 Tests finished" (or the single target). */
+export function ladderText(def: BadgeDef) {
+  if (def.tiers.length === 1) return `${def.tiers[0]} ${def.unit}`;
+  return `${def.tiers.map((t, i) => `${TIER_NAMES[i]} ${t}`).join(' · ')} ${def.unit}`;
+}
+
+/** Progress toward the next level: "1/5 Tests finished for Silver", or null when all are earned. */
+export function nextText(b: BadgeState) {
+  if (b.next === null) return null;
+  const lvl = b.def.tiers.length === 1 ? '' : ` for ${TIER_NAMES[b.tier]}`;
+  return `${Math.min(b.value, b.next)}/${b.next} ${b.def.unit}${lvl}`;
+}
+
+/** Everything about a badge in one line (for hover text). */
+export function badgeHelp(b: BadgeState | BadgeDef) {
+  const def = 'def' in b ? b.def : b;
+  const xp = def.tiers.map((_, i) => tierXp(def, i));
+  const levels = def.tiers.length === 1 ? `+${xp[0]} XP` : def.tiers.map((t, i) => `${TIER_NAMES[i]}: ${t} (+${xp[i]} XP)`).join(', ');
+  return `${def.icon} ${def.name}: ${def.desc} ${def.tiers.length === 1 ? `(${levels})` : `Levels, counting ${def.unit}: ${levels}.`}`;
 }
 
 /** Key for one earned tier, used to announce new badges once. */

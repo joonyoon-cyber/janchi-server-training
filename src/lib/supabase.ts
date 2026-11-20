@@ -53,6 +53,22 @@ export function signInWithGoogle() {
   return supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
 }
 
+// ---- Nicknames ------------------------------------------------------------------
+// Letters and numbers only, 2-20 long, and unique regardless of capitals (checked here
+// for a friendly message, and enforced by the database: supabase/nickname.sql).
+export const NICK_RULE = /^[A-Za-z0-9]{2,20}$/;
+export const NICK_HELP = 'Nicknames use letters and numbers only (no spaces or symbols), 2 to 20 characters.';
+
+export function nicknameProblem(name: string): string | null {
+  return NICK_RULE.test(name) ? null : NICK_HELP;
+}
+
+/** True when someone else already uses this nickname (ignoring capitals). */
+export async function nicknameTaken(name: string, myId: string): Promise<boolean> {
+  const { data, error } = await supabase.from('profiles').select('id').ilike('display_name', name).neq('id', myId).limit(1);
+  return !error && !!data?.length;
+}
+
 // ---- Email + password accounts ---------------------------------------------
 // "Confirm email" is off in Supabase, so an account works as soon as it is created
 // and no email is ever sent.
@@ -63,6 +79,7 @@ export async function signUpWithEmail(email: string, password: string, name: str
   const { data, error } = await supabase.auth.signUp({
     email: clean,
     password,
+    // The database makes the starting nickname unique (adding a number if needed).
     options: { data: { full_name: name.trim() || clean.split('@')[0] } },
   });
   if (error) return /registered|exists/i.test(error.message) ? 'An account with this email already exists. Use Sign in.' : error.message;
@@ -109,6 +126,33 @@ export async function setNewPassword(password: string): Promise<string | null> {
   return error.message;
 }
 
+/**
+ * Deletes the signed-in person's account and everything saved for it, then signs out.
+ * Needs supabase/accounts.sql. The owner account is refused.
+ */
+export async function deleteMyAccount(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  const id = data.session?.user.id;
+  if (!id) return 'Not signed in.';
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) {
+    if (/owner/i.test(error.message)) return 'The owner account cannot be deleted from the website.';
+    if (/function|schema cache|not find/i.test(error.message)) return 'Account deletion needs one setup step in Supabase (run supabase/accounts.sql).';
+    return error.message;
+  }
+  // Also drop this account's results kept in this browser.
+  try {
+    const key = 'janchi-pos-sim:progress:v1';
+    const all = JSON.parse(localStorage.getItem(key) ?? '[]') as { owner?: string }[];
+    localStorage.setItem(key, JSON.stringify(all.filter((p) => p.owner !== id)));
+    localStorage.removeItem(`janchi:badges-seen:${id}`);
+  } catch {
+    // ignore
+  }
+  await supabase.auth.signOut();
+  return null;
+}
+
 export function signOut() {
   return supabase.auth.signOut();
 }
@@ -140,7 +184,16 @@ export function useAuth() {
 
   const updateProfile = async (patch: Partial<Pick<Profile, 'display_name' | 'avatar_url' | 'featured_badge'>>) => {
     if (!session) return 'Not signed in';
+    if (patch.display_name !== undefined) {
+      const name = patch.display_name.trim();
+      const bad = nicknameProblem(name);
+      if (bad) return bad;
+      if (await nicknameTaken(name, session.user.id)) return `"${name}" is already taken. Please pick another nickname.`;
+      patch = { ...patch, display_name: name };
+    }
     const { error } = await supabase.from('profiles').update(patch).eq('id', session.user.id);
+    if (error && (error.code === '23505' || /unique|duplicate/i.test(error.message))) return 'That nickname is already taken. Please pick another one.';
+    if (error && /display_name_format|check constraint/i.test(error.message)) return NICK_HELP;
     if (!error) setProfile((p) => ({ ...(p ?? { id: session.user.id, display_name: '' }), ...patch }));
     if (error && /column|schema cache/i.test(error.message)) return 'Profile pictures and badges need one more setup step in Supabase (run supabase/profile.sql).';
     return error?.message ?? null;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { EMAIL_RULE, openSignIn, signInWithEmail, signInWithGoogle, signUpWithEmail, useSignInOpen } from '../lib/supabase';
+import { PasswordInput } from '../ui/PasswordInput';
+import { EMAIL_RULE, NICK_HELP, NICK_RULE, openSignIn, signInWithEmail, signInWithGoogle, signUpWithEmail, useSignInOpen } from '../lib/supabase';
 
 /** Sign in with Google, or with an email and password (sign in / create an account). */
 export function SignInDialog() {
@@ -25,6 +26,7 @@ export function SignInDialog() {
     if (!EMAIL_RULE.test(email.trim())) return setError('Please enter a valid email address.');
     if (password.length < 8) return setError('Password: at least 8 characters.');
     if (tab === 'create' && password !== password2) return setError('The two passwords do not match.');
+    if (tab === 'create' && name.trim() && !NICK_RULE.test(name.trim())) return setError(NICK_HELP);
     setBusy(true);
     setError(null);
     const err = tab === 'create' ? await signUpWithEmail(email, password, name) : await signInWithEmail(email, password);
@@ -78,9 +80,8 @@ export function SignInDialog() {
           </label>
           <label className="block text-sm">
             Password
-            <input
+            <PasswordInput
               data-testid="password-input"
-              type="password"
               autoComplete={tab === 'create' ? 'new-password' : 'current-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -91,11 +92,11 @@ export function SignInDialog() {
             <>
               <label className="block text-sm">
                 Password again
-                <input type="password" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} className={input} />
+                <PasswordInput data-testid="password2-input" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} className={input} />
               </label>
               <label className="block text-sm">
-                Name on the leaderboard <span className="text-slate-400">(optional; you can change it later)</span>
-                <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} className={input} />
+                Nickname on the leaderboard <span className="text-slate-400">(optional; letters and numbers only, 2-20; a number is added if it is taken; you can change it later)</span>
+                <input data-testid="nickname-signup" value={name} maxLength={20} onChange={(e) => setName(e.target.value.replace(/[^A-Za-z0-9]/g, ''))} className={input} />
               </label>
               <p className="text-xs text-slate-400">
                 Password: at least 8 characters. No emails are sent (no confirmation, no password reset), so double-check your email and keep your password

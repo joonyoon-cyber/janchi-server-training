@@ -245,7 +245,8 @@ export function Leaderboard({ auth }: { auth: Auth }) {
                 <input
                   autoFocus
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  maxLength={20}
+                  onChange={(e) => setName(e.target.value.replace(/[^A-Za-z0-9]/g, ''))}
                   className="w-44 rounded-full bg-white px-3 py-1 text-slate-900"
                 />
                 <button className="rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BADGES, BUILT_IN, computeAchievements, earnedKeys, rankFor, type Activity } from '../training/achievements';
+import { badgeHelp, BADGES, BUILT_IN, computeAchievements, earnedKeys, ladderText, nextText, rankFor, tierXp, type Activity } from '../training/achievements';
 import { mergeActivity } from '../training/activity';
 
 const DAY = 86400000;
@@ -49,7 +49,7 @@ describe('achievements', () => {
     expect(badge(h, 'test80').tier).toBe(2); // 1 and 3
     expect(badge(h, 'test90').tier).toBe(2);
     expect(badge(h, 'test100').tier).toBe(1);
-    expect(badge(h, 'pb').value).toBe(3);
+    expect(badge(h, 'pb').value).toBe(3); // 91 >= 82, 95 >= 91, 100 >= 95
     expect(badge(h, 'rush').tier).toBe(1);
     expect(badge(h, 'clocked-in').tier).toBe(1);
   });
@@ -60,9 +60,27 @@ describe('achievements', () => {
     expect(badge(h, 'streak').tier).toBe(1);
   });
 
-  it('Comeback counts once per scenario', () => {
-    const h = [run('party-of-six', 50, t0), run('party-of-six', 85, t0 + 1), run('party-of-six', 95, t0 + 2)];
-    expect(badge(h, 'comeback').value).toBe(1);
+  it('Back for More counts every replay of a scenario already finished', () => {
+    const h = [run('party-of-six', 50, t0), run('party-of-six', 85, t0 + 1), run('party-of-six', 95, t0 + 2), run('weekday-lunch', 70, t0 + 3)];
+    expect(badge(h, 'replay').value).toBe(2);
+  });
+
+  it('Personal Best can always be earned: matching your best counts, even 100 after 100', () => {
+    expect(badge([test(100, t0), test(100, t0 + DAY)], 'pb').value).toBe(1);
+    expect(badge([test(100, t0)], 'pb').value).toBe(0); // the first Test only sets the bar
+    expect(badge([test(90, t0), test(85, t0 + DAY), test(92, t0 + 2 * DAY)], 'pb').value).toBe(1);
+  });
+
+  it('every badge says what it counts and how much XP each level gives', () => {
+    for (const b of BADGES) {
+      expect(b.desc.length).toBeGreaterThan(10);
+      expect(b.unit.length).toBeGreaterThan(2);
+      b.tiers.forEach((_, i) => expect(tierXp(b, i)).toBeGreaterThan(0));
+      expect(badgeHelp(b)).toContain('XP');
+    }
+    const st = badge([test(85, t0)], 'clocked-in');
+    expect(nextText(st)).toBe('1/5 Tests finished for Silver');
+    expect(ladderText(st.def)).toBe('Bronze 1 · Silver 5 · Gold 15 Tests finished');
   });
 
   it('skill badges need 90+ on every scenario in the group', () => {

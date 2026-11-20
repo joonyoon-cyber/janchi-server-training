@@ -2,7 +2,7 @@ import { Fragment, useMemo, useState } from 'react';
 import type { TeamData, TeamMember } from '../lib/supabase';
 import { Avatar } from '../ui/Avatar';
 import { HBarChart } from '../ui/charts';
-import { BADGES, BUILT_IN, computeAchievements, goalText, TIER_NAMES, type Achievements, type Group } from './achievements';
+import { BADGES, badgeHelp, BUILT_IN, computeAchievements, levelName, nextText, tierXp, type Achievements, type Group } from './achievements';
 import { historyOf } from './effort';
 import { BadgeMedal, Passport } from './Profile';
 
@@ -33,13 +33,13 @@ function PersonBadges({ r }: { r: Row }) {
                   <div
                     key={b.def.id}
                     className="flex w-[11.5rem] items-center gap-2 rounded-xl bg-slate-900 px-2 py-1.5 ring-1 ring-slate-800"
-                    title={`${b.def.name}: ${b.next === null ? b.def.goal.replace('{n}', String(b.def.tiers[b.def.tiers.length - 1])) : goalText(b)}${b.tier ? `\nEarned ${new Date(b.earnedAt[b.tier - 1]).toLocaleDateString()}` : ''}`}
+                    title={`${badgeHelp(b)}${b.tier ? `\n${levelName(b.def, b.tier - 1)} earned ${new Date(b.earnedAt[b.tier - 1]).toLocaleDateString()}` : ''}${nextText(b) ? `\nNext: ${nextText(b)}` : ''}`}
                   >
                     <BadgeMedal b={b} size="h-9 w-9 text-base" />
                     <div className="min-w-0 flex-1 text-[11px] leading-tight">
                       <div className={`truncate font-semibold ${b.tier ? 'text-white' : 'text-slate-400'}`}>{b.def.name}</div>
                       <div className="text-slate-500">
-                        {b.tier ? (b.def.tiers.length > 1 ? TIER_NAMES[b.tier - 1] : 'Earned') : 'Not yet'}
+                        {b.tier ? levelName(b.def, b.tier - 1) : 'Not yet'}
                         {b.next !== null && (
                           <span className="tabular-nums">
                             {' · '}
@@ -98,7 +98,7 @@ export function TeamAchievements({ data, onlyIds }: { data: TeamData; onlyIds?: 
     () =>
       BADGES.filter((b) => !b.secret).map((b) => {
         const n = all.filter((r) => (r.a.badges.find((x) => x.def.id === b.id)?.tier ?? 0) > 0).length;
-        return { key: b.id, label: `${b.icon} ${b.name}`, value: n, sub: `${n} of ${all.length} people` };
+        return { key: b.id, label: `${b.icon} ${b.name}`, value: n, sub: `${n} of ${all.length} people\n${badgeHelp(b)}` };
       }),
     [all],
   );
@@ -167,8 +167,12 @@ export function TeamAchievements({ data, onlyIds }: { data: TeamData; onlyIds?: 
                           {r.tiers}
                           <span className="font-normal text-slate-500">/{TOTAL_TIERS}</span>
                         </span>
-                        <span className="whitespace-nowrap text-base leading-none" title={recent.map((b) => b.def.name).join(', ')}>
-                          {recent.map((b) => b.def.icon).join('')}
+                        <span className="whitespace-nowrap text-base leading-none">
+                          {recent.map((b) => (
+                            <span key={b.def.id} className="cursor-help" title={`${badgeHelp(b)}\n${levelName(b.def, b.tier - 1)} earned ${new Date(b.earnedAt[b.tier - 1]).toLocaleDateString()}`}>
+                              {b.def.icon}
+                            </span>
+                          ))}
                         </span>
                       </div>
                     </td>
@@ -184,12 +188,12 @@ export function TeamAchievements({ data, onlyIds }: { data: TeamData; onlyIds?: 
                     <td className="px-2 text-right tabular-nums">{r.mastered}</td>
                     <td className="px-2 text-xs text-slate-300">
                       {next ? (
-                        <>
+                        <span className="cursor-help" title={`${badgeHelp(next)}\nNext: ${nextText(next)}`}>
                           {next.def.icon} {next.def.name}{' '}
                           <span className="tabular-nums text-slate-500">
                             {Math.min(next.value, next.next as number)}/{next.next}
                           </span>
-                        </>
+                        </span>
                       ) : (
                         <span className="text-amber-300">Every badge earned</span>
                       )}
@@ -208,6 +212,28 @@ export function TeamAchievements({ data, onlyIds }: { data: TeamData; onlyIds?: 
           </tbody>
         </table>
       </div>
+      <details className="rounded-2xl bg-slate-900/80 px-4 py-3 ring-1 ring-slate-800" data-testid="badge-guide">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-200">What each badge means (hover any badge for the same)</summary>
+        <div className="mt-3 grid gap-x-6 gap-y-2 md:grid-cols-2">
+          {BADGES.map((b) => (
+            <div key={b.id} className="flex gap-2 text-xs">
+              <span className="text-lg leading-none">{b.icon}</span>
+              <div>
+                <div className="font-semibold text-slate-100">
+                  {b.name}
+                  {b.secret && <span className="ml-1 rounded bg-slate-700 px-1 text-[9px] uppercase text-slate-300">secret to trainees</span>}
+                </div>
+                <div className="text-slate-400">{b.desc}</div>
+                <div className="text-slate-500">
+                  {b.tiers.length === 1
+                    ? `+${tierXp(b, 0)} XP`
+                    : b.tiers.map((t, i) => `${levelName(b, i)} ${t} (+${tierXp(b, i)} XP)`).join(' · ') + ` ${b.unit}`}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
       <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-slate-800">
         <HBarChart rows={coverage} fmt={(v) => `${v}`} median={false} caption="People who have each badge" />
         <p className="mt-2 text-[11px] text-slate-500">Badges few people have point at skills to coach (e.g. split payments or the AYCE rules). Secret badges are left out.</p>

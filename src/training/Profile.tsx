@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
-import { openSignIn, setNewPassword, signOut, type useAuth } from '../lib/supabase';
+import { deleteMyAccount, openSignIn, setNewPassword, signOut, type useAuth } from '../lib/supabase';
+import { PasswordInput } from '../ui/PasswordInput';
 import { Avatar, AVATAR_COLORS, AVATAR_EMOJI, emojiAvatar, parseAvatar, photoToAvatar } from '../ui/Avatar';
-import { BUILT_IN, goalText, TIER_NAMES, type Achievements, type BadgeState, type Group } from './achievements';
+import { badgeHelp, BUILT_IN, nextText, RANKS, RUN_XP, TIER_NAMES, tierXp, type Achievements, type BadgeState, type Group } from './achievements';
 import type { Activity } from './achievements';
 import type { Level } from './types';
 
@@ -41,42 +42,60 @@ export function BadgeMedal({ b, size = 'h-14 w-14 text-2xl' }: { b: BadgeState; 
   );
 }
 
+const LEVEL_DOT = ['bg-orange-400', 'bg-slate-200', 'bg-amber-300'];
+
+/**
+ * One badge: what earns it, each level with its target and XP (earned ones ticked),
+ * and progress toward the next level.
+ */
 function BadgeCard({ b }: { b: BadgeState }) {
   const hidden = b.def.secret && !b.tier;
-  const top = b.def.tiers[b.def.tiers.length - 1];
-  const target = b.next ?? top;
+  const target = b.next ?? b.def.tiers[b.def.tiers.length - 1];
   const pct = Math.min(100, (b.value / target) * 100);
+  const multi = b.def.tiers.length > 1;
   return (
-    <div data-testid={`badge-${b.def.id}`} className={`flex gap-3 rounded-2xl p-3 ring-1 ${b.tier ? 'bg-slate-900 ring-slate-700' : 'bg-slate-900/50 ring-slate-800'}`}>
+    <div
+      data-testid={`badge-${b.def.id}`}
+      title={hidden ? undefined : badgeHelp(b)}
+      className={`flex gap-3 rounded-2xl p-3 ring-1 ${b.tier ? 'bg-slate-900 ring-slate-700' : 'bg-slate-900/50 ring-slate-800'}`}
+    >
       <BadgeMedal b={b} />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
           <div className={`truncate font-bold ${b.tier ? 'text-white' : 'text-slate-300'}`}>{hidden ? 'Secret badge' : b.def.name}</div>
           {tierLabel(b) && <div className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-amber-300">{tierLabel(b)}</div>}
         </div>
-        <div className="text-xs text-slate-400">{hidden ? 'Keep training to find out.' : b.next === null ? b.def.goal.replace('{n}', String(top)) : goalText(b)}</div>
+        <div className="text-xs text-slate-400">{hidden ? 'Keep training to find out.' : b.def.desc}</div>
         {!hidden && (
-          <div className="mt-1.5 flex items-center gap-2">
-            {b.def.tiers.length > 1 && (
-              <div className="flex gap-0.5" aria-label={`${b.tier} of ${b.def.tiers.length} tiers`}>
-                {b.def.tiers.map((_, i) => (
-                  <span key={i} className={`h-1.5 w-3 rounded-full ${i < b.tier ? ['bg-orange-400', 'bg-slate-200', 'bg-amber-300'][i] : 'bg-slate-700'}`} />
-                ))}
-              </div>
-            )}
+          <>
+            {/* The levels: target and XP for each. */}
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {b.def.tiers.map((t, i) => {
+                const got = i < b.tier;
+                return (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ring-1 ${got ? 'bg-amber-400/10 text-amber-100 ring-amber-400/40' : 'text-slate-400 ring-slate-700'}`}
+                  >
+                    {multi && <span className={`h-1.5 w-1.5 rounded-full ${got ? LEVEL_DOT[i] : 'bg-slate-600'}`} />}
+                    {multi ? `${TIER_NAMES[i]} ${t}` : got ? 'Earned' : `Goal ${t}`}
+                    <span className={got ? 'text-amber-300' : 'text-slate-500'}>+{tierXp(b.def, i)} XP</span>
+                    {got && '✓'}
+                  </span>
+                );
+              })}
+            </div>
             {b.next !== null ? (
-              <>
+              <div className="mt-1.5 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">
                   <div className="h-full rounded-full bg-sky-500" style={{ width: `${pct}%` }} />
                 </div>
-                <div className="text-[11px] font-bold tabular-nums text-slate-300">
-                  {Math.min(b.value, target)}/{target}
-                </div>
-              </>
+                <div className="shrink-0 text-[11px] tabular-nums text-slate-300">{nextText(b)}</div>
+              </div>
             ) : (
-              <div className="text-[11px] text-slate-500">Earned {fmtDate(b.earnedAt[b.earnedAt.length - 1])}</div>
+              <div className="mt-1 text-[11px] text-slate-500">All levels earned · {fmtDate(b.earnedAt[b.earnedAt.length - 1])}</div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -257,7 +276,6 @@ function Account({ auth, earned }: { auth: Auth; earned: BadgeState[] }) {
   const saveName = async (e: React.FormEvent) => {
     e.preventDefault();
     const n = name.trim();
-    if (n.length < 1 || n.length > 40) return setMsg({ ok: false, text: 'Use 1 to 40 characters.' });
     const err = await auth.rename(n);
     setMsg(err ? { ok: false, text: err } : { ok: true, text: 'Saved.' });
   };
@@ -278,7 +296,8 @@ function Account({ auth, earned }: { auth: Auth; earned: BadgeState[] }) {
       <form onSubmit={saveName} className="space-y-2">
         <label className="block text-sm font-semibold">
           Nickname <span className="font-normal text-slate-400">(shown on the leaderboard)</span>
-          <input data-testid="nickname-input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} className={input} />
+          <input data-testid="nickname-input" value={name} maxLength={20} onChange={(e) => setName(e.target.value.replace(/[^A-Za-z0-9]/g, ''))} className={input} />
+          <span className="mt-1 block text-xs font-normal text-slate-500">Letters and numbers only, 2 to 20 characters. Each nickname can be used by one person.</span>
         </label>
         <div className="flex items-center gap-3">
           <button data-testid="nickname-save" className="rounded-full bg-sky-600 px-4 py-1.5 text-sm font-semibold hover:bg-sky-500">
@@ -321,13 +340,120 @@ function Account({ auth, earned }: { auth: Auth; earned: BadgeState[] }) {
       <form onSubmit={savePw} className="space-y-2">
         <div className="text-sm font-semibold">{providers.includes('email') ? 'Change password' : 'Add a password'}</div>
         {!providers.includes('email') && <p className="text-xs text-slate-400">Optional: lets you also sign in with your email and a password.</p>}
-        <input type="password" autoComplete="new-password" placeholder="New password (8+ characters)" value={pw} onChange={(e) => setPw(e.target.value)} className={input} />
-        <input type="password" autoComplete="new-password" placeholder="New password again" value={pw2} onChange={(e) => setPw2(e.target.value)} className={input} />
+        <PasswordInput autoComplete="new-password" placeholder="New password (8+ characters)" value={pw} onChange={(e) => setPw(e.target.value)} className={input} />
+        <PasswordInput autoComplete="new-password" placeholder="New password again" value={pw2} onChange={(e) => setPw2(e.target.value)} className={input} />
         <div className="flex items-center gap-3">
           <button className="rounded-full border border-slate-600 px-4 py-1.5 text-sm font-semibold hover:bg-slate-800">Save password</button>
           {note(pwMsg)}
         </div>
       </form>
+    </section>
+  );
+}
+
+/** Bottom of the Profile: delete the account and everything saved for it, after typing DELETE. */
+function DeleteAccount({ isOwner }: { isOwner: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  return (
+    <section className="rounded-3xl p-5 ring-1 ring-rose-900/60" data-testid="delete-account">
+      <h3 className="text-lg font-black text-rose-200">Delete account</h3>
+      {isOwner ? (
+        <p className="mt-1 text-sm text-slate-400">The owner account can't be deleted from the website, so the Team and Analytics pages are never locked out by accident.</p>
+      ) : !open ? (
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-400">Permanently delete your account, your Test results, practice history, badges and leaderboard entry.</p>
+          <button data-testid="delete-open" className="rounded-full border border-rose-700 px-4 py-1.5 text-sm font-semibold text-rose-200 hover:bg-rose-950" onClick={() => setOpen(true)}>
+            Delete my account…
+          </button>
+        </div>
+      ) : (
+        <form
+          className="mt-2 space-y-3"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (typed !== 'DELETE') return;
+            setBusy(true);
+            const r = await deleteMyAccount();
+            setBusy(false);
+            setErr(r);
+          }}
+        >
+          <p className="text-sm text-rose-100">
+            This can't be undone. Everything saved for this account is deleted: Test results, practice history, badges, XP and your place on the leaderboard. Type{' '}
+            <b>DELETE</b> to confirm.
+          </p>
+          <input data-testid="delete-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="DELETE" className="w-48 rounded-lg bg-slate-950 px-3 py-2 text-slate-100 ring-1 ring-rose-800" />
+          {err && <div className="rounded-lg bg-rose-950/60 p-2 text-sm text-rose-200">{err}</div>}
+          <div className="flex gap-2">
+            <button type="button" className="rounded-full border border-slate-600 px-4 py-1.5 text-sm" onClick={() => (setOpen(false), setTyped(''), setErr(null))}>
+              Cancel
+            </button>
+            <button data-testid="delete-submit" disabled={typed !== 'DELETE' || busy} className="rounded-full bg-rose-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-40">
+              {busy ? 'Deleting…' : 'Delete my account forever'}
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
+/** How XP is earned, how much is still available from badges, and the ranks. */
+function XpGuide({ ach }: { ach: Achievements }) {
+  const fromBadges = ach.badges.reduce((t, b) => t + b.def.tiers.reduce((x, _, i) => x + tierXp(b.def, i), 0), 0);
+  const earnedBadges = ach.badges.reduce((t, b) => t + b.earnedAt.reduce((x, _, i) => x + tierXp(b.def, i), 0), 0);
+  const s = ach.stats;
+  const fromRuns = s.runs * RUN_XP.scenario + s.tests * RUN_XP.test;
+  return (
+    <section className="grid gap-4 rounded-3xl bg-slate-900/70 p-5 ring-1 ring-slate-800 md:grid-cols-2" data-testid="xp-guide">
+      <div className="space-y-2">
+        <h3 className="text-lg font-black">How XP works</h3>
+        <ul className="space-y-1.5 text-sm text-slate-300">
+          <li>
+            <b className="text-white">+{RUN_XP.scenario} XP</b> for every scenario you finish (replays too).
+          </li>
+          <li>
+            <b className="text-white">+{RUN_XP.test} XP</b> for every Test you finish.
+          </li>
+          <li>
+            <b className="text-white">Badge XP</b> for each badge level you reach, shown on every badge (usually +50 bronze, +100 silver, +200 gold; graduations, skills and a perfect Test give more).
+          </li>
+        </ul>
+        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+          <div className="rounded-xl bg-slate-950/50 p-2 ring-1 ring-slate-800">
+            <div className="text-lg font-black tabular-nums">{fromRuns.toLocaleString()}</div>
+            <div className="text-[11px] text-slate-400">XP from runs</div>
+          </div>
+          <div className="rounded-xl bg-slate-950/50 p-2 ring-1 ring-slate-800">
+            <div className="text-lg font-black tabular-nums">{earnedBadges.toLocaleString()}</div>
+            <div className="text-[11px] text-slate-400">XP from badges</div>
+          </div>
+          <div className="rounded-xl bg-slate-950/50 p-2 ring-1 ring-slate-800">
+            <div className="text-lg font-black tabular-nums">{(fromBadges - earnedBadges).toLocaleString()}</div>
+            <div className="text-[11px] text-slate-400">badge XP still to earn</div>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <h3 className="text-lg font-black">Ranks</h3>
+        <ol className="space-y-1 text-sm">
+          {RANKS.map((r, i) => {
+            const here = ach.rank.level === i + 1;
+            return (
+              <li key={r.title} className={`flex items-center justify-between rounded-lg px-3 py-1 ${here ? 'bg-sky-600/20 ring-1 ring-sky-600' : ''}`}>
+                <span>
+                  {r.icon} <b className={here ? 'text-white' : 'text-slate-300'}>{r.title}</b>
+                  {here && <span className="ml-2 text-[10px] font-bold uppercase text-sky-300">You are here</span>}
+                </span>
+                <span className="tabular-nums text-slate-400">{r.xp.toLocaleString()} XP</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </section>
   );
 }
@@ -487,12 +613,12 @@ export function Profile({ auth, ach, history, loading, onStart }: { auth: Auth; 
             </div>
           </div>
         ))}
-        <p className="text-xs text-slate-500">
-          Rank goes up with XP: 10 per scenario run, 25 per Test, and 50 / 100 / 200 for each bronze / silver / gold badge.
-        </p>
       </section>
 
+      <XpGuide ach={ach} />
+
       {signedIn && <Account key={auth.profile ? 'loaded' : 'loading'} auth={auth} earned={earned} />}
+      {signedIn && <DeleteAccount isOwner={!!auth.profile?.is_owner} />}
       {editAvatar && <AvatarEditor auth={auth} onClose={() => setEditAvatar(false)} />}
     </div>
   );

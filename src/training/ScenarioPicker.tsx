@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { generateScenario } from './generator';
 import { scenarios } from './scenarios';
 import type { Level, Scenario } from './types';
-import { BUILT_IN, goalText, type Achievements, type Activity } from './achievements';
+import { BUILT_IN, nextText, type Achievements, type Activity } from './achievements';
 
 
 const LEVELS: { id: Level; label: string; focus: string }[] = [
@@ -57,42 +57,56 @@ export function ScenarioPicker({ onStart, ach, history: all, signedIn, onProfile
           Guests speak in menu language. Find the right buttons yourself; there is no help in Training Mode. Mistakes are allowed and scored afterwards.
         </p>
       </div>
+      {signedIn ? (
       <button
-        data-testid="passport-bar"
-        onClick={onProfile}
-        className="block w-full rounded-2xl bg-gradient-to-r from-slate-900 to-sky-950/50 p-4 text-left ring-1 ring-slate-800 transition hover:ring-sky-600"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🛂</span>
-            <div>
-              <div className="font-bold">
-                Scenario passport: {done}/{BUILT_IN.length} finished
-              </div>
-              <div className="text-xs text-slate-400">
-                {done === BUILT_IN.length ? 'Every scenario stamped. Now go for 90+ on all of them!' : 'Finish every scenario at least once to earn the Full Passport badge.'}
-                {nextBadge?.next ? ` Next badge: ${nextBadge.def.icon} ${nextBadge.def.name} (${goalText(nextBadge).toLowerCase()}).` : ''}
+          data-testid="passport-bar"
+          onClick={onProfile}
+          className="block w-full rounded-2xl bg-gradient-to-r from-slate-900 to-sky-950/50 p-4 text-left ring-1 ring-slate-800 transition hover:ring-sky-600"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🛂</span>
+              <div>
+                <div className="font-bold">
+                  Scenario passport: {done}/{BUILT_IN.length} finished
+                </div>
+                <div className="text-xs text-slate-400">
+                  {done === BUILT_IN.length ? 'Every scenario stamped. Now go for 90+ on all of them!' : 'Finish every scenario at least once to earn the Full Passport badge.'}
+                  {nextBadge?.next ? ` Next badge: ${nextBadge.def.icon} ${nextBadge.def.name} (${nextText(nextBadge)}).` : ''}
+                </div>
               </div>
             </div>
+            <span className="text-xs font-semibold text-sky-300">
+              {ach.rank.icon} {ach.rank.title} · 🏅 {ach.badges.reduce((t, b) => t + b.tier, 0)} badges · View all →
+            </span>
           </div>
-          <span className="text-xs font-semibold text-sky-300">
-            {ach.rank.icon} {ach.rank.title} · 🏅 {ach.badges.reduce((t, b) => t + b.tier, 0)} badges · View all →
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full rounded-full bg-gradient-to-r from-sky-700 via-sky-500 to-amber-300" style={{ width: `${(done / BUILT_IN.length) * 100}%` }} />
+          </div>
+        </button>
+      ) : (
+        <div data-testid="guest-note" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300 ring-1 ring-slate-800">
+          <span>
+            Playing as a guest: you get a score for every scenario, but nothing is saved. <b className="text-white">Sign in</b> to track your progress, fill your scenario passport,
+            earn badges and XP.
           </span>
+          <button className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-sky-500" onClick={() => openSignIn()}>
+            Sign in
+          </button>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-          <div className="h-full rounded-full bg-gradient-to-r from-sky-700 via-sky-500 to-amber-300" style={{ width: `${(done / BUILT_IN.length) * 100}%` }} />
-        </div>
-      </button>
+      )}
       <div className="flex flex-wrap gap-2">
         {LEVELS.map((l) => {
           const [d, n] = levelDone(l.id);
           return (
             <button key={l.id} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${l.id === level ? 'bg-sky-600' : 'bg-slate-700 hover:bg-slate-600'}`} onClick={() => setLevel(l.id)}>
               {l.label}{' '}
-              <span className={`ml-1 rounded-full px-1.5 text-[11px] tabular-nums ${d === n ? 'bg-amber-400 text-slate-950' : 'bg-black/25'}`}>
-                {d === n ? '✓ ' : ''}
-                {d}/{n}
-              </span>
+              {signedIn && (
+                <span className={`ml-1 rounded-full px-1.5 text-[11px] tabular-nums ${d === n ? 'bg-amber-400 text-slate-950' : 'bg-black/25'}`}>
+                  {d === n ? '✓ ' : ''}
+                  {d}/{n}
+                </span>
+              )}
             </button>
           );
         })}
@@ -110,9 +124,9 @@ export function ScenarioPicker({ onStart, ach, history: all, signedIn, onProfile
                   <span title="Your best score" className={`shrink-0 rounded-full px-2 text-xs font-bold ${best[s.id] >= 90 ? 'bg-amber-400 text-slate-950' : 'bg-sky-700'}`}>
                     ✓ {best[s.id]}
                   </span>
-                ) : (
+                ) : signedIn ? (
                   <span className="shrink-0 rounded-full border border-dashed border-slate-600 px-2 text-[10px] font-semibold uppercase text-slate-400">New</span>
-                )}
+                ) : null}
               </div>
               <div className="mt-1 text-sm text-slate-400">{s.summary}</div>
             </button>

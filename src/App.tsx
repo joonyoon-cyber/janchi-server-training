@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { actions, usePos } from './lib/store';
 import { PosFrame, ZOOMS, type Zoom } from './pos/PosFrame';
 import { quitScenario, startScenario, useTraining } from './training/engine';
@@ -150,6 +150,10 @@ export default function App() {
   // Scenario results saved in this browser belong to the account that played them.
   setProgressOwner(userId);
   const achievements = useAchievements(userId);
+  // The Profile (and badges) exist only for signed-in people: leave it on sign-out.
+  useEffect(() => {
+    if (auth.ready && !auth.session && mode === 'profile') setModeState('scenarios');
+  }, [auth.ready, auth.session, mode]);
   const test = useTest();
   const [zoom, setZoomState] = useState<Zoom>(() => {
     const z = readPref<string>('janchi-pos-sim:zoom', 'fit');
@@ -193,9 +197,26 @@ export default function App() {
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100">Server Training</div>
             <div className="text-[10px] tracking-wide text-slate-400">POS simulator · not connected to the live POS</div>
           </div>
+          {/* Owner-only tools sit on the left, apart from the training tabs, so everyone's menu stays the same. */}
+          {auth.profile?.is_owner && (
+            <nav data-testid="owner-nav" className="ml-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/15 to-amber-300/5 p-1 pl-2.5 text-xs font-semibold ring-1 ring-amber-400/40">
+              <span className="mr-1 text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">👑 Owner</span>
+              {MODES.filter((m) => m.id === 'team' || m.id === 'analytics').map((m) => (
+                <button
+                  key={m.id}
+                  data-testid={`mode-${m.id}`}
+                  className={`rounded-full px-3.5 py-1.5 transition-colors ${mode === m.id ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-slate-950 shadow shadow-amber-900/50' : 'text-amber-100 hover:bg-amber-400/15 hover:text-white'}`}
+                  onClick={() => setMode(m.id)}
+                >
+                  {m.id === 'team' ? '👥 ' : '📊 '}
+                  {m.label}
+                </button>
+              ))}
+            </nav>
+          )}
         </div>
         <nav className="flex rounded-full bg-slate-900 p-1 text-xs font-semibold ring-1 ring-slate-800">
-          {MODES.filter((m) => (m.id !== 'team' && m.id !== 'analytics') || auth.profile?.is_owner).map((m) => (
+          {MODES.filter((m) => m.id !== 'team' && m.id !== 'analytics').map((m) => (
             <button
               key={m.id}
               data-testid={`mode-${m.id}`}
@@ -230,24 +251,15 @@ export default function App() {
             </button>
           </span>
         ) : (
-          <span className="flex items-center gap-2">
-            <button
-              data-testid="open-profile"
-              className={`rounded-full border px-3 py-1 text-xs ${mode === 'profile' ? 'border-sky-600 bg-sky-600/25 text-white' : 'border-slate-700 text-slate-200 hover:bg-slate-800'}`}
-              onClick={() => setMode('profile')}
-            >
-              🏅 Badges
-            </button>
-            <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
-              Sign in
-            </button>
-          </span>
+          <button data-testid="sign-in" className="rounded-full bg-sky-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-sky-500" onClick={() => openSignIn()}>
+            Sign in
+          </button>
         )}
       </header>
 
       {!showPos ? (
         <main className="min-h-0 flex-1 overflow-y-auto">
-          {mode === 'profile' ? (
+          {mode === 'profile' && auth.session ? (
             <Profile
               auth={auth}
               ach={achievements.a}
@@ -338,7 +350,7 @@ export default function App() {
       </footer>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
       <SignInDialog />
-      {auth.ready && <BadgeToaster ach={achievements.a} loading={achievements.loading} who={userId ?? 'guest'} onOpen={() => setMode('profile')} />}
+      {auth.ready && auth.session && <BadgeToaster ach={achievements.a} loading={achievements.loading} who={userId ?? 'guest'} onOpen={() => setMode('profile')} />}
     </div>
   );
 }
