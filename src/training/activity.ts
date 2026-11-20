@@ -16,8 +16,8 @@ export function activityChanged() {
   window.dispatchEvent(new Event(EVENT));
 }
 
-function localActivity(): Activity[] {
-  return loadProgress()
+function localActivity(userId: string | null): Activity[] {
+  return loadProgress(userId)
     .filter((p) => !p.scenarioId.startsWith('test-'))
     .map((p) => ({
       kind: 'practice' as const,
@@ -42,7 +42,7 @@ export function mergeActivity(server: Activity[], local: Activity[]): Activity[]
 }
 
 export async function loadActivity(userId: string | null): Promise<Activity[]> {
-  const local = localActivity();
+  const local = localActivity(userId);
   if (!userId) return local;
   const r = await loadMyActivity(userId);
   const server: Activity[] = [
@@ -64,7 +64,7 @@ export async function loadActivity(userId: string | null): Promise<Activity[]> {
 /** Badges for the signed-in person (or this browser when signed out); refreshes after each run. */
 export function useAchievements(userId: string | null) {
   const [state, setState] = useState<{ a: Achievements; history: Activity[]; loading: boolean; forUser: string | null }>(() => {
-    const h = localActivity();
+    const h = localActivity(userId);
     return { a: computeAchievements(h), history: h, loading: !!userId, forUser: userId };
   });
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { generateScenario } from './generator';
-import { bestScores, clearProgress, loadProgress } from './progress';
+import { clearProgress, loadProgress } from './progress';
 import { scenarios } from './scenarios';
 import type { Level, Scenario } from './types';
 import { BUILT_IN, goalText, type Achievements } from './achievements';
@@ -38,9 +38,9 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
   };
   const [, force] = useState(0);
   // Best scores from the account (all devices) and this browser.
-  const local = bestScores();
-  const best: Record<string, number> = { ...local };
-  ach.stats.best.forEach((v, k) => (best[k] = Math.max(best[k] ?? 0, v)));
+  // Best scores of whoever is signed in (their account on any device, plus this browser).
+  const best: Record<string, number> = {};
+  ach.stats.best.forEach((v, k) => (best[k] = v));
   const done = BUILT_IN.filter((s) => best[s.id] !== undefined).length;
   const levelDone = (l: Level) => [BUILT_IN.filter((s) => s.level === l && best[s.id] !== undefined).length, BUILT_IN.filter((s) => s.level === l).length];
   const nextBadge = ach.badges.find((b) => b.def.group === 'Scenarios' && b.next !== null && b.value > 0) ?? ach.badges.find((b) => b.def.id === 'first-table');
@@ -130,7 +130,7 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
             <button
               className="text-xs text-slate-400 underline hover:text-slate-200"
               onClick={() => {
-                if (confirm('Clear all saved training results on this device?')) {
+                if (confirm('Clear your training history saved in this browser? (Results saved to your account stay.)')) {
                   clearProgress();
                   force((x) => x + 1);
                 }
@@ -141,7 +141,7 @@ export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scena
           )}
         </div>
         {history.length === 0 ? (
-          <div className="text-sm text-slate-400">No scenarios completed yet. Results are saved in this browser.</div>
+          <div className="text-sm text-slate-400">No scenarios completed yet. Sign in to keep your results on every device.</div>
         ) : (
           <>
             <div className="mb-2 text-sm text-slate-300">

@@ -18,6 +18,7 @@ import { SignInDialog } from './auth/SignInDialog';
 import { Profile } from './training/Profile';
 import { BadgeToaster } from './training/BadgeToaster';
 import { useAchievements } from './training/activity';
+import { setProgressOwner } from './training/progress';
 import { scenarios } from './training/scenarios';
 import { Avatar } from './ui/Avatar';
 
@@ -89,6 +90,8 @@ export default function App() {
   });
   const auth = useAuth();
   const userId = auth.ready ? auth.session?.user.id ?? null : null;
+  // Scenario results saved in this browser belong to the account that played them.
+  setProgressOwner(userId);
   const achievements = useAchievements(userId);
   const test = useTest();
   const [zoom, setZoomState] = useState<Zoom>(() => {

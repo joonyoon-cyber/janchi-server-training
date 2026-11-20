@@ -11,16 +11,32 @@ export interface ProgressEntry {
   durationSec: number;
   mistakes: number;
   at: number;
+  /** Account that played it (signed-in user id); missing = played signed out. */
+  owner?: string;
 }
 
 const KEY = 'janchi-pos-sim:progress:v1';
 
-export function loadProgress(): ProgressEntry[] {
+/**
+ * Who is playing on this browser right now (set by the app when someone signs in or out).
+ * Results are kept per account, so a second account on the same computer starts fresh.
+ */
+let currentOwner: string | null = null;
+export function setProgressOwner(userId: string | null) {
+  currentOwner = userId;
+}
+
+function loadAll(): ProgressEntry[] {
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? '[]') as ProgressEntry[];
   } catch {
     return [];
   }
+}
+
+/** Results saved in this browser for one account (default: whoever is signed in; null = signed out). */
+export function loadProgress(owner: string | null = currentOwner): ProgressEntry[] {
+  return loadAll().filter((p) => (p.owner ?? null) === owner);
 }
 
 export function saveResult(sc: Scenario, ev: Evaluation) {
@@ -33,6 +49,7 @@ export function saveResult(sc: Scenario, ev: Evaluation) {
     durationSec: ev.durationSec,
     mistakes: ev.incorrect.length + ev.missing.length + ev.wrongQty.length + ev.ayceViolations.length + ev.paymentMistakes.length,
     at: Date.now(),
+    ...(currentOwner ? { owner: currentOwner } : {}),
   };
   // Scenario practice also goes to the owner's Team page when signed in (Tests are saved separately).
   if (!sc.id.startsWith('test-')) {
@@ -47,7 +64,7 @@ export function saveResult(sc: Scenario, ev: Evaluation) {
     }).then(announce);
   }
   try {
-    localStorage.setItem(KEY, JSON.stringify([...loadProgress(), entry].slice(-1000)));
+    localStorage.setItem(KEY, JSON.stringify([...loadAll(), entry].slice(-2000)));
   } catch {
     // storage unavailable: results still show on screen
   }
@@ -59,9 +76,10 @@ function announce() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event('janchi:activity'));
 }
 
+/** Clears this account's results in this browser (other accounts' stay). */
 export function clearProgress() {
   try {
-    localStorage.removeItem(KEY);
+    localStorage.setItem(KEY, JSON.stringify(loadAll().filter((p) => (p.owner ?? null) !== currentOwner)));
   } catch {
     // ignore
   }
