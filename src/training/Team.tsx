@@ -4,6 +4,8 @@ import { fmtTime } from './TestMode';
 import { ColumnChart, HBarChart, LineChart, SERIES } from '../ui/charts';
 import { Avatar } from '../ui/Avatar';
 import { TeamAchievements } from './TeamAchievements';
+import { TeamEffort } from './TeamEffort';
+import { fmtDuration, historyOf } from './effort';
 
 type Auth = ReturnType<typeof useAuth>;
 type Range = '7' | '30' | 'all';
@@ -347,6 +349,9 @@ export function Team({ auth }: { auth: Auth }) {
   const allRuns = stats.flatMap((s) => s.runs);
   const started = stats.reduce((a, s) => a + s.started, 0);
   const practiceRuns = stats.reduce((a, s) => a + s.practiceCount, 0);
+  // Rounded to the minute so it stays the same between renders (the Effort section is memoized on it).
+  const since = range === 'all' ? 0 : Math.floor(Date.now() / 60000) * 60000 - Number(range) * DAY;
+  const trainingSec = data ? data.members.reduce((t, m) => t + historyOf(data, m.id).filter((a) => a.at >= since).reduce((x, a) => x + a.durationSec, 0), 0) : 0;
   const notStarted = stats.filter((s) => !s.m.is_owner && s.finished === 0 && s.practiceCount === 0);
 
   const th = (key: SortKey, label: string, cls = 'text-right') => (
@@ -390,11 +395,12 @@ export function Team({ auth }: { auth: Auth }) {
         <div className="text-slate-400">Loading…</div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
             <Card label="Active people" value={`${active.length}`} sub={`of ${stats.length} accounts`} />
             <Card label="Tests finished" value={`${allRuns.length}`} sub={`${started} started${started ? ` · ${Math.round((allRuns.length / started) * 100)}% finished` : ''}`} />
             <Card label="Average Test score" value={allRuns.length ? `${round(avg(allRuns.map((r) => r.score)))}` : '-'} sub={allRuns.length ? `best ${Math.max(...allRuns.map((r) => r.score))}` : undefined} />
             <Card label="Practice runs" value={`${practiceRuns}`} sub="Scenarios finished" />
+            <Card label="Time training" value={fmtDuration(trainingSec)} sub={active.length ? `about ${fmtDuration(trainingSec / active.length)} per active person` : undefined} />
           </div>
 
           <TeamCharts data={data} stats={stats} range={range} onPerson={(id) => setOpen(id)} />
@@ -476,6 +482,12 @@ export function Team({ auth }: { auth: Auth }) {
             Tests started counts every Test opened, including ones quit partway. Practice counts Scenarios finished while signed in (tracking began with this
             page; earlier practice was kept only on each person's own device). Trend compares the latest Test with the average of the three before it.
           </p>
+          <TeamEffort
+            data={data}
+            since={since}
+            periodLabel={RANGES.find((r) => r.id === range)?.label ?? ''}
+            onlyIds={q.trim() ? new Set(rows.map((r) => r.m.id)) : undefined}
+          />
           <TeamAchievements data={data} onlyIds={q.trim() ? new Set(rows.map((r) => r.m.id)) : undefined} />
         </>
       )}

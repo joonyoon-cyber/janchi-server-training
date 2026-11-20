@@ -2,19 +2,9 @@ import { Fragment, useMemo, useState } from 'react';
 import type { TeamData, TeamMember } from '../lib/supabase';
 import { Avatar } from '../ui/Avatar';
 import { HBarChart } from '../ui/charts';
-import { BADGES, BUILT_IN, computeAchievements, goalText, TIER_NAMES, type Achievements, type Activity, type Group } from './achievements';
+import { BADGES, BUILT_IN, computeAchievements, goalText, TIER_NAMES, type Achievements, type Group } from './achievements';
+import { historyOf } from './effort';
 import { BadgeMedal, Passport } from './Profile';
-import type { Level } from './types';
-
-/** Everyone's history in the form the badge rules read (all time, like each person's own Profile). */
-function historyOf(data: TeamData, id: string): Activity[] {
-  return [
-    ...data.practice
-      .filter((p) => p.user_id === id)
-      .map((p) => ({ kind: 'practice' as const, scenarioId: p.scenario_id, level: p.level as Level, generated: p.generated, score: p.score, durationSec: p.duration_sec, mistakes: p.mistakes, at: Date.parse(p.created_at) })),
-    ...data.runs.filter((r) => r.user_id === id).map((r) => ({ kind: 'test' as const, score: r.score, durationSec: r.clear_time_sec, mistakes: 0, at: Date.parse(r.created_at) })),
-  ];
-}
 
 interface Row {
   m: TeamMember;

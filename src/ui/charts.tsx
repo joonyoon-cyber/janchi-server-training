@@ -208,11 +208,11 @@ export function ColumnChart({ points, series, height = 150, fmt = (n: number) =>
 }
 
 /** Weekday x hour grid: one hue, light to strong. Shows when things happen. */
-export function HeatGrid({ values, caption, unit = 'flags' }: { values: number[][]; caption?: string; unit?: string }) {
+export function HeatGrid({ values, caption, unit = 'flags', fromHour = 10 }: { values: number[][]; caption?: string; unit?: string; fromHour?: number }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const hours = Array.from({ length: 14 }, (_, i) => i + 10); // 10 AM - 11 PM
+  const hours = Array.from({ length: 24 - fromHour }, (_, i) => i + fromHour); // default 10 AM - 11 PM (opening hours)
   const max = Math.max(1, ...values.flat());
-  const label = (h: number) => (h === 12 ? '12p' : h > 12 ? `${h - 12}p` : `${h}a`);
+  const label = (h: number) => (h === 0 ? '12a' : h === 12 ? '12p' : h > 12 ? `${h - 12}p` : `${h}a`);
   return (
     <figure className="space-y-2" data-testid="heat-grid">
       {caption && <figcaption className="text-xs font-semibold uppercase tracking-wider text-slate-400">{caption}</figcaption>}
