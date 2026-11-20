@@ -5,7 +5,7 @@ import { quitScenario, startScenario, useTraining } from './training/engine';
 import { HelpPanel } from './training/HelpPanel';
 import { Results } from './training/Results';
 import { ScenarioPanel } from './training/ScenarioPanel';
-import { ScenarioPicker } from './training/ScenarioPicker';
+import { rememberLevel, ScenarioPicker } from './training/ScenarioPicker';
 import { Leaderboard } from './training/Leaderboard';
 import { Team } from './training/Team';
 
@@ -196,6 +196,7 @@ export default function App() {
               onStart={(id) => {
                 const sc = scenarios.find((x) => x.id === id);
                 if (!sc) return;
+                rememberLevel(sc.level);
                 setMode('scenarios');
                 startScenario(sc);
               }}

@@ -67,7 +67,7 @@ function kindOf(st: Stage): Kind {
 }
 
 // Menu items, numbers and dollar amounts in guest requests are bold, so what to ring stands out.
-const NUMBER_WORDS = 'one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|half|both|all|everyone|everything|each';
+const NUMBER_WORDS = 'one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|fifty|a hundred|hundred|half|both|all|everyone|everything|each';
 let pattern: RegExp | null = null;
 function itemPattern(): RegExp {
   if (pattern) return pattern;
@@ -76,11 +76,17 @@ function itemPattern(): RegExp {
   mappings.forEach((m) => {
     const n = m.customerName.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase();
     if (n.length >= 4) names.add(n);
+    // Short names guests use, e.g. "spicy pork" for 34. Spicy Pork Bulgogi.
+    (m.aliases ?? []).forEach((al) => al.length >= 4 && names.add(al.toLowerCase()));
   });
-  ['premium all you can eat', 'ultimate all you can eat', 'all you can eat', 'premium ayce', 'ultimate ayce', 'ayce', 'premium', 'ultimate'].forEach((n) => names.add(n));
+  ['premium all you can eat', 'ultimate all you can eat', 'all you can eat', 'premium ayce', 'ultimate ayce', 'ayce', 'premium', 'ultimate', 'ssamjang', 'macaron ice cream', 'macaron', 'vanilla', 'mango', 'strawberry', 'green tea', 'coffee', 'gift card', 'gift certificate'].forEach((n) => names.add(n));
   const esc = [...names].sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  pattern = new RegExp(`(\\$\\d+(?:\\.\\d{2})?|\\b\\d+(?:\\.\\d+)?%?|\\b(?:${NUMBER_WORDS})\\b|\\b(?:${esc.join('|')})\\b)`, 'gi');
+  pattern = new RegExp(`(\\$\\d+(?:\\.\\d{2})?|\\b\\d+(?:\\.\\d+)?%?|\\b(?:${NUMBER_WORDS})\\b|\\b(?:${esc.join('|')})(?:e?s)?\\b)`, 'gi');
   return pattern;
+}
+/** The parts of a guest line shown in bold (menu items, quantities, amounts). */
+export function boldParts(text: string): string[] {
+  return text.split(itemPattern()).filter((_, i) => i % 2 === 1);
 }
 function highlight(text: string, current?: boolean) {
   const parts = text.split(itemPattern());

@@ -16,6 +16,7 @@ are not asked again.
 | 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
 | 7 | **AYCE exception for guests with disabilities**: the original spec makes it an exception to "everyone does AYCE"; the restaurant's rule of thumb (below) does not mention it. | One advanced scenario still treats it as an exception. Remove it if there is no such exception. |
 | 8 | **BAR seats**: how many guests per BAR seat? | Not scored: any party may sit at the bar. |
+| 10 | **Recall** shows previous payments (confirmed 11/2026), but there is no photo of the screen yet. What does the list show (time, table, check #, server, amount, card/cash?), is it today only, and what can you do with a check from it (view, reprint, reopen, refund)? | A list of every paid check, newest first (time closed, table, check #, server, cash/card, amount paid). Tapping one shows its receipt (view only). |
 | 9 | ~~Joining W tables on the real POS~~ **Answered (video, 11/2026):** Move/Join. Move = check to an empty table (bar → table); Join = combine two checks (7–8 guests on a W pair, joined when they pay; the 18% applies after). Both are in the simulator and in Scenarios/Test. | Link Table is still not simulated. |
 
 Not worried about (intentionally not simulated): PATIO layout, the icon on table W6, card slip layout, physical gift card activation.

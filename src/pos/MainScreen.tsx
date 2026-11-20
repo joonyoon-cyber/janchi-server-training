@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { checkTotals, fmt } from '../lib/money';
+import { fmt } from '../lib/money';
+import type { Check } from '../lib/types';
+import { Receipt } from './TenderScreen';
 import { actions, checkPlace, getState } from '../lib/store';
 import { BluuLogo, DlgButton, HeaderClock, Modal, ModText, dialogs } from './common';
 import { requireLogin } from './LoginPad';
@@ -24,33 +26,60 @@ import {
   IconCard,
 } from './icons';
 
-/** Lists open checks; used by Recall on the main screen. */
-export function openCheckPicker(title: string, onPick: (checkId: string) => void) {
+const hm = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const payLabel = (c: Check) =>
+  [...new Set(c.payments.map((p) => (p.method === 'cash' ? 'Cash' : `Card${p.cardLast4 ? ` ••${p.cardLast4}` : ''}`)))].join(' + ') || '-';
+
+/**
+ * Recall: the checks already paid and closed, newest first. Picking one shows its receipt.
+ * (Our guess at the real screen: see docs/OPEN_QUESTIONS.md.)
+ */
+export function recallPicker() {
   dialogs.custom((close) => {
     const s = getState();
-    const open = Object.values(s.checks).filter((c) => c.status === 'open');
+    const paid = Object.values(s.checks)
+      .filter((c) => c.status === 'closed')
+      .sort((a, b) => (b.closedAt ?? 0) - (a.closedAt ?? 0));
     return (
-      <Modal w={460} title={title}>
-        <div style={{ padding: 12, maxHeight: 420, overflowY: 'auto' }}>
-          {open.length === 0 && <div style={{ padding: 16, fontSize: 15 }}>There are no open checks.</div>}
-          {open.map((c) => (
+      <Modal w={620} title="Recall: previous payments">
+        <div data-testid="recall-list" style={{ padding: 12, maxHeight: 440, overflowY: 'auto' }}>
+          {paid.length === 0 && <div style={{ padding: 16, fontSize: 15 }}>No checks have been paid yet.</div>}
+          {paid.map((c) => (
             <button
               key={c.id}
+              data-testid={`recall-${c.number}`}
               className="pos-btn"
-              style={{ position: 'relative', width: '100%', height: 46, marginBottom: 6, justifyContent: 'space-between', padding: '0 14px', fontSize: 15 }}
-              onClick={() => {
-                close();
-                onPick(c.id);
-              }}
+              style={{ position: 'relative', width: '100%', height: 46, marginBottom: 6, display: 'grid', gridTemplateColumns: '72px 56px 130px 1fr 120px 70px', alignItems: 'center', textAlign: 'left', padding: '0 14px', fontSize: 14, gap: 6, whiteSpace: 'nowrap' }}
+              onClick={() => showReceipt(c.id)}
             >
+              <span>{c.closedAt ? hm(c.closedAt) : ''}</span>
               <b>{checkPlace(c)}</b>
               <span>Check {c.number}</span>
               <span>{c.server}</span>
-              <span style={{ color: '#d0303a', fontWeight: 'bold' }}>{fmt(checkTotals(c, s.settings.taxRate).balance)}</span>
+              <span>{payLabel(c)}</span>
+              <span style={{ textAlign: 'right', fontWeight: 'bold' }}>{fmt(c.payments.reduce((t, p) => t + p.amount, 0))}</span>
             </button>
           ))}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 12 }}>
+          <DlgButton onClick={close}>Close</DlgButton>
+        </div>
+      </Modal>
+    );
+  });
+}
+
+function showReceipt(checkId: string) {
+  dialogs.custom((close) => {
+    const s = getState();
+    const c = s.checks[checkId];
+    return (
+      <Modal w={420} title={`Check ${c.number}`}>
+        <div data-testid="recall-receipt" style={{ padding: 12 }}>
+          <Receipt check={c} taxRate={s.settings.taxRate} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: 12 }}>
+          <DlgButton onClick={() => recallPicker()}>Back</DlgButton>
           <DlgButton onClick={close}>Close</DlgButton>
         </div>
       </Modal>
@@ -148,7 +177,7 @@ export function MainScreen() {
       </div>
       <Tile x={454} y={260} icon={<IconForkSpoon size={ic} />} label="Dine-in" onClick={() => requireLogin(() => actions.goto('floor'))} />
       <Tile x={765} y={260} icon={<IconQuickServe size={ic} />} label="Quick Serve" onClick={() => requireLogin(() => actions.quickServe())} />
-      <Tile x={454} y={386} icon={<IconRecall size={ic} />} label="Recall" onClick={() => requireLogin(() => openCheckPicker('Recall', (id) => actions.openCheck(id)))} />
+      <Tile x={454} y={386} icon={<IconRecall size={ic} />} label="Recall" onClick={() => requireLogin(() => recallPicker())} />
       <Tile x={765} y={386} icon={<IconCard size={ic} />} label="Tender" onClick={() => requireLogin(() => actions.goto('tenderList'))} />
       <Tile x={454} y={512} icon={<IconCashierIn size={ic} />} label="Cashier In" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier In'))} />
       <Tile x={610} y={512} icon={<IconCashierOut size={ic} />} label="Cashier Out" onClick={() => requireLogin(() => dialogs.notInSimulator('Cashier Out'))} />

@@ -322,7 +322,7 @@ export const actions = {
     emit({ type: 'quick-serve', tableId: check.tableId, checkId: check.id });
   },
 
-  /** Open any open check on the order screen (Edit on the Tender list, Recall). */
+  /** Open any open check on the order screen (Edit on the Tender list). */
   openCheck(checkId: string) {
     const c = state.checks[checkId];
     if (!c) return;

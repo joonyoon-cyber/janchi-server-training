@@ -12,8 +12,30 @@ const LEVELS: { id: Level; label: string; focus: string }[] = [
   { id: 'advanced', label: 'Advanced', focus: 'AYCE rules, voids after sending, gratuity, multiple tables, policy calls.' },
 ];
 
+const LEVEL_KEY = 'janchi-pos-sim:scenario-level';
+/** Remember the level tab, also when a scenario of that level is started from elsewhere (Profile passport). */
+export function rememberLevel(l: Level) {
+  try {
+    localStorage.setItem(LEVEL_KEY, l);
+  } catch {
+    // ignore
+  }
+}
+
 export function ScenarioPicker({ onStart, ach, onProfile }: { onStart: (s: Scenario) => void; ach: Achievements; onProfile: () => void }) {
-  const [level, setLevel] = useState<Level>('beginner');
+  // Stay on the level last chosen (e.g. after finishing an Advanced scenario), not back to Beginner.
+  const [level, setLevelState] = useState<Level>(() => {
+    try {
+      const v = localStorage.getItem(LEVEL_KEY);
+      return v === 'intermediate' || v === 'advanced' ? v : 'beginner';
+    } catch {
+      return 'beginner';
+    }
+  });
+  const setLevel = (l: Level) => {
+    setLevelState(l);
+    rememberLevel(l);
+  };
   const [, force] = useState(0);
   // Best scores from the account (all devices) and this browser.
   const local = bestScores();
