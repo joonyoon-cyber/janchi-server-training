@@ -94,7 +94,6 @@ export function Landing({ auth, rank, onGo }: { auth: Auth; rank: Rank | null; o
         <HeroVideo />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(10,9,8,0.35),rgba(10,9,8,0.88)_70%)]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-transparent to-ink" />
-        <div className="pointer-events-none absolute inset-4 border border-gold-line sm:inset-6" />
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-center px-6 py-20 text-center" style={{ minHeight: 'min(82vh, 760px)' }}>
           {/* Same pattern as the sections below: gold label, one display heading, plain lede. */}
           <p className="eyebrow rise-in" style={{ animationDelay: '0.1s' }}>
