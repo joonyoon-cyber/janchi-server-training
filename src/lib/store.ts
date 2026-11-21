@@ -127,10 +127,22 @@ export function evenSplit(total: number, ways: number): number[] {
   return Array.from({ length: ways }, (_, i) => fromCents(base + (i < cents - base * ways ? 1 : 0)));
 }
 
-/** What the next payment should be: the next unpaid split share, or the whole balance. */
+/**
+ * Even Amount Split: the share the next payment goes to. On the POS you tap a share tile to pick
+ * it (they are the same amount); otherwise it is the first share still owed. -1 when not split.
+ */
+export function currentShare(c: Check): number {
+  if (!c.splits) return -1;
+  const sel = c.splitSelected;
+  if (sel !== undefined && (c.splits[sel] ?? 0) > 0) return sel;
+  return c.splits.findIndex((x) => x > 0);
+}
+
+/** What the next payment should be: the chosen (or next) unpaid split share, or the whole balance. */
 export function dueNow(c: Check, taxRate: number): number {
   const { balance } = checkTotals(c, taxRate);
-  const share = c.splits?.find((x) => x > 0);
+  const i = currentShare(c);
+  const share = i >= 0 ? c.splits![i] : undefined;
   return share !== undefined ? Math.min(share, balance) : balance;
 }
 
@@ -505,8 +517,15 @@ export const actions = {
     const c = activeCheck();
     if (!c || ways < 1) return;
     const amounts = evenSplit(checkTotals(c, state.settings.taxRate).balance, ways);
-    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined, splitShares: ways > 1 ? amounts : undefined })));
+    set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined, splitShares: ways > 1 ? amounts : undefined, splitSelected: undefined })));
     emit({ type: 'split', checkId: c.id, ways, amounts });
+  },
+
+  /** Tap a share tile (Even Amount Split) to pay that share next. */
+  selectShare(i: number) {
+    const c = activeCheck();
+    if (!c?.splits || !(c.splits[i] > 0)) return;
+    set(updateCheck(c.id, (ch) => ({ ...ch, splitSelected: i })));
   },
 
   pay(method: PayMethod, amount: number, tendered?: number) {
@@ -521,7 +540,7 @@ export const actions = {
     const payment: Payment = { id: uid('p'), method, amount: applied, tendered, change, at: now() };
     // The party tip rides along with the payments; on a split it is divided equally.
     const tipLeft = toCents(gratuity) - c.payments.reduce((s, p) => s + toCents(p.preGratuity ?? 0), 0);
-    const share = c.splits ? c.splits.findIndex((x) => x > 0) : -1;
+    const share = currentShare(c);
     // A share paid in two parts (cash, then card) carries its part of the tip only once.
     const tipShare =
       share >= 0
@@ -535,12 +554,9 @@ export const actions = {
       payment.troutD = digits(7);
       payment.cardLast4 = digits(4);
     }
-    // With a split, the payment goes to the first share that is still owed.
+    // With a split, the payment goes to the chosen share (or the first one still owed).
     let splits = c.splits;
-    if (splits) {
-      const i = splits.findIndex((x) => x > 0);
-      if (i >= 0) splits = splits.map((x, j) => (j === i ? fromCents(Math.max(0, toCents(x) - toCents(applied))) : x));
-    }
+    if (splits && share >= 0) splits = splits.map((x, j) => (j === share ? fromCents(Math.max(0, toCents(x) - toCents(applied))) : x));
     set(updateCheck(c.id, (ch) => ({ ...ch, payments: [...ch.payments, payment], splits })));
     emit({ type: 'payment', checkId: c.id, tableId: c.tableId, method, amount: applied, tendered, change });
     return payment;

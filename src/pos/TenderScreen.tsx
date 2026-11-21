@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { posItem } from '../lib/menu';
 import { checkTotals, fmt, toCents } from '../lib/money';
-import { actions, checkPlace, dueNow, evenSplit, getState, isTakeout, now, usePos } from '../lib/store';
+import { actions, checkPlace, currentShare, dueNow, evenSplit, getState, isTakeout, now, usePos } from '../lib/store';
 import type { Check, Payment } from '../lib/types';
 import { BluuLogo, DlgButton, HeaderClock, Modal, dialogs, formatLongTime } from './common';
 import { IconCard, IconCash, IconCheckBadge, IconMinusBadge, IconPrinter, IconSearchPerson, IconTerminal } from './icons';
@@ -14,7 +14,7 @@ function balanceOf(): number {
   return c ? checkTotals(c, s.settings.taxRate).balance : 0;
 }
 
-/** Amount for the next payment: the next unpaid split share, or the balance. */
+/** Amount for the next payment: the chosen (or next) unpaid split share, or the balance. */
 function dueOf(): number {
   const s = getState();
   const c = s.activeCheckId ? s.checks[s.activeCheckId] : null;
@@ -25,7 +25,7 @@ function dueOf(): number {
 function splitNote(): string {
   const s = getState();
   const c = s.activeCheckId ? s.checks[s.activeCheckId] : null;
-  const i = c?.splits?.findIndex((x) => x > 0) ?? -1;
+  const i = c ? currentShare(c) : -1;
   return c?.splits && i >= 0 ? ` (Split ${i + 1} of ${c.splits.length})` : '';
 }
 
@@ -363,31 +363,34 @@ export function TenderScreen() {
       {payBtn('Gift Card', 12, 216, <IconCash size={44} />, () => dialogs.notInSimulator('Gift Card payment'))}
 
       {check.splits && (
-        // After Apply, the shares sit as tiles at the bottom left (as on the POS). Payments take them in order;
-        // a paid share is greyed out (our guess: the video doesn't show a paid share).
+        // After Apply, the shares sit as tiles at the bottom left (as on the POS). Tap one to pay it next
+        // (they are the same amount); a share disappears once it is paid (confirmed from a POS photo, 11/2026).
         <div className="pos-abs" data-testid="tender-splits" style={{ left: 41, top: check.splits.length > 8 ? 548 : 606, width: 640, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {check.splits.map((x, i) => {
-            const next = i === check.splits!.findIndex((y) => y > 0);
-            const paid = x <= 0;
+            if (x <= 0) return null;
+            const chosen = i === currentShare(check);
             return (
               <div
                 key={i}
+                role="button"
                 data-testid={`split-tile-${i + 1}`}
-                title={paid ? `Split ${i + 1}: paid` : `Split ${i + 1}`}
+                title={`Split ${i + 1}: tap to pay this share next`}
+                onClick={() => actions.selectShare(i)}
                 style={{
                   width: 74,
                   height: 58,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: `1px solid ${next ? '#7d9ad8' : '#d4d8e0'}`,
-                  background: paid ? '#eceef2' : '#f7f8fa',
-                  color: paid ? '#a7adb8' : '#6a87c4',
+                  cursor: 'pointer',
+                  border: `1px solid ${chosen ? '#4677d8' : '#d4d8e0'}`,
+                  boxShadow: chosen ? 'inset 0 0 0 1px #4677d8' : undefined,
+                  background: chosen ? '#e6eefb' : '#f7f8fa',
+                  color: '#4f74c4',
                   fontSize: 16,
-                  textDecoration: paid ? 'line-through' : 'none',
                 }}
               >
-                {fmt(paid ? (check.splitShares?.[i] ?? 0) : x)}
+                {fmt(x)}
               </div>
             );
           })}
@@ -397,8 +400,11 @@ export function TenderScreen() {
         <div className="pos-abs" data-testid="tender-payments" style={{ left: 196, top: 236, width: 300, fontSize: 13, color: '#333' }}>
           {check.payments.map((p) => (
             <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccd', padding: '4px 2px' }}>
-              <span>{p.method === 'cash' ? `Cash ${fmt(p.tendered ?? p.amount)}` : 'Credit Card'}</span>
-              <span>{fmt(p.amount)}</span>
+              {/* A card payment shows as a card icon and its amount (as on the POS). */}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {p.method === 'cash' ? `Cash ${fmt(p.tendered ?? p.amount)}` : <IconCard size={22} />}
+              </span>
+              <span style={{ fontSize: p.method === 'cash' ? 13 : 16 }}>{fmt(p.amount)}</span>
               {p.change ? <span style={{ color: '#1c5bb8' }}>Change {fmt(p.change)}</span> : <span />}
             </div>
           ))}

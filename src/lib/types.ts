@@ -151,6 +151,8 @@ export interface Check {
   splits?: number[];
   /** Even Amount Split: each share as first split (for the share tiles after paying). */
   splitShares?: number[];
+  /** Even Amount Split: the share tile tapped to pay next (otherwise the first one still owed). */
+  splitSelected?: number;
   gratuity: number;
   /** 'joined': combined into another check with Move/Join (see joinedInto). */
   status: 'open' | 'closed' | 'joined';

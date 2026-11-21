@@ -10,7 +10,7 @@ are not asked again.
 | # | Question | What the simulator does now |
 |---|----------|-----------------------------|
 | 1 | **Modifier for ULTIMATE W/ BEER**: what choices appear? | A one-tap list of the 8 drafts (guess). Soon tofu and bibimbap modifiers are confirmed (below). |
-| 2 | **Even Amount Split** (layout answered by video, 11/2026): number-of-customers pad → "Even Amount Split" window with "Split Amount 1: 2.42 / Split Amount 2: 2.41" and **Print & Apply / Close / Apply** → the shares appear as tiles at the bottom left of the tender screen → Credit Card charges the first share ($2.42 on the reader). **Still to confirm:** (a) Can you tap a share tile to choose which share to pay next, or do payments always take the shares in order? (b) What does a share tile look like once it is paid: does it disappear, turn grey, or show "Paid"? (c) Does **Print & Apply** print one check per share, or the whole check once? (d) Paying a share in cash: does the cash pad start with that share's amount? | Matches the video. **Guesses:** payments take the shares in order (tiles are not tappable); a paid share stays as a greyed, struck-through tile; Print & Apply prints the whole check once, then applies the split; the cash pad starts empty (type the cash handed over). |
+| 2 | **Even Amount Split** (layout answered by video, 11/2026): number-of-customers pad → "Even Amount Split" window with "Split Amount 1: 2.42 / Split Amount 2: 2.41" and **Print & Apply / Close / Apply** → the shares appear as tiles at the bottom left of the tender screen → Credit Card charges the share. **Still to confirm:** (c) Does **Print & Apply** print one check per share, or the whole check once? (d) Paying a share in cash: does the cash pad start with that share's amount? | Matches the video and photo. **Guesses:** Print & Apply prints the whole check once, then applies the split; the cash pad starts empty (type the cash handed over). |
 | 4 | **Unlabeled 3rd and 5th section tabs** on the Dine-in screen. | Shown blank; selecting one shows an empty floor. |
 | 5 | **Tender list Edit button**: opens the order screen? | Opens the order screen. |
 | 6 | **Sauvignon Blanc**: is the menu's *Tierra del Fuego* the SAU.BL. HOUSE button? | Mapped to SAU.BL. HOUSE (same prices: $10 / $30). |
@@ -22,6 +22,10 @@ are not asked again.
 Not worried about (intentionally not simulated): PATIO layout, the icon on table W6, card slip layout, physical gift card activation.
 
 ## Confirmed
+
+**Even Amount Split** (photo of the POS, 11/2026)
+* You can tap a share tile to choose which share to pay next (they are the same amount); otherwise payments take the first share still owed.
+* A share disappears from the tiles once it is paid; the payment shows in the payment list as a card icon and its amount.
 
 **Ordering and menu**
 * Everyone at a table does AYCE or everyone orders à la carte; AYCE tables can still add à la carte items. Not enforced by the POS; servers enforce it.

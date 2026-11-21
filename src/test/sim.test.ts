@@ -725,3 +725,27 @@ describe('Void / Edit', () => {
     expect(r.correct.some((x) => x.startsWith('Voided'))).toBe(true);
   });
 });
+
+describe('even split: choosing which share to pay', () => {
+  it('a tapped share is paid next, and paid shares are done', () => {
+    actions.reset({ persist: false });
+    actions.goto('floor');
+    actions.seatTable('B5', 3);
+    actions.addItem('premium-ayce-dinner', 3);
+    actions.submitOrder();
+    actions.openTender(getState().tableChecks.B5);
+    actions.splitEvenly(3);
+    const id = getState().tableChecks.B5;
+    actions.selectShare(2);
+    const p = actions.pay('credit', 100000)!;
+    expect(p.share).toBe(2);
+    let c = getState().checks[id];
+    expect(c.splits![2]).toBe(0);
+    expect(c.splits![0]).toBeGreaterThan(0);
+    // A paid share can't be chosen; the next payment goes to the first one still owed.
+    actions.selectShare(2);
+    expect(actions.pay('credit', 100000)!.share).toBe(0);
+    c = getState().checks[id];
+    expect(c.splits!.filter((x) => x > 0)).toHaveLength(1);
+  });
+});
