@@ -2275,6 +2275,152 @@
           "say": "Here's my card."
         }
       ]
+    },
+    {
+      "id": "tip-slip",
+      "title": "Signed Slip: Tip Adjustment",
+      "level": "intermediate",
+      "summary": "A table pays by card and leaves the signed merchant copy. Enter the tip they wrote with Tip Adjustments: right away, or later when you have a moment.",
+      "time": {
+        "weekday": 2,
+        "hour": 19,
+        "minute": 10
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 240,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "say": "Two guests, A B C BAR section."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "A beef bulgogi entrée and a kimchi stew, please. And a Sprite.",
+          "expect": [
+            {
+              "posId": "bulgogi-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "kimchi-stew-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "sprite",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "ask": "Can we get the check?",
+          "say": "Here's my card."
+        },
+        {
+          "id": "tip",
+          "kind": "tip",
+          "party": "p1",
+          "tip": 9,
+          "note": "The guests sign the merchant copy and leave.",
+          "say": "Their signed merchant copy is on the table."
+        }
+      ]
+    },
+    {
+      "id": "tip-split-slips",
+      "title": "Split Check: Three Signed Slips",
+      "level": "advanced",
+      "summary": "A party of three splits the check evenly on three cards and leaves three signed slips, one with the tip left blank. Enter each tip on the right share.",
+      "time": {
+        "weekday": 6,
+        "hour": 20,
+        "minute": 0
+      },
+      "parties": {
+        "p1": 3
+      },
+      "targetSeconds": 330,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 3,
+          "section": "ABC",
+          "say": "Three guests, A B C BAR section."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "Premium AYCE for the three of us. Three Cokes. To start: two briskets and a pork belly.",
+          "expect": [
+            {
+              "posId": "premium-ayce-dinner",
+              "qty": 3
+            },
+            {
+              "posId": "coke",
+              "qty": 3
+            },
+            {
+              "posId": "15-brisket-ayce",
+              "qty": 2
+            },
+            {
+              "posId": "18-pork-belly-ayce",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "split": 3,
+          "ask": "Can we get the check, please?",
+          "say": "Can you split it evenly, three ways? All on cards."
+        },
+        {
+          "id": "tip1",
+          "kind": "tip",
+          "party": "p1",
+          "share": 0,
+          "tip": 12,
+          "note": "They sign the three merchant copies and leave.",
+          "say": "Signed slip for the first share."
+        },
+        {
+          "id": "tip2",
+          "kind": "tip",
+          "party": "p1",
+          "share": 1,
+          "tip": 0,
+          "say": "Signed slip for the second share (the tip line is blank)."
+        },
+        {
+          "id": "tip3",
+          "kind": "tip",
+          "party": "p1",
+          "share": 2,
+          "tip": 10.5,
+          "say": "Signed slip for the third share."
+        }
+      ]
     }
   ]
 }

@@ -474,6 +474,13 @@ onPosEvent((e) => {
         return;
       }
       break;
+    case 'tip':
+      // Any tip entered on this table's payments answers the slip (checked for the right amount at the end).
+      if (e.type === 'tip-adjust' && partyOf(e.checkId) === st.party) {
+        advance();
+        return;
+      }
+      break;
     case 'discount':
       // Judged at the end from the discount on the check, so a wrong one can still be fixed.
       if (e.type === 'discount' && onParty && e.value > 0) {

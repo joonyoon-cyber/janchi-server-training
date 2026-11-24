@@ -2,7 +2,7 @@ import { isAycePackage, isMeat, posItem, sectionOfTable, sections, tableCapacity
 import { AUTO_TIP_MIN_GUESTS, AUTO_TIP_PERCENT, checkTotals, discountOf, fmt, fromCents, taxCents, toCents } from '../lib/money';
 import type { PosState } from '../lib/store';
 import type { Check } from '../lib/types';
-import type { ItemReq, OrderStage, PayStage, RunState, Scenario, StagedEvent, Stage, StageRecord } from './types';
+import type { ItemReq, OrderStage, PayStage, RunState, Scenario, StagedEvent, Stage, StageRecord, TipStage } from './types';
 
 export interface CategoryScore {
   name: string;
@@ -136,6 +136,13 @@ export function expectedTotals(items: ItemReq[], taxRate: number, gratuityPct = 
   return { subtotal: fromCents(sub), amountDue: fromCents(sub + tax), totalDue: fromCents(sub + tax + grat), gratuity: fromCents(grat) };
 }
 
+/** The card payment a signed slip belongs to (a split share's, or the party's card payment). */
+export function slipPayment(checks: Check[], share?: number) {
+  const cards = checks.flatMap((c) => c.payments.map((p) => ({ c, p }))).filter((x) => x.p.method === 'credit');
+  const pick = share !== undefined ? cards.filter((x) => x.p.share === share) : cards;
+  return pick[pick.length - 1];
+}
+
 /** Discount note: has the employee's name and the relationship (MOM / DAD accepted). */
 export function noteMatches(note: string, employee: string, relationship: string) {
   const t = ` ${note.toUpperCase().replace(/[^A-Z]+/g, ' ')} `;
@@ -237,7 +244,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
       else if (st.kind === 'discount') {
         score('payment', 0);
         score('payment', 0);
-      }
+      } else if (st.kind === 'tip') evalTip(st);
       else if (st.kind === 'decision') score('decisions', 0);
       else if (st.kind === 'pay') {
         score('payment', 0);
@@ -379,6 +386,9 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         else ev.incorrect.push('The two W tables were never joined into one check (Move/Join > Join)');
         break;
       }
+      case 'tip':
+        evalTip(st);
+        break;
       case 'discount': {
         // What is on the check at the end counts (a wrong discount can be fixed before they pay).
         const d = discountOn(st.party);
@@ -402,6 +412,30 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     if (expectedDiscountPct(sc, party)) continue;
     const d = discountOn(party);
     if (d) ev.paymentMistakes.push(`Applied a ${d.kind === 'pct' ? `${d.value}%` : fmt(d.value)} discount (${d.name}${d.note ? `, "${d.note}"` : ''}) that the policy doesn't allow here`);
+  }
+
+  /** The tip from the signed slip must be on that card payment (blank slip: no tip entered). */
+  function evalTip(st: TipStage) {
+    const checks = [...checksOf(st.party)].map((id) => pos.checks[id]).filter((c): c is Check => !!c);
+    const slip = slipPayment(checks, st.share);
+    const which = st.share !== undefined ? ` (split ${st.share + 1})` : '';
+    if (!slip) {
+      score('payment', 0);
+      ev.paymentMistakes.push(`No card payment to put the slip's tip on${which}`);
+      return;
+    }
+    const got = slip.p.tip ?? 0;
+    const ok = Math.abs(got - st.tip) < 0.005;
+    score('payment', ok ? 1 : 0);
+    if (ok) ev.correct.push(st.tip ? `Entered the $${fmt(st.tip)} tip from the signed slip${which} in Tip Adjustments` : `Left the blank-tip slip${which} at no tip`);
+    else if (slip.p.tip === undefined) ev.paymentMistakes.push(`The signed slip${which} shows a $${fmt(st.tip)} tip, but it was never entered (Tip Adjustments)`);
+    else ev.paymentMistakes.push(`Entered a $${fmt(got)} tip${which}; the signed slip says $${fmt(st.tip)}`);
+    // A tip typed on the wrong payment of the same table.
+    checks.flatMap((c) => c.payments).forEach((p) => {
+      if (p !== slip.p && (p.tip ?? 0) > 0 && !sc.stages.some((x) => x.kind === 'tip' && x.party === st.party && x.share !== undefined && x.share === p.share)) {
+        ev.paymentMistakes.push(`A $${fmt(p.tip ?? 0)} tip was entered on another payment of this table; check the receipt number`);
+      }
+    });
   }
 
   function evalPay(st: PayStage, rec: StageRecord) {

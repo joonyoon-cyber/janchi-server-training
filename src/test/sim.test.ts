@@ -806,3 +806,40 @@ describe('employee discount', () => {
     for (const seed of [1, 2, 3, 4]) expect(buildTest(seed).stages.some((s) => s.kind === 'discount')).toBe(true);
   });
 });
+
+describe('signed slips: tip adjustments', () => {
+  it('the tip from the slip must be entered on that card payment', () => {
+    const sc = scenarios.find((x) => x.id === 'tip-slip')!;
+    startScenario(sc);
+    playPerfect(sc);
+    expect(getRun().result!.score).toBe(100);
+    const id = getRun().run!.partyChecks.p1;
+    expect(getState().checks[id].payments.find((p) => p.method === 'credit')!.tip).toBe(9);
+    startScenario(sc);
+    playPerfect(sc, { tip: 'wrong' });
+    expect(getRun().result!.paymentMistakes.some((x) => /signed slip says \$9\.00/.test(x))).toBe(true);
+    startScenario(sc);
+    playPerfect(sc, { tip: 'skip' });
+    expect(getRun().result!.paymentMistakes.some((x) => /never entered/.test(x))).toBe(true);
+  });
+
+  it('split slips: each tip goes on its own share; a blank slip stays at no tip', () => {
+    const sc = scenarios.find((x) => x.id === 'tip-split-slips')!;
+    startScenario(sc);
+    playPerfect(sc);
+    expect(getRun().result!.score).toBe(100);
+    const c = getState().checks[getRun().run!.partyChecks.p1];
+    const byShare = (i: number) => c.payments.find((p) => p.share === i)!.tip ?? 0;
+    expect([byShare(0), byShare(1), byShare(2)]).toEqual([12, 0, 10.5]);
+  });
+
+  it('every Test shift has signed slips, and perfect play still scores 100', () => {
+    for (const seed of [11, 12, 13]) {
+      const sc = buildTest(seed);
+      expect(sc.stages.filter((s) => s.kind === 'tip').length).toBeGreaterThanOrEqual(2);
+      startScenario(sc);
+      playPerfect(sc);
+      expect(getRun().result!.score).toBe(100);
+    }
+  });
+});

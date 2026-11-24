@@ -294,8 +294,22 @@ export function TipAdjustScreen() {
                 key={r.payment.id}
                 role="button"
                 data-testid={`ta-row-${receiptNo(r)}`}
-                onClick={() => setSelected(r.payment.id)}
-                style={{ display: 'grid', gridTemplateColumns: grid, height: 58, fontSize: 11.5, cursor: 'pointer', background: on ? '#1f56c8' : i % 2 ? '#f1f3f6' : '#fff', color: on ? '#fff' : '#222', borderBottom: '1px solid #c3c9d3' }}
+                onClick={() => {
+                  // As on the POS (video, 11/2026): tapping a card payment opens its Credit Card tip window.
+                  setSelected(r.payment.id);
+                  if (r.payment.method === 'credit') dialogs.custom((close) => <CreditGratuity close={close} row={r} />);
+                }}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: grid,
+                  height: 58,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  // A payment whose tip has been entered (even 0.00) turns pink.
+                  background: on ? '#1f56c8' : r.payment.tip !== undefined ? '#f6d9e2' : i % 2 ? '#f1f3f6' : '#fff',
+                  color: on ? '#fff' : '#222',
+                  borderBottom: '1px solid #c3c9d3',
+                }}
               >
                 {cell(i + 1)}
                 {cell(

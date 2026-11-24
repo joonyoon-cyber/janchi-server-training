@@ -211,6 +211,8 @@ export interface GenOptions {
   bar?: boolean;
   /** Later in the meal a drink they ordered never came: take it off with Void / Edit. */
   voidDrink?: boolean;
+  /** Card payments come back as signed slips whose tips are entered with Tip Adjustments. */
+  slips?: boolean;
 }
 /** Item use counts during a Test build, so a shift asks for many different items. */
 let usage: Map<string, number> | null = null;
@@ -607,6 +609,23 @@ function build(level: Level, opts: GenOptions): Scenario {
       pay.say = pick([`I'll put $${part} in cash toward it, and the rest on my card.`, `Here's $${part} in cash. Put the rest on this card, please.`]);
     }
     stages.push(pay);
+
+    // Signed slips: the tip each card guest wrote, entered with Tip Adjustments (now or later).
+    if (method === 'credit' && !pay.cashPart && (opts.slips ?? (!opts.rng && chance(0.5)))) {
+      const tipFor = (amount: number) => {
+        if (chance(0.2)) return 0; // tip line left blank
+        if (gratuityPct) return chance(0.5) ? 0 : pick([2, 3, 5]); // the 18% is already included
+        return Math.round(amount * (0.15 + rnd(6) * 0.01) * 2) / 2;
+      };
+      const note = 'They sign the merchant copy and leave.';
+      if (pay.split) {
+        const shares = evenSplit(total, pay.split);
+        shares.forEach((amt, i) => {
+          if (i < (pay.cashShares ?? 0)) return; // paid in cash: no slip
+          stages.push({ id: id(), kind: 'tip', party: p, share: i, tip: tipFor(amt), note: i === (pay.cashShares ?? 0) ? note : undefined, say: `Signed slip for share ${i + 1}.` });
+        });
+      } else stages.push({ id: id(), kind: 'tip', party: p, tip: tipFor(total), note, say: 'Their signed merchant copy is on the table.' });
+    }
   }
 
   if (twoTables) {

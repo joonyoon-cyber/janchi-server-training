@@ -95,6 +95,17 @@ export interface DiscountStage extends StageBase {
   relationship: string;
 }
 
+/**
+ * A signed card slip comes back: enter the tip the guest wrote with Tip Adjustments (right away,
+ * or later in the shift). tip 0 = the tip line was left blank (nothing to enter).
+ */
+export interface TipStage extends StageBase {
+  kind: 'tip';
+  tip: number;
+  /** Even Amount Split: which share's slip (0-based). Otherwise the party's card payment. */
+  share?: number;
+}
+
 export interface DecisionStage extends StageBase {
   kind: 'decision';
   question: string;
@@ -124,7 +135,7 @@ export interface PayStage extends StageBase {
   shareCashPart?: number;
 }
 
-export type Stage = SeatStage | OrderStage | VoidStage | DiscountStage | DecisionStage | PayStage | MoveStage | JoinStage;
+export type Stage = SeatStage | OrderStage | VoidStage | DiscountStage | TipStage | DecisionStage | PayStage | MoveStage | JoinStage;
 
 export interface Scenario {
   id: string;

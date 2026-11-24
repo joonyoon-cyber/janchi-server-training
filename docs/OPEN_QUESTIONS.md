@@ -29,6 +29,10 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 * Policy: 20% on-duty (your own food, during your shift, take-out too); 10% off-duty for employees and immediate family (parents, siblings, spouse, children).
 * Discount Item and Discount Line Item are not simulated (training uses Discount Order).
 
+**Tip Adjustments** (video of the POS, 11/2026)
+* Main → Tip Adjustments → Search With Receipt Number → type the check number (e.g. 10060) → Ok → the check's card payments are listed → tap one → Credit Card window (Gratuity, Server, Total Charge, Receipt No, Approval No, Pre Gratuity) → type the tip → Ok → Print Receipt? (All / Merchant Copy / No). A payment with its tip entered shows pink in the list.
+* Tips can be entered right away, or when there is time in the middle or at the end of the shift.
+
 **Even Amount Split** (photo of the POS, 11/2026)
 * You can tap a share tile to choose which share to pay next (they are the same amount); otherwise payments take the first share still owed.
 * A share disappears from the tiles once it is paid; the payment shows in the payment list as a card icon and its amount.

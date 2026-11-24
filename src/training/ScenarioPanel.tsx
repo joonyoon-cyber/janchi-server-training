@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { mappings, tableLabel } from '../lib/menu';
 import { spokenItemNames } from './generator';
-import { orderTableOf } from './evaluate';
-import { usePos } from '../lib/store';
+import { orderTableOf, slipPayment } from './evaluate';
+import { fmt } from '../lib/money';
+import type { Check } from '../lib/types';
+import { checkPlace, isTakeout as isTakeoutCheck, usePos } from '../lib/store';
 import { formatClock, useNow } from '../pos/common';
 import { answerChange, answerDecision, currentStage, DEFAULT_ASK, endScenario, nextStage, useTraining, waitingForCheck } from './engine';
 import type { RunState, Stage } from './types';
@@ -32,6 +34,8 @@ function task(st: Stage, run: RunState) {
       return 'Take it off the check (Void / Edit), then press Order to send the void.';
     case 'discount':
       return 'Apply the discount the policy allows, with the right note.';
+    case 'tip':
+      return st.tip ? 'Enter the tip from the signed slip (Tip Adjustments). Now, or later in your shift.' : 'Check the signed slip.';
     case 'decision':
       return 'Choose how you respond.';
     case 'pay':
@@ -43,7 +47,7 @@ function fmtSec(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'move' | 'join' | 'void' | 'discount' | 'note';
+type Kind = 'seat' | 'counter' | 'order' | 'change' | 'question' | 'serve' | 'check' | 'pay' | 'move' | 'join' | 'void' | 'discount' | 'tip' | 'note';
 
 /** Each kind of request has its own color and icon, so it is clear what the guest wants. */
 const KIND: Record<Kind, { label: string; card: string; current: string; badge: string; icon: string }> = {
@@ -57,6 +61,7 @@ const KIND: Record<Kind, { label: string; card: string; current: string; badge: 
   pay: { label: 'Paying', card: 'bg-amber-950/40 ring-1 ring-amber-800/60', current: 'bg-amber-900/60 ring-2 ring-amber-400', badge: 'bg-amber-500', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
   move: { label: 'Move table', card: 'bg-cyan-950/50 ring-1 ring-cyan-800/60', current: 'bg-cyan-900/70 ring-2 ring-cyan-400', badge: 'bg-cyan-500', icon: 'M4 12h14M13 6l6 6-6 6' },
   join: { label: 'Join tables', card: 'bg-fuchsia-950/40 ring-1 ring-fuchsia-800/60', current: 'bg-fuchsia-900/60 ring-2 ring-fuchsia-400', badge: 'bg-fuchsia-500', icon: 'M9 12h6M8 8H6a4 4 0 0 0 0 8h2M16 8h2a4 4 0 0 1 0 8h-2' },
+  tip: { label: 'Signed slip', card: 'bg-sky-950/40 ring-1 ring-stone-600/60', current: 'bg-stone-800 ring-2 ring-stone-300', badge: 'bg-stone-500', icon: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h4M9 16h2' },
   discount: { label: 'Discount', card: 'bg-lime-950/40 ring-1 ring-lime-800/60', current: 'bg-lime-900/60 ring-2 ring-lime-400', badge: 'bg-lime-600', icon: 'M19 5L5 19M7 7h.01M17 17h.01' },
   void: { label: 'Take it off', card: 'bg-red-950/50 ring-1 ring-red-800/60', current: 'bg-red-900/60 ring-2 ring-red-400', badge: 'bg-red-500', icon: 'M5 12h14' },
   note: { label: '', card: '', current: '', badge: '', icon: '' },
@@ -69,6 +74,7 @@ function kindOf(st: Stage): Kind {
   if (st.kind === 'join') return 'join';
   if (st.kind === 'void') return 'void';
   if (st.kind === 'discount') return 'discount';
+  if (st.kind === 'tip') return 'tip';
   if (st.kind === 'decision') return st.followUp ? 'serve' : 'question';
   return 'order';
 }
@@ -105,6 +111,42 @@ function highlight(text: string, current?: boolean) {
     ) : (
       p
     ),
+  );
+}
+
+/** The signed merchant copy the guest left: what to look up in Tip Adjustments and the tip they wrote. */
+function SlipCard({ run, st, checks }: { run: RunState; st: Extract<Stage, { kind: 'tip' }>; checks: Record<string, Check> }) {
+  const ids = run.partyAll?.[st.party] ?? [run.partyChecks[st.party]];
+  const slip = slipPayment(ids.map((id) => checks[id]).filter((c): c is Check => !!c), st.share);
+  if (!slip) return null;
+  const { c, p } = slip;
+  const amount = p.amount;
+  const row = (a: ReactNode, b: ReactNode) => (
+    <div className="flex justify-between gap-3">
+      <span>{a}</span>
+      <span>{b}</span>
+    </div>
+  );
+  const hand = 'font-["Bradley_Hand","Segoe_Print","Comic_Sans_MS",cursive] text-[15px] text-blue-800';
+  return (
+    <div data-testid="slip-card" className="mx-auto w-56 -rotate-1 rounded-sm bg-[#fbf8ef] px-3 py-2 font-mono text-[11px] leading-snug text-stone-800 shadow-md">
+      <div className="text-center font-bold">JANCHI KOREAN BBQ</div>
+      <div className="text-center">** MERCHANT COPY **</div>
+      {row(isTakeoutCheck(c) ? 'Take out' : `Table ${checkPlace(c)}`, `Chk ${c.number}`)}
+      {row('Card', `...${p.cardLast4 ?? '0000'}`)}
+      {row('Approval', p.approvalNo ?? '')}
+      {st.share !== undefined && row('Split', `${st.share + 1} of ${c.splitShares?.length ?? '?'}`)}
+      {row(<b>AMOUNT</b>, <b>{fmt(amount)}</b>)}
+      <div className="mt-1 flex items-end justify-between">
+        <span>TIP</span>
+        <span className={st.tip ? hand : 'text-stone-400'}>{st.tip ? fmt(st.tip) : '__________'}</span>
+      </div>
+      <div className="flex items-end justify-between">
+        <span>TOTAL</span>
+        <span className={st.tip ? hand : 'text-stone-400'}>{st.tip ? fmt(amount + st.tip) : '__________'}</span>
+      </div>
+      <div className={`mt-1 border-t border-stone-400 pt-0.5 text-center ${hand}`}>~ signed ~</div>
+    </div>
   );
 }
 
@@ -206,6 +248,7 @@ export function ScenarioPanel({ run, testLabel }: { run: RunState; testLabel?: s
               {(s.kind !== 'pay' || isTakeout(s.party) || rec?.checkPrinted) && (
                 <Line who={who(s)} kind={kindOf(s)} text={s.say} current={isCur && !rec?.interruptShown && !run.awaitingChange} />
               )}
+              {s.kind === 'tip' && <SlipCard run={run} st={s} checks={allChecks} />}
               {s.kind === 'order' && s.interrupt && rec?.interruptShown && <Line who={who(s)} kind="change" text={s.interrupt.say} current={isCur} />}
               {rec?.skipped && <div className="text-xs text-rose-300">Step skipped</div>}
               {rec?.passed && !isCur && <div className="text-xs text-slate-400">↷ Moved on. It still counts if you do it now.</div>}

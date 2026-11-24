@@ -4,7 +4,7 @@ import { allTables, isMeat } from '../lib/menu';
 import { checkTotals, fromCents, toCents } from '../lib/money';
 import { actions, getState } from '../lib/store';
 import { answerChange, answerDecision, currentStage, getRun, nextStage } from '../training/engine';
-import { expectedForStage, orderTableOf } from '../training/evaluate';
+import { expectedForStage, orderTableOf, slipPayment } from '../training/evaluate';
 import type { ItemReq, Scenario } from '../training/types';
 
 export interface BotOptions {
@@ -24,6 +24,8 @@ export interface BotOptions {
   noSplit?: boolean;
   /** A party on two W tables: ring every order on the first table's check. */
   oneTableOnly?: boolean;
+  /** Signed slips: skip them, or type the wrong tip. */
+  tip?: 'skip' | 'wrong';
   /** Employee discount: skip it, ring the wrong percent, or leave the note empty. */
   discount?: 'skip' | 'wrongPct' | 'noNote';
 }
@@ -90,6 +92,16 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         items.forEach((i) => actions.addItem(i.posId, i.qty, undefined, i.price));
         if (st.kitchenPrint === false && !opts.alwaysOrder) actions.sendOrder(false);
         else actions.submitOrder();
+        break;
+      }
+      case 'tip': {
+        if (!st.tip || opts.tip === 'skip') {
+          nextStage();
+          break;
+        }
+        const ids = run.partyAll?.[st.party] ?? [run.partyChecks[st.party]];
+        const slip = slipPayment(ids.map((id) => getState().checks[id]).filter(Boolean), st.share);
+        actions.adjustTip(slip!.c.id, slip!.p.id, opts.tip === 'wrong' ? st.tip + 1 : st.tip);
         break;
       }
       case 'discount': {

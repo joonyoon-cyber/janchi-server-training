@@ -44,6 +44,11 @@ export function HelpPanel() {
                   <b>Order</b> to send the void (Close without Order throws it away).
                 </li>
                 <li>
+                  <b>Tip Adjustments:</b> when a card guest leaves the signed merchant copy, enter the tip they wrote (right away, or when you have a moment
+                  later in the shift). Main → <b>Tip Adjustments</b> → <b>Search With Receipt Number</b> → the check number (e.g. 10060) → tap the payment →
+                  type the tip → Ok. A blank tip line: nothing to enter.
+                </li>
+                <li>
                   <b>Employee discount:</b> 20% on an employee's own food during their shift (take-out too); 10% off duty for employees and immediate family
                   (parents, siblings, spouse, children; not cousins or friends). <b>Discount</b> → type the employee's name and relationship (e.g. JOON SELF,
                   JEISLER MOTHER) → Ok → <b>Discount Order</b> → <b>&lt;&lt;20%&gt;&gt;</b> or <b>&lt;&lt;10%&gt;&gt;</b> / <b>Emp Disc</b> (10%) → Ok.
