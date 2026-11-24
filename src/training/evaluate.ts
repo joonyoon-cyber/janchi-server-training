@@ -1,5 +1,5 @@
 import { isAycePackage, isMeat, posItem, sectionOfTable, sections, tableCapacity, tableDef, tableLabel } from '../lib/menu';
-import { AUTO_TIP_MIN_GUESTS, AUTO_TIP_PERCENT, checkTotals, fmt, fromCents, taxCents, toCents } from '../lib/money';
+import { AUTO_TIP_MIN_GUESTS, AUTO_TIP_PERCENT, checkTotals, discountOf, fmt, fromCents, taxCents, toCents } from '../lib/money';
 import type { PosState } from '../lib/store';
 import type { Check } from '../lib/types';
 import type { ItemReq, OrderStage, PayStage, RunState, Scenario, StagedEvent, Stage, StageRecord } from './types';
@@ -125,12 +125,30 @@ export function expectedPartyItems(sc: Scenario, party: string): ItemReq[] {
   return [...m].filter(([, q]) => q > 0).map(([posId, qty]) => (prices.has(posId) ? { posId, qty, price: prices.get(posId) } : { posId, qty }));
 }
 
-export function expectedTotals(items: ItemReq[], taxRate: number, gratuityPct = 0) {
+export function expectedTotals(items: ItemReq[], taxRate: number, gratuityPct = 0, discountPct = 0) {
   const price = (i: ItemReq) => toCents(i.price ?? posItem(i.posId).price) * i.qty;
-  const sub = items.reduce((s, i) => s + price(i), 0);
-  const tax = taxCents(items.filter((i) => !posItem(i.posId).taxExempt).reduce((s, i) => s + price(i), 0), taxRate);
+  const order = items.reduce((s, i) => s + price(i), 0);
+  // Same math as the POS: percent off the order, tax on the discounted amount.
+  const sub = order - discountOf(discountPct ? { kind: 'pct', value: discountPct } : undefined, order);
+  const taxableBefore = items.filter((i) => !posItem(i.posId).taxExempt).reduce((s, i) => s + price(i), 0);
+  const tax = taxCents(order ? Math.round((taxableBefore * sub) / order) : 0, taxRate);
   const grat = Math.round((sub * gratuityPct) / 100);
   return { subtotal: fromCents(sub), amountDue: fromCents(sub + tax), totalDue: fromCents(sub + tax + grat), gratuity: fromCents(grat) };
+}
+
+/** Discount note: has the employee's name and the relationship (MOM / DAD accepted). */
+export function noteMatches(note: string, employee: string, relationship: string) {
+  const t = ` ${note.toUpperCase().replace(/[^A-Z]+/g, ' ')} `;
+  const rel: Record<string, string[]> = { MOTHER: ['MOTHER', 'MOM'], FATHER: ['FATHER', 'DAD'] };
+  // relationship may list several that are fine ("MOTHER|FATHER" when both parents are at the table).
+  const words = relationship.split('|').flatMap((r) => rel[r] ?? [r]);
+  return t.includes(` ${employee.toUpperCase()} `) && words.some((r) => t.includes(` ${r} `));
+}
+
+/** The employee discount a party should get (0 = none). */
+export function expectedDiscountPct(sc: Scenario, party: string): number {
+  const d = sc.stages.find((x) => x.party === party && x.kind === 'discount');
+  return d && d.kind === 'discount' ? d.pct : 0;
 }
 
 function inStage(events: StagedEvent[], stageIndex: number) {
@@ -170,6 +188,8 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
   const checkOf = (party: string): Check | undefined => pos.checks[run.partyChecks[party]];
   /** Every check the party had: both W tables before a join, the bar check after a move. */
   const checksOf = (party: string) => new Set(run.partyAll?.[party] ?? [run.partyChecks[party]]);
+  /** The discount on a party's check (any of its checks, e.g. after a join). */
+  const discountOn = (party: string) => [...checksOf(party)].map((id) => pos.checks[id]?.discount).find((d) => !!d);
   /** Every table the party sat at or was moved to. */
   const tablesOf = (party: string) => {
     const mine = checksOf(party);
@@ -214,6 +234,10 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         score('items', 0, exp.filter((i) => !isAycePackage(i.posId)).length || 1);
       } else if (st.kind === 'void') score('mods', 0);
       else if (st.kind === 'move' || st.kind === 'join') score('table', 0);
+      else if (st.kind === 'discount') {
+        score('payment', 0);
+        score('payment', 0);
+      }
       else if (st.kind === 'decision') score('decisions', 0);
       else if (st.kind === 'pay') {
         score('payment', 0);
@@ -355,7 +379,29 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
         else ev.incorrect.push('The two W tables were never joined into one check (Move/Join > Join)');
         break;
       }
+      case 'discount': {
+        // What is on the check at the end counts (a wrong discount can be fixed before they pay).
+        const d = discountOn(st.party);
+        const want = `${st.employee} ${st.relationship.split('|')[0]}`;
+        const rightPct = !!d && d.kind === 'pct' && Math.abs(d.value - st.pct) < 0.001;
+        score('payment', rightPct ? 1 : 0);
+        if (rightPct) ev.correct.push(`Applied the ${st.pct}% ${st.pct === 20 ? 'on-duty' : 'off-duty'} employee discount (${d!.name})`);
+        else if (!d) ev.paymentMistakes.push(`No discount was applied; the policy gives ${st.pct}% here (Discount > Discount Order > ${st.pct === 20 ? '<<20%>>' : '<<10%>> or Emp Disc'})`);
+        else ev.paymentMistakes.push(`Applied ${d.kind === 'pct' ? `${d.value}%` : fmt(d.value)} off; the ${st.pct === 20 ? 'on-duty' : 'off-duty'} employee discount is ${st.pct}%`);
+        const okNote = !!d && noteMatches(d.note, st.employee, st.relationship);
+        score('payment', okNote ? 1 : 0);
+        if (okNote) ev.correct.push(`Discount note "${d!.note}" names the employee and the relationship`);
+        else if (d) ev.paymentMistakes.push(`Discount note was "${d.note || '(empty)'}"; type the employee's name and relationship, e.g. ${want}`);
+        break;
+      }
     }
+  }
+
+  // A discount where the policy gives none (a cousin, a friend, a guest who asks nicely).
+  for (const party of Object.keys(sc.parties)) {
+    if (expectedDiscountPct(sc, party)) continue;
+    const d = discountOn(party);
+    if (d) ev.paymentMistakes.push(`Applied a ${d.kind === 'pct' ? `${d.value}%` : fmt(d.value)} discount (${d.name}${d.note ? `, "${d.note}"` : ''}) that the policy doesn't allow here`);
   }
 
   function evalPay(st: PayStage, rec: StageRecord) {
@@ -424,7 +470,7 @@ export function evaluate(run: RunState, pos: PosState): Evaluation {
     }
     // The POS adds the 18% tip by itself for parties of 5+; the server must not add another.
     const tipPct = st.gratuityPct ?? (sc.parties[st.party] >= AUTO_TIP_MIN_GUESTS ? AUTO_TIP_PERCENT : 0);
-    const exp = expectedTotals(expectedPartyItems(sc, st.party), pos.settings.taxRate, tipPct);
+    const exp = expectedTotals(expectedPartyItems(sc, st.party), pos.settings.taxRate, tipPct, expectedDiscountPct(sc, st.party));
     if (check) {
       const t = checkTotals(check, pos.settings.taxRate);
       possible += 1;

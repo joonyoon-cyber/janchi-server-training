@@ -9,7 +9,7 @@ import type { Level, Scenario, Stage } from './types';
  * Bump TEST_VERSION whenever the recipe or scoring changes, so leaderboard
  * runs stay comparable.
  */
-export const TEST_VERSION = 9;
+export const TEST_VERSION = 10;
 /** Most tables a server has open at once during the shift. */
 const MAX_OPEN = 10;
 export const TEST_TABLES = 10;
@@ -24,7 +24,7 @@ const RECIPE: Slot[] = [
   { label: 'AYCE, drinks first, split on cards (A B C BAR: drinks at the bar, then moved to a table)', level: 'advanced', opts: { alaCarte: false, guests: 3, drinks: 'before', extraRounds: 1, pay: 'split', over: false, interrupt: false , serverItems: 'none' } },
   { label: 'Ultimate AYCE', level: 'intermediate', opts: { alaCarte: false, ultimate: true, drinks: 'after', extraRounds: 1, pay: 'credit', over: false, interrupt: false , serverItems: 'kitchen' } },
   { label: 'À la carte, cash', level: 'intermediate', opts: { alaCarte: true, pay: 'cash' } },
-  { label: 'Take-out order at the counter', counter: ['takeout'] },
+  { label: "Take-out at the counter: a coworker's own meal (employee discount, on or off duty)", counter: ['takeout'] },
   { label: 'Macaron to go or a gift card', counter: ['macaron', 'gift'] },
   { label: 'House policy, family or combo', handWritten: ['ayce-same-choice', 'family-kids', 'combo-dinner'] },
 ];
@@ -40,7 +40,11 @@ export function buildTables(seed: number, section: 'ABC' | 'MYW' = 'ABC'): Scena
   trackVariety(true);
   const tables = RECIPE.map((slot, i): Scenario => {
     let sc: Scenario;
-    if ('counter' in slot) sc = generateCounter(slot.counter[Math.floor(rng() * slot.counter.length)], { rng });
+    if ('counter' in slot) {
+      const kind = slot.counter[Math.floor(rng() * slot.counter.length)];
+      // The take-out is always a coworker's own meal, on or off duty: every shift practices the employee discount.
+      sc = generateCounter(kind, { rng, employee: kind === 'takeout' ? (rng() < 0.5 ? 'on' : 'off') : undefined });
+    }
     else if ('handWritten' in slot) {
       const id = slot.handWritten[Math.floor(rng() * slot.handWritten.length)];
       sc = structuredClone(scenarios.find((s) => s.id === id)!);

@@ -132,6 +132,17 @@ export interface Payment {
 
 export type OrderType = 'dine-in' | 'takeout';
 
+/** A discount on the whole check, as rung with Discount > Discount Order on the POS. */
+export interface CheckDiscount {
+  /** Preset name as on the POS (<<10%>>, <<20%>>, Emp Disc, <<$5>>…) or 'Custom'. */
+  name: string;
+  kind: 'pct' | 'amt';
+  /** Percent (10 = 10%) or dollars off. */
+  value: number;
+  /** What was typed in the Discount note (policy: employee name and relationship, e.g. JOON SELF). */
+  note: string;
+}
+
 export interface Check {
   id: string;
   /** A W table pushed together with its neighbor for a party of 5-8 (e.g. ['W1', 'W2']). */
@@ -154,6 +165,8 @@ export interface Check {
   /** Even Amount Split: the share tile tapped to pay next (otherwise the first one still owed). */
   splitSelected?: number;
   gratuity: number;
+  /** Discount Order (Discount > Discount Order): one discount on the whole check, with its typed note. */
+  discount?: CheckDiscount;
   /** 'joined': combined into another check with Move/Join (see joinedInto). */
   status: 'open' | 'closed' | 'joined';
   closedAt?: number;
@@ -173,6 +186,7 @@ export type PosEvent =
   | { type: 'cancel-all'; checkId: string }
   | { type: 'submit'; checkId: string; tableId: string; round: number; items: { posId: string; qty: number }[]; kitchenPrint: boolean }
   | { type: 'void-sent'; checkId: string; posId: string; qty: number; reason?: string }
+  | { type: 'discount'; checkId: string; tableId: string; name: string; kind: 'pct' | 'amt'; value: number; note: string }
   | { type: 'discard-unsent'; checkId: string; items: { posId: string; qty: number }[] }
   | { type: 'open-tender'; checkId: string; tableId: string }
   | { type: 'gratuity'; checkId: string; amount: number }

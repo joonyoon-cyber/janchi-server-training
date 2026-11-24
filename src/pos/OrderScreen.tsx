@@ -8,6 +8,7 @@ import { IconCancelAll, IconBag, IconForkSpoon, IconGuests, IconModifierBadge, I
 import { bluuPad } from './LoginPad';
 import { modifierGroups } from './modifiers';
 import { VoidEditScreen } from './VoidEdit';
+import { DiscountPanel, startDiscount } from './Discount';
 
 const GRID_X = 185;
 const GRID_Y = 69;
@@ -88,6 +89,8 @@ function voidLineFlow(line: OrderLine) {
 
 export function OrderScreen() {
   const [voidEdit, setVoidEdit] = useState(false);
+  // Discount: the note typed first, then the Discount panel over the menu.
+  const [discountNote, setDiscountNote] = useState<string | null>(null);
   const checkId = usePos((s) => s.activeCheckId);
   const checks = usePos((s) => s.checks);
   const settings = usePos((s) => s.settings);
@@ -442,7 +445,7 @@ export function OrderScreen() {
       {btn('Split', 480, 665, 105, 44, () => dialogs.notInSimulator('Split'))}
       {btn('Combine', 592, 665, 106, 44, () => dialogs.notInSimulator('Combine'))}
       {btn('Price Change', 146, 715, 104, 41, () => dialogs.notInSimulator('Price Change'))}
-      {btn('Discount', 257, 715, 105, 41, () => dialogs.notInSimulator('Discount'))}
+      {btn('Discount', 257, 715, 105, 41, () => startDiscount((note) => setDiscountNote(note)))}
       <button className="pos-btn" style={{ left: 369, top: 715, width: 104, height: 41, fontSize: 11.5 }} onClick={() => dialogs.notInSimulator('Input Customer Information')}>
         Input Customer Information
       </button>
@@ -458,6 +461,7 @@ export function OrderScreen() {
         Order
       </button>
       {voidEdit && check && <VoidEditScreen check={check} onClose={() => setVoidEdit(false)} />}
+      {discountNote !== null && check && <DiscountPanel note={discountNote} onClose={() => setDiscountNote(null)} />}
     </div>
   );
 }

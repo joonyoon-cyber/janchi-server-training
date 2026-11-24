@@ -134,19 +134,30 @@ const ROWS: string[][] = [
 const WIDE: Record<string, number> = { Back: 2, ' ': 5, Enter: 2, Upper: 1 };
 
 /** The reason keyboard shown before a void is added (up to 256 characters). */
-function ReasonKeyboard({ close, onOk }: { close: () => void; onOk: (reason: string) => void }) {
-  const [text, setText] = useState('');
+interface KeyboardOpts {
+  /** Small title at the top left (the POS shows "Discount" for the discount note). */
+  title?: string;
+  placeholder?: string;
+  max?: number;
+  /** Message when OK is pressed with nothing typed; omit to allow an empty note. */
+  requiredMsg?: [string, string];
+  initial?: string;
+}
+
+function ReasonKeyboard({ close, onOk, opts = {} }: { close: () => void; onOk: (reason: string) => void; opts?: KeyboardOpts }) {
+  const MAX = opts.max ?? 256;
+  const [text, setText] = useState(opts.initial ?? '');
   const [caret, setCaret] = useState(0);
   const [upper, setUpper] = useState(true);
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => ref.current?.focus(), []);
   const put = (s: string) => {
-    const t = (text.slice(0, caret) + s + text.slice(caret)).slice(0, 256);
+    const t = (text.slice(0, caret) + s + text.slice(caret)).slice(0, MAX);
     setText(t);
     setCaret(Math.min(t.length, caret + s.length));
   };
   const ok = () => {
-    if (!text.trim()) return dialogs.message('Please enter the reason for the void.', 'Void');
+    if (!text.trim() && opts.requiredMsg) return dialogs.message(opts.requiredMsg[0], opts.requiredMsg[1]);
     close();
     onOk(text.trim());
   };
@@ -177,18 +188,19 @@ function ReasonKeyboard({ close, onOk }: { close: () => void; onOk: (reason: str
     <>
       <div className="pos-modal-backdrop" />
       <div data-testid="reason-keyboard" className="pos-abs" style={{ left: 20, top: 30, width: 984, height: 700, background: '#f4f5f8', border: '1px solid #c3c8d2', zIndex: 60, boxShadow: '0 6px 30px rgba(0,0,0,.25)' }}>
+        {opts.title && <div className="pos-abs" style={{ left: 22, top: 2, fontSize: 12, color: '#777' }}>{opts.title}</div>}
         <textarea
           ref={ref}
           data-testid="reason-text"
           value={text}
-          maxLength={256}
+          maxLength={MAX}
           onChange={(e) => {
-            setText(e.target.value.slice(0, 256));
+            setText(e.target.value.slice(0, MAX));
             setCaret(e.target.selectionStart ?? e.target.value.length);
           }}
           onSelect={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), ok())}
-          placeholder="Reason for the void"
+          placeholder={opts.placeholder}
           style={{ position: 'absolute', left: 20, top: 20, width: 790, height: 200, fontSize: 22, padding: 12, border: '1px solid #b8bdc8', resize: 'none' }}
         />
         <button data-testid="reason-OK" className="pos-btn pos-btn-blue" style={{ left: 830, top: 20, width: 134, height: 80, fontSize: 18, fontWeight: 'bold', background: '#3b5ec0' }} onClick={ok}>
@@ -198,7 +210,7 @@ function ReasonKeyboard({ close, onOk }: { close: () => void; onOk: (reason: str
           Close
         </button>
         <div className="pos-abs" style={{ left: 830, top: 200, width: 134, fontSize: 13, color: '#555', textAlign: 'center' }}>
-          {text.length} / 256
+          {text.length} / {MAX}
         </div>
         <div className="pos-abs" style={{ left: 20, top: 400, width: 944, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {ROWS.map((row, i) => (
@@ -217,5 +229,12 @@ function ReasonKeyboard({ close, onOk }: { close: () => void; onOk: (reason: str
 }
 
 export function reasonKeyboard(onOk: (reason: string) => void) {
-  dialogs.custom((close) => <ReasonKeyboard close={close} onOk={onOk} />);
+  dialogs.custom((close) => (
+    <ReasonKeyboard close={close} onOk={onOk} opts={{ placeholder: 'Reason for the void', requiredMsg: ['Please enter the reason for the void.', 'Void'] }} />
+  ));
+}
+
+/** The POS's full keyboard for a typed note (also used for the Discount note). */
+export function textKeyboard(opts: KeyboardOpts, onOk: (text: string) => void) {
+  dialogs.custom((close) => <ReasonKeyboard close={close} onOk={onOk} opts={opts} />);
 }

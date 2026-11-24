@@ -242,7 +242,19 @@ function advance() {
   run.addsThisStage = 0;
   run.awaitingChange = false;
   if (run.stageIndex >= run.scenario.stages.length) finish();
-  else run.records.push({ stageId: run.scenario.stages[run.stageIndex].id, startedAt: now() });
+  else {
+    run.records.push({ stageId: run.scenario.stages[run.stageIndex].id, startedAt: now() });
+    // A discount the server already rang while entering the order (as on the POS) answers it.
+    const st = run.scenario.stages[run.stageIndex];
+    if (st.kind === 'discount') {
+      const c = getState().checks[run.partyChecks[st.party]];
+      if (c?.discount && c.discount.value > 0) {
+        record().discounted = true;
+        advance();
+        return;
+      }
+    }
+  }
   notify();
 }
 
@@ -458,6 +470,14 @@ onPosEvent((e) => {
         record().kitchenPrint = e.kitchenPrint;
         record().submitRound = e.round;
         record().submitTable = e.tableId;
+        advance();
+        return;
+      }
+      break;
+    case 'discount':
+      // Judged at the end from the discount on the check, so a wrong one can still be fixed.
+      if (e.type === 'discount' && onParty && e.value > 0) {
+        record().discounted = true;
         advance();
         return;
       }

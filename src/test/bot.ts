@@ -3,7 +3,7 @@
 import { allTables, isMeat } from '../lib/menu';
 import { checkTotals, fromCents, toCents } from '../lib/money';
 import { actions, getState } from '../lib/store';
-import { answerChange, answerDecision, currentStage, getRun } from '../training/engine';
+import { answerChange, answerDecision, currentStage, getRun, nextStage } from '../training/engine';
 import { expectedForStage, orderTableOf } from '../training/evaluate';
 import type { ItemReq, Scenario } from '../training/types';
 
@@ -24,6 +24,8 @@ export interface BotOptions {
   noSplit?: boolean;
   /** A party on two W tables: ring every order on the first table's check. */
   oneTableOnly?: boolean;
+  /** Employee discount: skip it, ring the wrong percent, or leave the note empty. */
+  discount?: 'skip' | 'wrongPct' | 'noNote';
 }
 
 export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
@@ -88,6 +90,22 @@ export function playPerfect(sc: Scenario, opts: BotOptions = {}) {
         items.forEach((i) => actions.addItem(i.posId, i.qty, undefined, i.price));
         if (st.kitchenPrint === false && !opts.alwaysOrder) actions.sendOrder(false);
         else actions.submitOrder();
+        break;
+      }
+      case 'discount': {
+        if (opts.discount === 'skip') {
+          nextStage();
+          break;
+        }
+        actions.openCheck(run.partyChecks[st.party]);
+        const pct = opts.discount === 'wrongPct' ? (st.pct === 20 ? 10 : 20) : st.pct;
+        actions.applyDiscount({
+          name: pct === 20 ? '<<20%>>' : 'Emp Disc',
+          kind: 'pct',
+          value: pct,
+          note: opts.discount === 'noNote' ? '' : `${st.employee} ${st.relationship.split('|')[0]}`,
+        });
+        actions.leaveOrderScreen();
         break;
       }
       case 'void': {

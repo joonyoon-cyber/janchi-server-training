@@ -266,6 +266,8 @@ export function Receipt({ check, taxRate }: { check: Check; taxRate: number }) {
       <hr />
       {check.lines.map((l) => row(`${l.qty} ${posItem(l.posId).label}${l.modifier ? ` (${l.modifier})` : ''}`, fmt(l.qty * l.unitPrice)))}
       <hr />
+      {t.discount > 0 && row(`Discount ${check.discount?.name ?? ''}`.trim(), `-${fmt(t.discount)}`)}
+      {t.discount > 0 && check.discount?.note && <div style={{ fontSize: 11 }}>{check.discount.note}</div>}
       {row('Subtotal', fmt(t.subtotal))}
       {row('Tax', fmt(t.tax))}
       {t.autoTip > 0 && row('Gratuity 18% (party of 5+)', fmt(t.autoTip))}

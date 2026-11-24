@@ -81,6 +81,20 @@ export interface VoidStage extends StageBase {
   item: ItemReq;
 }
 
+/**
+ * An employee (or their family) asks for the employee discount: ring Discount > Discount Order
+ * with the right percent and the note NAME RELATIONSHIP (e.g. ALEX SELF, ALEX MOTHER).
+ */
+export interface DiscountStage extends StageBase {
+  kind: 'discount';
+  /** 20 = on duty (own food during the shift), 10 = off duty (employee or immediate family). */
+  pct: 10 | 20;
+  /** Employee's first name as typed in the note, upper case (e.g. ALEX). */
+  employee: string;
+  /** SELF, MOTHER, FATHER, SISTER, BROTHER, WIFE, HUSBAND, SON, DAUGHTER. */
+  relationship: string;
+}
+
 export interface DecisionStage extends StageBase {
   kind: 'decision';
   question: string;
@@ -110,7 +124,7 @@ export interface PayStage extends StageBase {
   shareCashPart?: number;
 }
 
-export type Stage = SeatStage | OrderStage | VoidStage | DecisionStage | PayStage | MoveStage | JoinStage;
+export type Stage = SeatStage | OrderStage | VoidStage | DiscountStage | DecisionStage | PayStage | MoveStage | JoinStage;
 
 export interface Scenario {
   id: string;
@@ -154,6 +168,8 @@ export interface StageRecord {
   movedTo?: string;
   /** join: the two tables were joined into one check. */
   joined?: boolean;
+  /** discount: a discount was rung on the party's check while this request was open. */
+  discounted?: boolean;
   /** decision */
   choice?: number;
   /** pay */

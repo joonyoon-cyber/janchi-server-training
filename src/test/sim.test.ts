@@ -749,3 +749,60 @@ describe('even split: choosing which share to pay', () => {
     expect(c.splits!.filter((x) => x > 0)).toHaveLength(1);
   });
 });
+
+describe('employee discount', () => {
+  it('matches the POS video: apple juice 3.50, 10% off -> 3.15 + 0.23 tax = 3.38', () => {
+    actions.reset({ persist: false });
+    actions.goto('main');
+    actions.quickServe();
+    actions.addItem('apple-juice', 1);
+    actions.applyDiscount({ name: 'Emp Disc', kind: 'pct', value: 10, note: 'JOON SELF' });
+    const c = getState().checks[getState().activeCheckId!];
+    const t = checkTotals(c, getState().settings.taxRate, true);
+    expect([t.discount, t.subtotal, t.tax, t.amountDue]).toEqual([0.35, 3.15, 0.23, 3.38]);
+    // A zero discount removes it.
+    actions.applyDiscount({ name: 'Custom', kind: 'pct', value: 0, note: '' });
+    expect(getState().checks[c.id].discount).toBeUndefined();
+  });
+
+  it('on-duty meal: perfect play scores 100; wrong percent, no note, or no discount are flagged', () => {
+    const sc = scenarios.find((x) => x.id === 'employee-meal')!;
+    startScenario(sc);
+    playPerfect(sc);
+    expect(getRun().result!.score).toBe(100);
+    startScenario(sc);
+    playPerfect(sc, { discount: 'wrongPct' });
+    expect(getRun().result!.paymentMistakes.some((x) => /employee discount is 20%/.test(x))).toBe(true);
+    startScenario(sc);
+    playPerfect(sc, { discount: 'noNote' });
+    expect(getRun().result!.paymentMistakes.some((x) => /SAM SELF/.test(x))).toBe(true);
+    startScenario(sc);
+    playPerfect(sc, { discount: 'skip' });
+    expect(getRun().result!.paymentMistakes.some((x) => /No discount was applied/.test(x))).toBe(true);
+    expect(getRun().result!.score).toBeLessThan(100);
+  });
+
+  it('a discount the policy does not allow is flagged', () => {
+    const sc = scenarios.find((x) => x.id === 'discount-policy')!;
+    startScenario(sc);
+    playPerfect(sc, {
+      mutateOrder: (_id, items) => {
+        actions.applyDiscount({ name: '<<10%>>', kind: 'pct', value: 10, note: 'RILEY COUSIN' });
+        return items;
+      },
+    });
+    expect(getRun().result!.paymentMistakes.some((x) => /doesn't allow/.test(x))).toBe(true);
+  });
+
+  it('generated employee take-outs (on and off duty) play to 100, and every Test shift has one', () => {
+    for (let i = 0; i < 12; i++) {
+      const sc = generateCounter('takeout', { rng: seededRng(400 + i), employee: i % 2 ? 'on' : 'off' });
+      const d = sc.stages.find((s) => s.kind === 'discount');
+      expect(d && d.kind === 'discount' && d.pct).toBe(i % 2 ? 20 : 10);
+      startScenario(sc);
+      playPerfect(sc);
+      expect(getRun().result!.score).toBe(100);
+    }
+    for (const seed of [1, 2, 3, 4]) expect(buildTest(seed).stages.some((s) => s.kind === 'discount')).toBe(true);
+  });
+});

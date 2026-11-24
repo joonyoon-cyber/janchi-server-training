@@ -44,6 +44,11 @@ export function HelpPanel() {
                   <b>Order</b> to send the void (Close without Order throws it away).
                 </li>
                 <li>
+                  <b>Employee discount:</b> 20% on an employee's own food during their shift (take-out too); 10% off duty for employees and immediate family
+                  (parents, siblings, spouse, children; not cousins or friends). <b>Discount</b> → type the employee's name and relationship (e.g. JOON SELF,
+                  JEISLER MOTHER) → Ok → <b>Discount Order</b> → <b>&lt;&lt;20%&gt;&gt;</b> or <b>&lt;&lt;10%&gt;&gt;</b> / <b>Emp Disc</b> (10%) → Ok.
+                </li>
+                <li>
                   <b>Table sizes:</b> A, B, Y3–Y5 up to 4; C, M, Y1–Y2 up to 6; W tables 4 each, or up to 8 when W1&amp;2, W3&amp;4 or W5&amp;6 are used
                   together. A party of 7–8 sits across the pair as two checks (up to 4 at each).
                 </li>

@@ -23,6 +23,12 @@ Not worried about (intentionally not simulated): PATIO layout, the icon on table
 
 ## Confirmed
 
+**Discounts** (video of the POS, 11/2026)
+* Discount → type the note (employee name and relationship, e.g. JOON SELF) → Ok → Discount panel (Discount Item, Discount Line Item, Discount Order, Reason, Close) → **Discount Order** → pad with presets <<10%>>, <<15%>>, <<20%>>, <<$5>>, <<$10>>, **Emp Disc** (10%) → Ok.
+* Tax is charged on the discounted amount (3.50 − 10% = 3.15, tax 0.23).
+* Policy: 20% on-duty (your own food, during your shift, take-out too); 10% off-duty for employees and immediate family (parents, siblings, spouse, children).
+* Discount Item and Discount Line Item are not simulated (training uses Discount Order).
+
 **Even Amount Split** (photo of the POS, 11/2026)
 * You can tap a share tile to choose which share to pay next (they are the same amount); otherwise payments take the first share still owed.
 * A share disappears from the tiles once it is paid; the payment shows in the payment list as a card icon and its amount.
@@ -71,7 +77,7 @@ These look like the real POS but show a "not part of the simulator yet" message:
 
 Main screen: Cashier In, Cashier Out, Gift Card, Cash Drawer, Announcement, Operations, and the top-right icons.
 Dine-in: Information, Move/Join, Link Table, Quick Serve, Cash Drawer, Refund.
-Order screen: Split, Combine, Price Change, Discount, Input Customer Information, Kitchen Memo, Last Receipt, Assign Seat and its − / +, Select Cust.
+Order screen: Split, Combine, Price Change, Input Customer Information, Kitchen Memo, Last Receipt, Assign Seat and its − / +, Select Cust.
 Tender screen: Offline C.C., Gift Card, Gratuity, Total Amount, ︿ / ﹀, customer search.
 Tender list: Change Order Type, Server, Reprint Kitchen Memo, Check No Search, POS SEARCH.
 Tip Adjustments: Cash / Offline C.C. / Flexgift Gratuity, Reprint, Search By Employee, Select Employee, calendar.

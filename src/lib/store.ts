@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { posItem, tableDef, tableLabel } from './menu';
 import { checkTotals, fromCents, toCents } from './money';
-import type { Check, LoggedEvent, OrderLine, PayMethod, Payment, PosEvent, Screen } from './types';
+import type { Check, CheckDiscount, LoggedEvent, OrderLine, PayMethod, Payment, PosEvent, Screen } from './types';
 
 export interface Settings {
   /** Sales tax percent. 7.25 matches the receipts in the reference photos. */
@@ -519,6 +519,18 @@ export const actions = {
     const amounts = evenSplit(checkTotals(c, state.settings.taxRate).balance, ways);
     set(updateCheck(c.id, (ch) => ({ ...ch, splits: ways > 1 ? amounts : undefined, splitShares: ways > 1 ? amounts : undefined, splitSelected: undefined })));
     emit({ type: 'split', checkId: c.id, ways, amounts });
+  },
+
+  /**
+   * Discount > Discount Order: one discount on the whole check (a percent or dollars off),
+   * with the note typed first. A zero value removes the discount.
+   */
+  applyDiscount(d: CheckDiscount) {
+    const c = activeCheck();
+    if (!c) return;
+    const keep = d.value > 0 ? d : undefined;
+    set(updateCheck(c.id, (ch) => ({ ...ch, discount: keep })));
+    emit({ type: 'discount', checkId: c.id, tableId: c.tableId, name: d.name, kind: d.kind, value: keep ? d.value : 0, note: d.note });
   },
 
   /** Tap a share tile (Even Amount Split) to pay that share next. */

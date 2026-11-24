@@ -638,7 +638,14 @@ function meatCount(items: ItemReq[]) {
  * Counter guest at the Quick Serve, who says up front what it is and hands over payment:
  * macaron ice cream to go, a gift certificate, or a food take-out order.
  */
-export function generateCounter(kind: 'macaron' | 'gift' | 'takeout', opts: { rng?: () => number } = {}): Scenario {
+/** Made-up employee first names for discount practice (never real staff). */
+const EMPLOYEE_NAMES = ['Alex', 'Sam', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Jamie'];
+
+/**
+ * Counter guests. With `employee`, the take-out is a staff member's own meal: 'on' = during their
+ * shift (20% on-duty discount), 'off' = on their day off (10% off-duty discount).
+ */
+export function generateCounter(kind: 'macaron' | 'gift' | 'takeout', opts: { rng?: () => number; employee?: 'on' | 'off' } = {}): Scenario {
   const prev = rand;
   rand = opts.rng ?? Math.random;
   try {
@@ -667,19 +674,39 @@ export function generateCounter(kind: 'macaron' | 'gift' | 'takeout', opts: { rn
       what = `A $${amount} gift card`;
     } else {
       items = [
-        ...sample(Object.keys(DINNER_ENTREES), 1 + rnd(2)).map((posId) => ({ posId, qty: 1 })),
+        ...sample(Object.keys(DINNER_ENTREES), opts.employee ? 1 : 1 + rnd(2)).map((posId) => ({ posId, qty: 1 })),
         ...sample(Object.keys(APPETIZERS), 1).map((posId) => ({ posId, qty: 1 })),
       ];
       opener = "Hi! I'd like to place a take-out order. I'll pay now.";
       what = capFirst(list(items));
       kitchenPrint = true;
     }
-    const total = expectedTotals(items, taxRate).totalDue;
+    const emp = kind === 'takeout' && opts.employee ? pick(EMPLOYEE_NAMES) : null;
+    const pct: 0 | 10 | 20 = emp ? (opts.employee === 'on' ? 20 : 10) : 0;
+    if (emp)
+      opener =
+        opts.employee === 'on'
+          ? pick([`Hey, it's ${emp}. I'm on my shift and want to grab my meal to go, with my employee discount.`, `It's ${emp} from the floor: I'm working tonight. Can I order my own food to go? Employee discount, please.`])
+          : pick([`Hi! It's ${emp}, I'm off today. I'm picking up dinner for myself. Can I use my employee discount?`, `Hey, ${emp} here, on my day off. A take-out order for me, with the employee discount please.`]);
+    const total = expectedTotals(items, taxRate, 0, pct).totalDue;
     const cash = chance(0.5);
     const payLine = cash ? `Here's $${cashFor(total)} in cash.` : "Here's my card.";
     const stages: Stage[] = [
       { id: 's0', kind: 'seat', party: p, takeout: true, guests: 1, speaker: 'guest', note: 'A guest walks up to the counter.', say: opener },
       { id: 's1', kind: 'order', party: p, expect: items, kitchenPrint, say: `${what}, please. ${payLine}` },
+      ...(emp
+        ? [
+            {
+              id: 's1d',
+              kind: 'discount' as const,
+              party: p,
+              pct: pct as 10 | 20,
+              employee: emp.toUpperCase(),
+              relationship: 'SELF',
+              say: opts.employee === 'on' ? "That's with my employee discount, right? It's my own meal and I'm on the clock." : "And my employee discount, please. I'm not working today.",
+            },
+          ]
+        : []),
       cash
         ? { id: 's2', kind: 'pay', party: p, method: 'cash', cashGiven: cashFor(total), askChange: true, say: `(The guest is waiting to pay with the $${cashFor(total)} cash.)` }
         : { id: 's2', kind: 'pay', party: p, method: 'credit', say: '(The guest is waiting to pay by card.)' },
@@ -687,9 +714,13 @@ export function generateCounter(kind: 'macaron' | 'gift' | 'takeout', opts: { rn
     const titles = { macaron: 'Macaron ice cream to go', gift: 'Gift card sale', takeout: 'Take-out order at the counter' };
     return {
       id: `gen-${Date.now().toString(36)}-${genSeq++}`,
-      title: titles[kind],
+      title: emp ? `Employee take-out (${opts.employee === 'on' ? 'on duty' : 'off duty'})` : titles[kind],
       level: 'intermediate',
-      summary: kind === 'takeout' ? 'A counter guest orders food to go and pays right away.' : `Counter guest: ${titles[kind].toLowerCase()}.`,
+      summary: emp
+        ? `${emp} (staff) orders their own food to go ${opts.employee === 'on' ? 'during their shift' : 'on their day off'}: ring the employee discount with the right note.`
+        : kind === 'takeout'
+          ? 'A counter guest orders food to go and pays right away.'
+          : `Counter guest: ${titles[kind].toLowerCase()}.`,
       time: { weekday: rnd(7), hour: 18 + rnd(3), minute: rnd(60) },
       parties: { p1: 1 },
       stages,

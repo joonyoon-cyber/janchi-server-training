@@ -2047,6 +2047,234 @@
           "say": "(The guest is waiting to pay by card.)"
         }
       ]
+    },
+    {
+      "id": "employee-meal",
+      "title": "Employee Meal (On Duty)",
+      "level": "intermediate",
+      "summary": "A coworker on shift orders their own meal to go. Ring the on-duty employee discount with the right note.",
+      "time": {
+        "weekday": 5,
+        "hour": 17,
+        "minute": 40
+      },
+      "parties": {
+        "p1": 1
+      },
+      "targetSeconds": 210,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "guest",
+          "takeout": true,
+          "guests": 1,
+          "note": "Your coworker Sam, on shift tonight, comes to the counter on their break.",
+          "say": "Hey, it's Sam. I'm on my shift and want to grab my meal to go, with my employee discount."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "kitchenPrint": true,
+          "say": "A kimchi stew and a chicken katsu, please. I'll pay by card.",
+          "expect": [
+            {
+              "posId": "kimchi-stew-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "katsu-chicken-dnr",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "disc",
+          "kind": "discount",
+          "party": "p1",
+          "pct": 20,
+          "employee": "SAM",
+          "relationship": "SELF",
+          "say": "That's with my employee discount, right? It's my own meal and I'm on the clock."
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "say": "(Sam is waiting to pay by card.)"
+        }
+      ]
+    },
+    {
+      "id": "family-discount",
+      "title": "Employee's Family (Off-Duty Discount)",
+      "level": "advanced",
+      "summary": "A coworker's parents come in for dinner. Immediate family gets the off-duty employee discount: ring it with the employee's name and relationship.",
+      "time": {
+        "weekday": 0,
+        "hour": 18,
+        "minute": 15
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 270,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "say": "Two guests, A B C BAR section."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "We're not doing all you can eat tonight. A galbi entrée and a soybean stew, and two Cokes, please.",
+          "expect": [
+            {
+              "posId": "galbi-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "soybean-stew-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "coke",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "disc",
+          "kind": "discount",
+          "party": "p1",
+          "pct": 10,
+          "employee": "JORDAN",
+          "relationship": "MOTHER|FATHER",
+          "note": "They finish eating.",
+          "say": "We're Jordan's parents. Jordan works here. Do we get the family discount?"
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "ask": "Can we get the check?",
+          "say": "One card, please."
+        }
+      ]
+    },
+    {
+      "id": "discount-policy",
+      "title": "Discount Policy: Who Qualifies?",
+      "level": "advanced",
+      "summary": "Two discount requests that the employee policy does not cover. Say no politely, and don't ring a discount.",
+      "time": {
+        "weekday": 6,
+        "hour": 19,
+        "minute": 5
+      },
+      "parties": {
+        "p1": 2
+      },
+      "targetSeconds": 240,
+      "stages": [
+        {
+          "id": "seat",
+          "kind": "seat",
+          "party": "p1",
+          "speaker": "host",
+          "guests": 2,
+          "section": "ABC",
+          "say": "Two guests, A B C BAR section."
+        },
+        {
+          "id": "r1",
+          "kind": "order",
+          "party": "p1",
+          "say": "A beef bulgogi entrée and a spicy pork bulgogi entrée, please. And two iced teas.",
+          "expect": [
+            {
+              "posId": "bulgogi-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "spicy-pork-bulgogi-dnr",
+              "qty": 1
+            },
+            {
+              "posId": "iced-tea",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "q1",
+          "kind": "decision",
+          "party": "p1",
+          "say": "By the way, my cousin Riley works here. Can we get the employee discount?",
+          "question": "What do you do?",
+          "options": [
+            {
+              "text": "Ring the 10% off-duty discount with the note RILEY COUSIN",
+              "correct": false,
+              "feedback": "The off-duty discount is for employees and their immediate family only: parents, siblings, spouse and children. Cousins are not included."
+            },
+            {
+              "text": "Explain kindly that the discount covers immediate family only (parents, siblings, spouse, children), so no discount",
+              "correct": true,
+              "feedback": "Right. Immediate family only."
+            },
+            {
+              "text": "Ring the 20% discount since Riley is working tonight",
+              "correct": false,
+              "feedback": "20% is only for an on-duty employee's own food. It never applies to guests."
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "kind": "decision",
+          "party": "p1",
+          "speaker": "guest",
+          "note": "Your coworker Casey, on shift tonight, stops by.",
+          "say": "Hey, can you put my 20% on my friend's check over there? I'll pay for it.",
+          "question": "What do you tell Casey?",
+          "options": [
+            {
+              "text": "Sure, ring <<20%>> on the friend's check with the note CASEY SELF",
+              "correct": false,
+              "feedback": "The on-duty 20% is only for food the employee orders and eats themselves during their shift."
+            },
+            {
+              "text": "Explain the on-duty discount only covers Casey's own food, so the friend's check stays at full price",
+              "correct": true,
+              "feedback": "Right. Off duty, Casey could bring immediate family for 10%, but not friends."
+            },
+            {
+              "text": "Ring 10% instead as a compromise",
+              "correct": false,
+              "feedback": "Friends don't get an employee discount at any percent."
+            }
+          ]
+        },
+        {
+          "id": "pay",
+          "kind": "pay",
+          "party": "p1",
+          "method": "credit",
+          "ask": "Okay, no problem. Can we get the check?",
+          "say": "Here's my card."
+        }
+      ]
     }
   ]
 }
