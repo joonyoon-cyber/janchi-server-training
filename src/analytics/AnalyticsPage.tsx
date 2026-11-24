@@ -576,21 +576,21 @@ export default function AnalyticsPage({ isOwner }: { isOwner: boolean }) {
               {/* For time cards the fixes are the point; elsewhere the team comparison comes first. */}
               {cur.id === 'zero-tips' ? (
                 <>
-                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
-                  <MetricTable result={curRes} people={people} />
-                  <ZeroTipSheet parsed={parsed} people={people} onPerson={openPerson} />
+                  <CheckCharts key={`charts-${cur.id}`} result={curRes} people={people} onPerson={openPerson} />
+                  <MetricTable key={`table-${cur.id}`} result={curRes} people={people} />
+                  <ZeroTipSheet key={`zero-${cur.id}`} parsed={parsed} people={people} onPerson={openPerson} />
                 </>
               ) : cur.id === 'timecards' ? (
                 <>
-                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
-                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
-                  <MetricTable result={curRes} people={people} />
+                  <Findings key={`findings-${cur.id}`} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
+                  <CheckCharts key={`charts-${cur.id}`} result={curRes} people={people} onPerson={openPerson} />
+                  <MetricTable key={`table-${cur.id}`} result={curRes} people={people} />
                 </>
               ) : (
                 <>
-                  <CheckCharts key={cur.id} result={curRes} people={people} onPerson={openPerson} />
-                  <MetricTable result={curRes} people={people} />
-                  <Findings key={cur.id} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
+                  <CheckCharts key={`charts-${cur.id}`} result={curRes} people={people} onPerson={openPerson} />
+                  <MetricTable key={`table-${cur.id}`} result={curRes} people={people} />
+                  <Findings key={`findings-${cur.id}`} result={curRes} people={people} name={cur.id} onPerson={openPerson} />
                 </>
               )}
             </>
