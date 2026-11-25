@@ -38,7 +38,7 @@ Employee**, **Sales Record by Person Ordering**. The page recognizes and skips t
 | Large parties without the 18% | 5+ AYCE dinners but fewer than 5 guests entered; parties of 5+ tipped under 17.5% |
 | Items taken off after they were served | Items cancelled 20+ minutes after ordering; Ultimate switched to Premium; adult AYCE changed to a child price |
 | Paid checks voided | Voided checks, with cash-paid ones in red |
-| Discounts and the employee policy | **Off-duty 10%**: only employee + immediate family (parents, siblings, spouse, children), outside working hours, note "NAME RELATIONSHIP". **On-duty 20%**: only the employee's own food during their scheduled shift (flags: outside a shift, for someone else, alcohol/drinks, guest-sized dine-in checks). Also discounts with no reason or bigger than their button |
+| Discounts and the employee policy | **Off-duty 10%**: only employee + immediate family (parents, siblings, spouse, children), outside working hours, note "NAME RELATIONSHIP". **On-duty 20%**: only the employee's own food during their scheduled shift (flags: outside a shift, for someone else, alcohol/drinks, guest-sized dine-in checks). Also discounts with no reason or bigger than their button (measured against the whole order from the Detailed Sales List: the Discount report lists only some of a check's items) |
 | Free or cheaper items | Price changes down, items rung at $0 or below their usual price, employee items rung in bulk |
 | Bigger tips when something was free | Tip % on a server's checks with something free vs their other checks |
 | Checks outside shifts and shared logins | Checks closed while the server wasn't clocked in; checks under shared logins |

@@ -160,9 +160,26 @@ describe('anomaly checks', () => {
 
   it('classifies discount notes and catches oversized discounts', () => {
     const t = (ticket: string, amount: number, base: number, note: string) => ({ ticket, placed: d('2026-11-01 18:00'), table: 'Take Out', items: [{ menu: 'X', amount: base }], itemsAmount: base, name: '<<20%>>', amount, note, placedBy: 'PAT DOE', approval: '' });
-    const p: Parsed = { discounts: [t('2026110110001', 4, 20, 'EMPLOYEE'), t('2026110110002', 8, 20, 'EMPLOYEE'), t('2026110110003', 12, 20, 'EMPLOYEE'), t('2026110110004', 4, 20, 'COUSIN'), t('2026110110005', 4, 20, '')] };
+    const p: Parsed = {
+      discounts: [t('2026110110001', 4, 20, 'EMPLOYEE'), t('2026110110002', 8, 20, 'EMPLOYEE'), t('2026110110003', 12, 20, 'EMPLOYEE'), t('2026110110004', 4, 20, 'COUSIN'), t('2026110110005', 4, 20, '')],
+      // The whole checks, from the Detailed Sales List.
+      sales: [1, 2, 3, 4, 5].map((n) => receipt(n, 'PAT', { table: 'Take Out', items: [['BULGOGI DNR', 1, 20]] })),
+    };
     const what = run('discounts', p).findings.filter((f) => f.sev !== 'low').map((f) => f.what);
     expect(what).toEqual(['Discount applied twice?', 'Discount bigger than its label', 'On-duty 20% for someone else']);
+  });
+
+  it('discount percentages use the whole order, not just the items the Discount report lists', () => {
+    // The report lists $47.20 of items, but the check was $125.10: $12.51 off is exactly 10%.
+    const disc = { ticket: '2026110110007', placed: d('2026-11-01 18:00'), table: 'W1', items: [{ menu: 'GALBI DNR', amount: 47.2 }], itemsAmount: 47.2, name: '<<10%>>', amount: 12.51, note: 'PAT SELF', placedBy: 'PAT DOE', approval: '' };
+    const whole = receipt(7, 'PAT', { table: 'W1', items: [['GALBI DNR', 1, 47.2], ['PREMIUM AYCE (DINNER)', 2, 38.95]] });
+    expect(whole.subtotal).toBeCloseTo(125.1, 2);
+    const withSales = run('discounts', { discounts: [disc], sales: [whole] }).findings;
+    expect(withSales.some((f) => /bigger than its label|applied twice/.test(f.what))).toBe(false);
+    // Without the sales list the check can't see the whole order: it only notes it, at low priority.
+    const alone = run('discounts', { discounts: [disc] }).findings.filter((f) => /bigger than its label|applied twice/.test(f.what));
+    expect(alone.map((f) => f.sev)).toEqual(['low']);
+    expect(alone[0].detail).toMatch(/Detailed Sales List/);
   });
 
   it('finds items given away by price changes and $0 lines', () => {

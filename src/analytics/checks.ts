@@ -781,6 +781,11 @@ const discounts: Check = {
   needs: ['discounts', 'salesByDate'],
   run(p, people) {
     const ds = p.discounts ?? [];
+    // The Discount report lists only some of a check's items (e.g. the round the discount was rung on),
+    // so percentages use the whole check from the Detailed Sales List: "Total order amount" (food and
+    // drink before the discount). Matched by receipt number; without it, the report's items are used.
+    const sales = new Map((p.sales ?? []).map((r) => [r.receipt, r]));
+    const saleOf = (ticket: string) => sales.get(ticket) ?? [...sales.values()].find((r) => r.receipt.endsWith(ticket) || ticket.endsWith(r.receipt));
     const findings: Finding[] = [];
     const per = new Map<string, { n: number; amt: number; breaks: number; noNote: number }>();
     const flag = (f: Finding) => findings.push(f);
@@ -795,14 +800,24 @@ const discounts: Check = {
       per.set(k, g);
       const before = findings.length;
       const label = /(\d+)\s*%/.exec(d.name)?.[1];
-      const base = d.itemsAmount;
+      const sale = saleOf(d.ticket);
+      // Whole check before the discount; the report's own items only when the sales list doesn't have it.
+      const base = sale && sale.subtotal > 0 ? Math.max(sale.subtotal, d.itemsAmount) : d.itemsAmount;
+      const items = sale?.lines.length ? sale.lines.map((l) => ({ menu: l.menu, amount: l.amount })) : d.items;
       const realPct = base > 0 ? (d.amount / base) * 100 : null;
       const note = d.note.toUpperCase();
       const where = `${d.table || 'Check'}: ${money(d.amount)} off ${money(base)}${d.name ? ` (${d.name.replace(/[<>]/g, '')})` : ''}${d.note ? `, note "${d.note}"` : ', no note'}.`;
       const base0 = { emp: k, when: d.placed, amount: d.amount, ref: d.ticket };
       if (label && realPct !== null && realPct > +label + 10 && d.amount >= 5) {
         const twice = realPct <= 2 * +label + 1.5;
-        flag({ ...base0, sev: twice ? 'medium' : 'high', what: twice ? 'Discount applied twice?' : 'Discount bigger than its label', detail: `${where} That is ${pct(realPct)}, not ${label}%.` });
+        // Without the check's full total (Detailed Sales List not loaded or no match), this may be a false alarm.
+        const partial = !sale ? ' (Based only on the items in the Discount report: load the Detailed Sales List to check against the whole order.)' : '';
+        flag({
+          ...base0,
+          sev: !sale ? 'low' : twice ? 'medium' : 'high',
+          what: twice ? 'Discount applied twice?' : 'Discount bigger than its label',
+          detail: `${where} That is ${pct(realPct)} of the whole order, not ${label}%.${partial}`,
+        });
       }
       const named = namedEmployee(d.note, people, k);
       const duty = (who: string) => people.onDuty(who, d.placed);
@@ -836,8 +851,8 @@ const discounts: Check = {
         const other = NOT_IMMEDIATE.exec(note)?.[1] ?? (/FAMIL/.test(note) ? 'FAMILY' : null) ?? IMMEDIATE.exec(note.replace(/\bSELF\b|\bME\b/g, ''))?.[1] ?? null;
         if (other)
           flag({ ...base0, sev: 'high', what: 'On-duty 20% for someone else', detail: `${where} The note says "${other}": the 20% is only for the employee's own food. Family can get the 10% when the employee is off duty.` });
-        const booze = d.items.filter((i) => ALCOHOL.test(i.menu));
-        const drinks = d.items.filter((i) => DRINK.test(i.menu) && !ALCOHOL.test(i.menu));
+        const booze = items.filter((i) => ALCOHOL.test(i.menu));
+        const drinks = items.filter((i) => DRINK.test(i.menu) && !ALCOHOL.test(i.menu));
         if (booze.length) flag({ ...base0, sev: 'high', what: 'On-duty 20% on alcohol', detail: `${where} Includes ${booze.map((i) => i.menu).join(', ')}. The 20% is for food only.` });
         else if (drinks.length) flag({ ...base0, sev: 'low', what: 'On-duty 20% on drinks', detail: `${where} Includes ${drinks.map((i) => i.menu).join(', ')}. The policy covers food.` });
         if (!/take\s*out|to\s*go/i.test(d.table) && base >= 45)
